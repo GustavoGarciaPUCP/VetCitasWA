@@ -1,0 +1,273 @@
+/* ================== Modal Cliente ================== */
+.cli-modal-toggle {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.cli-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: cli-fade 0.18s ease-out;
+}
+
+.cli-modal-toggle:checked ~ .cli-modal-backdrop {
+    display: flex;
+}
+
+/* Backdrop click area eliminado — solo la X cierra el modal */
+
+.cli-modal-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.35);
+    animation: cli-pop 0.22s ease-out;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.cli-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+.cli-modal-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.3;
+}
+
+.cli-modal-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.74rem;
+    color: #6b7280;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.cli-modal-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 1.4rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.cli-modal-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.cli-modal-body {
+    padding: 1.1rem 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.cli-modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+/* ===== Form fields ===== */
+.cf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+}
+
+.cf-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.cf-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.cf-hint {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    line-height: 1.35;
+}
+
+.cf-input,
+.cf-textarea {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background-color: #ffffff;
+    color: #1f2937;
+    font-size: 0.85rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.cf-input {
+    height: 38px;
+}
+
+.cf-textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.cf-input:focus,
+.cf-textarea:focus {
+    outline: none;
+    border-color: #1976ef;
+    box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.15);
+}
+
+.cf-input::placeholder,
+.cf-textarea::placeholder {
+    color: #9ca3af;
+}
+
+/* Checkbox */
+.cf-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85rem;
+    color: #1f2937;
+}
+
+.cf-check-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.cf-check-visual {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 4px;
+    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    position: relative;
+}
+
+.cf-check-input:checked + .cf-check-visual {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.cf-check-input:checked + .cf-check-visual::after {
+    content: "";
+    width: 4px;
+    height: 8px;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* ===== Botones del modal ===== */
+.btn-cli {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+    text-decoration: none !important;
+}
+
+.btn-cli-ghost {
+    background: #ffffff;
+    color: #4b5563;
+    border-color: #e5e7eb;
+}
+
+.btn-cli-ghost:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.btn-cli-primary {
+    background: #2563eb;
+    color: #ffffff !important;
+    border-color: #2563eb;
+}
+
+.btn-cli-primary:hover {
+    background: #1d4ed8;
+}
+
+@keyframes cli-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes cli-pop {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 560px) {
+    .cf-row {
+        grid-template-columns: 1fr;
+    }
+
+    .cli-modal-card {
+        max-height: 95vh;
+    }
+}

@@ -1,0 +1,441 @@
+/* ================== Contenedor ================== */
+.page-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-wrapper {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem 1.75rem;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+/* ================== Back link ================== */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #1976ef !important;
+    text-decoration: none !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    margin-bottom: 1.25rem;
+}
+
+.back-link:hover {
+    color: #1567d3 !important;
+    text-decoration: underline !important;
+}
+
+.back-icon {
+    display: inline-flex;
+}
+
+/* ================== Header del cliente ================== */
+.client-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.client-header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-edit-cli {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    height: 38px;
+    padding: 0 1rem;
+    background: #eff6ff;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    text-decoration: none !important;
+    user-select: none;
+}
+
+.btn-edit-cli:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.client-avatar-big {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #34d399 0%, #0d9488 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.65rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: 1px;
+}
+
+.client-info {
+    min-width: 0;
+}
+
+.client-name {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.client-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.client-badge {
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.22rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid #fde68a;
+}
+
+.client-id {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 0 0 1.5rem;
+}
+
+/* ================== Info del cliente ================== */
+.block-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1976ef;
+    margin: 0 0 1rem 0;
+}
+
+.info-block {
+    margin-bottom: 1.75rem;
+}
+
+.info-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 2rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.info-item-full {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #9ca3af;
+    letter-spacing: 0.6px;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    color: #111827;
+    word-break: break-word;
+}
+
+.status-pill {
+    display: inline-block;
+    padding: 0.22rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.status-active {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+/* ================== Mascotas asociadas ================== */
+.pets-section {
+    margin-top: 0.5rem;
+}
+
+.pets-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.pets-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.pets-count {
+    color: #6b7280;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+.btn-add-pet {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    height: 36px;
+    padding: 0 0.85rem;
+    background: #2563eb;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-decoration: none !important;
+    user-select: none;
+}
+
+.btn-add-pet:hover {
+    background: #1d4ed8;
+}
+
+.btn-plus {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.pets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.pet-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.pet-card:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.pet-card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.pet-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+
+.pet-dog {
+    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+}
+
+.pet-cat {
+    background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+}
+
+.pet-card-meta {
+    min-width: 0;
+}
+
+.pet-card-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+}
+
+.species-pill {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.species-dog {
+    background: #3b82f6;
+}
+
+.species-cat {
+    background: #c084fc;
+}
+
+.pet-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+}
+
+.pet-row-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    color: #111827;
+    font-weight: 500;
+}
+
+.pet-row-label {
+    color: #6b7280;
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+.pet-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: auto;
+}
+
+.pet-card-link {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    background: #eff6ff;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe;
+    border-radius: 7px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pet-card-link:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.pet-card-edit {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    text-decoration: none !important;
+}
+
+.pet-card-edit:hover {
+    background: #eff6ff;
+    color: #2563eb;
+    border-color: #bfdbfe;
+}
+
+.eye-icon {
+    display: inline-flex;
+}
+
+/* ================== Responsive ================== */
+@media (max-width: 991.98px) {
+    .card-wrapper {
+        padding: 1.25rem 1.25rem 1.5rem;
+    }
+
+    .client-name {
+        font-size: 1.5rem;
+    }
+
+    .client-avatar-big {
+        width: 64px;
+        height: 64px;
+        font-size: 1.45rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .card-wrapper {
+        padding: 1rem 1rem 1.25rem;
+    }
+
+    .info-grid-2 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .client-header {
+        gap: 1rem;
+    }
+
+    .client-name {
+        font-size: 1.35rem;
+    }
+
+    .client-avatar-big {
+        width: 56px;
+        height: 56px;
+        font-size: 1.25rem;
+    }
+
+    .pets-grid {
+        grid-template-columns: 1fr;
+    }
+}

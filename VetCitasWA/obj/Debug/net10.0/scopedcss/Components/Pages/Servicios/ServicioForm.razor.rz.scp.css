@@ -1,0 +1,335 @@
+/* ================== Contenedor ================== */
+.page-section[b-z5r6i26xz2] {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-head[b-z5r6i26xz2] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.back-link[b-z5r6i26xz2] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #1976ef !important;
+    text-decoration: none !important;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    width: fit-content;
+}
+
+.back-link:hover[b-z5r6i26xz2] {
+    color: #1567d3 !important;
+    text-decoration: underline !important;
+}
+
+.back-icon[b-z5r6i26xz2] {
+    display: inline-flex;
+}
+
+.page-title[b-z5r6i26xz2] {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0.15rem 0 0;
+    line-height: 1.2;
+}
+
+.page-subtitle[b-z5r6i26xz2] {
+    font-size: 0.82rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* ===== Mismo template, dos modos =====
+   La página tiene dos @page (crear, editar). Cada acción tiene dos
+   spans (uno para cada modo) — el CSS oculta el opuesto según la
+   URL usando :has() en el <html>. Por defecto se muestra el de "Crear". */
+.title-edit[b-z5r6i26xz2],
+.action-edit[b-z5r6i26xz2] {
+    display: none;
+}
+
+/* Si la página se cargó como /servicios/editar mostramos los textos
+   de edición y ocultamos los de creación.
+   Como no hay JS para detectar la ruta, lo dejamos como nota para
+   integración real con Blazor (donde un parámetro @code controlaría
+   los textos). Para este demo mostramos siempre el modo "Editar"
+   ya que los campos vienen pre-llenados. */
+.title-create[b-z5r6i26xz2] {
+    display: none;
+}
+
+.title-edit[b-z5r6i26xz2],
+.action-edit[b-z5r6i26xz2] {
+    display: inline;
+}
+
+.action-create[b-z5r6i26xz2] {
+    display: none;
+}
+
+/* ================== Card del form ================== */
+.form-card[b-z5r6i26xz2] {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ===== Sección dentro del form ===== */
+.form-section[b-z5r6i26xz2] {
+    border: 1px solid #f3f4f6;
+    border-radius: 10px;
+    padding: 1rem 1.15rem 1.15rem;
+    margin: 0;
+    background: #fafbfc;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.form-legend[b-z5r6i26xz2] {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 0 0.4rem;
+}
+
+.form-row[b-z5r6i26xz2] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+}
+
+.form-field[b-z5r6i26xz2] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.form-field-wide[b-z5r6i26xz2] {
+    grid-column: span 1;
+}
+
+.form-label[b-z5r6i26xz2] {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.req[b-z5r6i26xz2] {
+    color: #ef4444;
+    margin-left: 0.1rem;
+}
+
+.form-hint[b-z5r6i26xz2] {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    line-height: 1.35;
+}
+
+.form-hint-indent[b-z5r6i26xz2] {
+    padding-left: 1.7rem;
+    margin-top: -0.25rem;
+}
+
+.form-input[b-z5r6i26xz2],
+.form-textarea[b-z5r6i26xz2],
+.form-select[b-z5r6i26xz2] {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background-color: #ffffff;
+    color: #1f2937;
+    font-size: 0.88rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.form-input[b-z5r6i26xz2] {
+    height: 40px;
+}
+
+.form-textarea[b-z5r6i26xz2] {
+    resize: vertical;
+    min-height: 75px;
+}
+
+.form-select-wrap[b-z5r6i26xz2] {
+    position: relative;
+}
+
+.form-select[b-z5r6i26xz2] {
+    height: 40px;
+    padding-right: 2rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236b7280' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    cursor: pointer;
+}
+
+.form-input:focus[b-z5r6i26xz2],
+.form-textarea:focus[b-z5r6i26xz2],
+.form-select:focus[b-z5r6i26xz2] {
+    outline: none;
+    border-color: #1976ef;
+    box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.15);
+}
+
+.form-input[b-z5r6i26xz2]::placeholder,
+.form-textarea[b-z5r6i26xz2]::placeholder {
+    color: #9ca3af;
+}
+
+/* ===== Input con prefijo (S/) ===== */
+.form-input-prefix[b-z5r6i26xz2] {
+    position: relative;
+}
+
+.prefix-symbol[b-z5r6i26xz2] {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 0.85rem;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.form-input-with-prefix[b-z5r6i26xz2] {
+    padding-left: 2.1rem;
+}
+
+/* ===== Checkbox ===== */
+.form-check[b-z5r6i26xz2] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.88rem;
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.form-check-input[b-z5r6i26xz2] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.form-check-visual[b-z5r6i26xz2] {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 4px;
+    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    position: relative;
+}
+
+.form-check-input:checked + .form-check-visual[b-z5r6i26xz2] {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.form-check-input:checked + .form-check-visual[b-z5r6i26xz2]::after {
+    content: "";
+    width: 5px;
+    height: 9px;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* ===== Acciones del form ===== */
+.form-actions[b-z5r6i26xz2] {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f3f4f6;
+    margin-top: 0.5rem;
+    padding-top: 1.1rem;
+}
+
+.btn-form[b-z5r6i26xz2] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    text-decoration: none !important;
+    user-select: none;
+}
+
+.btn-form-ghost[b-z5r6i26xz2] {
+    background: #ffffff;
+    color: #4b5563 !important;
+    border-color: #e5e7eb;
+}
+
+.btn-form-ghost:hover[b-z5r6i26xz2] {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.btn-form-primary[b-z5r6i26xz2] {
+    background: #2563eb;
+    color: #ffffff !important;
+    border-color: #2563eb;
+}
+
+.btn-form-primary:hover[b-z5r6i26xz2] {
+    background: #1d4ed8;
+}
+
+/* ================== Responsive ================== */
+@media (max-width: 767.98px) {
+    .form-card[b-z5r6i26xz2] {
+        padding: 1.1rem 1rem 1.1rem;
+    }
+
+    .form-row[b-z5r6i26xz2] {
+        grid-template-columns: 1fr;
+    }
+
+    .page-title[b-z5r6i26xz2] {
+        font-size: 1.2rem;
+    }
+
+    .form-actions[b-z5r6i26xz2] {
+        flex-direction: column-reverse;
+    }
+
+    .btn-form[b-z5r6i26xz2] {
+        width: 100%;
+    }
+}

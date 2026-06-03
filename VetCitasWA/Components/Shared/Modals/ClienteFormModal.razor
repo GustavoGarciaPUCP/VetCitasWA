@@ -1,0 +1,69 @@
+@*
+    Modal reutilizable para crear/editar cliente.
+    Se abre con <label for="cliente-form-modal">. El demo viene
+    pre-llenado con datos de Juan Pérez; en Blazor real esto se
+    cargaría según el cliente seleccionado.
+*@
+
+<input type="checkbox" id="cliente-form-modal" class="cli-modal-toggle" aria-hidden="true" />
+
+<div class="cli-modal-backdrop">
+    <div class="cli-modal-card" role="dialog" aria-modal="true" aria-labelledby="cli-modal-title">
+
+        <header class="cli-modal-head">
+            <div>
+                <h2 id="cli-modal-title" class="cli-modal-title">Editar Cliente</h2>
+                <p class="cli-modal-subtitle">Permiso requerido: CLIENTE_GESTIONAR</p>
+            </div>
+            <label for="cliente-form-modal" class="cli-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="cli-modal-body">
+
+            <div class="cf-row">
+                <div class="cf-field">
+                    <label class="cf-label" for="cf-nombres">Nombres *</label>
+                    <input id="cf-nombres" type="text" class="cf-input" value="Juan" required />
+                </div>
+                <div class="cf-field">
+                    <label class="cf-label" for="cf-apellidos">Apellidos *</label>
+                    <input id="cf-apellidos" type="text" class="cf-input" value="Pérez" required />
+                </div>
+            </div>
+
+            <div class="cf-field">
+                <label class="cf-label" for="cf-dni">DNI *</label>
+                <input id="cf-dni" type="text" class="cf-input" value="12345678" maxlength="8" pattern="[0-9]{8}" required />
+                <span class="cf-hint">Debe tener exactamente 8 dígitos. Es único en el sistema.</span>
+            </div>
+
+            <div class="cf-row">
+                <div class="cf-field">
+                    <label class="cf-label" for="cf-telefono">Teléfono</label>
+                    <input id="cf-telefono" type="tel" class="cf-input" value="+51 987 654 321" />
+                </div>
+                <div class="cf-field">
+                    <label class="cf-label" for="cf-email">Correo</label>
+                    <input id="cf-email" type="email" class="cf-input" value="juan.perez@email.com" />
+                </div>
+            </div>
+
+            <div class="cf-field">
+                <label class="cf-label" for="cf-observaciones">Observaciones</label>
+                <textarea id="cf-observaciones" class="cf-textarea" rows="3" maxlength="255">Cliente desde 2022. Prefiere ser contactado por WhatsApp en las tardes.</textarea>
+                <span class="cf-hint">Máximo 255 caracteres.</span>
+            </div>
+
+            <label class="cf-check">
+                <input type="checkbox" class="cf-check-input" checked />
+                <span class="cf-check-visual" aria-hidden="true"></span>
+                <span class="cf-check-text">Cliente activo</span>
+            </label>
+
+        </div>
+
+        <footer class="cli-modal-foot">
+            <button type="button" class="btn-cli btn-cli-primary">Guardar Cliente</button>
+        </footer>
+    </div>
+</div>

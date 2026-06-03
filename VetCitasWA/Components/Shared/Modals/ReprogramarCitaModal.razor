@@ -1,0 +1,87 @@
+@*
+    Modal para reprogramar una cita: cambia fecha/hora pero mantiene
+    cliente, mascota, servicio y veterinario. Se abre con
+    <label for="reprogramar-cita-modal">.
+*@
+
+<input type="checkbox" id="reprogramar-cita-modal" class="rp-modal-toggle" aria-hidden="true" />
+
+<div class="rp-modal-backdrop">
+    <div class="rp-modal-card" role="dialog" aria-modal="true" aria-labelledby="rp-modal-title">
+
+        <header class="rp-modal-head">
+            <div class="rp-head-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 0 9-9" />
+                    <path d="M3 4v5h5" />
+                    <path d="M12 7v5l3 2" />
+                </svg>
+            </div>
+            <div class="rp-head-text">
+                <h2 id="rp-modal-title" class="rp-modal-title">Reprogramar Cita</h2>
+                <p class="rp-modal-subtitle">Cita #1001 · Max (Perro) · Dr. Sánchez</p>
+            </div>
+            <label for="reprogramar-cita-modal" class="rp-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="rp-modal-body">
+
+            <div class="rp-info">
+                <strong>Programación actual:</strong> Lunes 12/05/2026 — 10:30 (Consulta General · 30 min)
+            </div>
+
+            <div class="rp-row">
+                <div class="rp-field">
+                    <label class="rp-label" for="rp-fecha">Nueva fecha <span class="rp-req">*</span></label>
+                    <input id="rp-fecha" type="date" class="rp-input" value="2026-05-15" />
+                </div>
+                <div class="rp-field">
+                    <label class="rp-label" for="rp-hora">Nueva hora <span class="rp-req">*</span></label>
+                    <input id="rp-hora" type="time" class="rp-input" value="11:00" step="900" />
+                </div>
+            </div>
+
+            <div class="rp-field">
+                <label class="rp-label" for="rp-vet">Veterinario</label>
+                <select id="rp-vet" class="rp-input" disabled>
+                    <option>Dr. Sánchez (actual)</option>
+                </select>
+                <span class="rp-hint">Para cambiar de veterinario usa la opción <strong>Cambiar Veterinario</strong>.</span>
+            </div>
+
+            @* Slots disponibles — demo *@
+            <div class="rp-slots-block">
+                <span class="rp-slots-title">Horarios disponibles del Dr. Sánchez (Vie 15/05)</span>
+                <div class="rp-slots-grid">
+                    <button type="button" class="rp-slot">09:00</button>
+                    <button type="button" class="rp-slot">09:30</button>
+                    <button type="button" class="rp-slot rp-slot-taken" disabled>10:00</button>
+                    <button type="button" class="rp-slot">10:30</button>
+                    <button type="button" class="rp-slot rp-slot-selected">11:00</button>
+                    <button type="button" class="rp-slot">11:30</button>
+                    <button type="button" class="rp-slot rp-slot-taken" disabled>15:00</button>
+                    <button type="button" class="rp-slot">15:30</button>
+                    <button type="button" class="rp-slot">16:00</button>
+                </div>
+                <span class="rp-hint">Los slots ocupados aparecen deshabilitados.</span>
+            </div>
+
+            <div class="rp-field">
+                <label class="rp-label" for="rp-motivo">Motivo de reprogramación</label>
+                <textarea id="rp-motivo" class="rp-textarea" rows="2" maxlength="255" placeholder="Ej. Cliente solicitó reagendar por viaje. Se confirmó nueva fecha por teléfono."></textarea>
+                <span class="rp-hint">Queda registrado en el historial de la cita (máx 255 caracteres).</span>
+            </div>
+
+            <label class="rp-check">
+                <input type="checkbox" class="rp-check-input" checked />
+                <span class="rp-check-visual" aria-hidden="true"></span>
+                <span class="rp-check-text">Notificar al cliente por WhatsApp con la nueva fecha</span>
+            </label>
+
+        </div>
+
+        <footer class="rp-modal-foot">
+            <button type="button" class="btn-rp btn-rp-primary">Confirmar Reprogramación</button>
+        </footer>
+    </div>
+</div>

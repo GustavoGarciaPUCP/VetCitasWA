@@ -1,0 +1,231 @@
+/* ================== Contenedor ================== */
+.page-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Cabecera con título + botón Nuevo */
+.page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.btn-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 42px;
+    background: #2563eb;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 8px;
+    padding: 0 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+    text-decoration: none !important;
+}
+
+.btn-new:hover {
+    background: #1d4ed8;
+}
+
+.btn-plus {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+/* Acciones de fila (icon buttons) */
+.row-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-icon {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    color: #6b7280;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-decoration: none !important;
+}
+
+.btn-icon-edit:hover {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.btn-icon-delete:hover {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* ================== Panel ================== */
+.panel {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+/* ================== Tabla ================== */
+.table-wrapper {
+    overflow-x: auto;
+    padding: 0.5rem;
+}
+
+.vet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    min-width: 720px;
+}
+
+.vet-table thead th {
+    text-align: left;
+    color: #9ca3af;
+    font-weight: 500;
+    font-size: 0.78rem;
+    padding: 1rem 1rem 0.85rem;
+    border-bottom: 1px solid #f3f4f6;
+    white-space: nowrap;
+}
+
+.vet-table tbody td {
+    padding: 1rem;
+    color: #6b7280;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.vet-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== Badge de tipo (pill) ===== */
+.type-badge {
+    display: inline-block;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.type-clinica {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.type-noclinica {
+    background: #f3e8ff;
+    color: #7e22ce;
+}
+
+/* ===== Badge de estado (pill verde) ===== */
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #ffffff;
+}
+
+.status-active {
+    background: #10b981;
+}
+
+/* ================== Responsive ================== */
+@media (max-width: 991.98px) {
+    .page-title {
+        font-size: 1.35rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .page-title {
+        font-size: 1.2rem;
+    }
+
+    /* Tabla → cards en móvil */
+    .table-wrapper {
+        overflow-x: visible;
+        padding: 0.75rem;
+    }
+
+    .vet-table {
+        min-width: 0;
+    }
+
+    .vet-table thead {
+        display: none;
+    }
+
+    .vet-table tbody tr {
+        display: block;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .vet-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .vet-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.4rem 0;
+        border-bottom: none;
+        font-size: 0.85rem;
+    }
+
+    .vet-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+    }
+
+    .vet-table tbody td[data-label="Servicio"] {
+        border-bottom: 1px solid #f3f4f6;
+        padding-bottom: 0.7rem;
+        margin-bottom: 0.4rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .vet-table tbody td[data-label="Servicio"]::before {
+        display: none;
+    }
+}

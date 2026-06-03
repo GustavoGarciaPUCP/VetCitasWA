@@ -1,0 +1,101 @@
+@page "/servicios/crear"
+@page "/servicios/editar"
+
+<PageTitle>Servicio - VetCitas</PageTitle>
+
+<SectionContent SectionName="breadcrumb">
+    <span class="crumb">VetCitas</span>
+    <span class="crumb-sep">›</span>
+    <a class="crumb crumb-link" href="/servicios">Servicios</a>
+    <span class="crumb-sep">›</span>
+    <span class="crumb current">Formulario</span>
+</SectionContent>
+
+<div class="page-section">
+
+    @* Cabecera con back link *@
+    <div class="form-head">
+        <a href="/servicios" class="back-link">
+            <span class="back-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+                </svg>
+            </span>
+            VOLVER AL CATÁLOGO
+        </a>
+        <h1 class="page-title">
+            @* Este mismo template sirve para crear y editar — el título cambia en función del estado *@
+            <span class="title-create">Crear Nuevo Servicio</span>
+            <span class="title-edit">Editar Servicio</span>
+        </h1>
+        <p class="page-subtitle">
+            Solo administradores pueden gestionar el catálogo (permiso: USUARIO_GESTIONAR).
+        </p>
+    </div>
+
+    @* Card principal con el form *@
+    <section class="form-card">
+
+        @* === Datos básicos === *@
+        <fieldset class="form-section">
+            <legend class="form-legend">Datos del servicio</legend>
+
+            <div class="form-row">
+                <div class="form-field form-field-wide">
+                    <label class="form-label" for="sv-nombre">Nombre <span class="req">*</span></label>
+                    <input id="sv-nombre" type="text" class="form-input" placeholder="Ej. Consulta General" value="Consulta General" required maxlength="100" />
+                    <span class="form-hint">Nombre visible en el catálogo. Máx 100 caracteres.</span>
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="sv-tipo">Tipo <span class="req">*</span></label>
+                    <div class="form-select-wrap">
+                        <select id="sv-tipo" class="form-select" required>
+                            <option value="CLINICA" selected>Clínica</option>
+                            <option value="NO_CLINICA">No clínica</option>
+                        </select>
+                    </div>
+                    <span class="form-hint">Clínica: requiere atención veterinaria.</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-field">
+                    <label class="form-label" for="sv-duracion">Duración (minutos) <span class="req">*</span></label>
+                    <input id="sv-duracion" type="number" class="form-input" placeholder="30" value="30" required min="1" max="600" />
+                    <span class="form-hint">Tiempo estimado por sesión.</span>
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="sv-precio">Precio referencial (S/) <span class="req">*</span></label>
+                    <div class="form-input-prefix">
+                        <span class="prefix-symbol">S/</span>
+                        <input id="sv-precio" type="number" class="form-input form-input-with-prefix" placeholder="0.00" value="50.00" required min="0" step="0.01" />
+                    </div>
+                    <span class="form-hint">Puede ajustarse al cobrar la atención.</span>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="sv-descripcion">Descripción</label>
+                <textarea id="sv-descripcion" class="form-textarea" rows="3" placeholder="Describe en qué consiste el servicio (opcional)..." maxlength="500">Atención médica básica para evaluar el estado de salud general de la mascota. Incluye revisión clínica, registro de signos vitales y recomendaciones.</textarea>
+                <span class="form-hint">Máximo 500 caracteres. Aparece como detalle del servicio.</span>
+            </div>
+
+            <label class="form-check">
+                <input type="checkbox" class="form-check-input" checked />
+                <span class="form-check-visual" aria-hidden="true"></span>
+                <span class="form-check-text">Servicio activo</span>
+            </label>
+            <span class="form-hint form-hint-indent">Si lo desactivas, no aparecerá disponible al agendar nuevas citas (las existentes no se ven afectadas).</span>
+        </fieldset>
+
+        @* === Acciones === *@
+        <footer class="form-actions">
+            <a href="/servicios" class="btn-form btn-form-ghost">Cancelar</a>
+            <button type="button" class="btn-form btn-form-primary">
+                <span class="action-create">Crear Servicio</span>
+                <span class="action-edit">Guardar cambios</span>
+            </button>
+        </footer>
+    </section>
+
+</div>

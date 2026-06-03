@@ -1,0 +1,15 @@
+@*
+    Esta vista fue REEMPLAZADA por CitasHoy.razor (/citas-hoy).
+    Mantenemos un redirect para que cualquier link antiguo a
+    /atenciones-medicas siga funcionando. Borrar este archivo
+    cuando ya no haya referencias pendientes.
+*@
+@page "/atenciones-medicas"
+@inject NavigationManager Nav
+
+@code {
+    protected override void OnInitialized()
+    {
+        Nav.NavigateTo("/citas-hoy", replace: true);
+    }
+}

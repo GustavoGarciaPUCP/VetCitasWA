@@ -1,0 +1,367 @@
+/* ================== Modal Usuario ================== */
+.usr-modal-toggle {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.usr-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: usr-fade 0.18s ease-out;
+}
+
+.usr-modal-toggle:checked ~ .usr-modal-backdrop {
+    display: flex;
+}
+
+/* Backdrop click area eliminado — solo la X cierra el modal */
+
+.usr-modal-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 960px;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.35);
+    animation: usr-pop 0.22s ease-out;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.usr-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+.usr-modal-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.3;
+}
+
+.usr-modal-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+.usr-modal-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 1.4rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.usr-modal-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.usr-modal-body {
+    padding: 1.25rem 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 1rem;
+    align-content: start;
+}
+
+/* La sección "Datos del usuario" ocupa toda la fila izquierda */
+.uf-section-datos {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+}
+
+/* Roles + datos específicos van en la columna derecha apilados */
+.uf-section-roles {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.uf-section-admin,
+.uf-section-vet,
+.uf-section-recep {
+    grid-column: 2;
+}
+
+.usr-modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+/* ===== Form sections (igual estilo que usaba el editor previo) ===== */
+.uf-section {
+    border: 1px solid #f3f4f6;
+    border-radius: 10px;
+    padding: 0.85rem 0.95rem 0.95rem;
+    margin: 0;
+    background: #fafbfc;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.uf-legend {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 0 0.4rem;
+}
+
+/* Secciones por rol — visibles condicionalmente con :has() */
+.uf-section-admin,
+.uf-section-vet,
+.uf-section-recep {
+    display: none;
+}
+
+.usr-modal-card:has(#uf-rol-admin:checked) .uf-section-admin { display: flex; }
+.usr-modal-card:has(#uf-rol-vet:checked) .uf-section-vet { display: flex; }
+.usr-modal-card:has(#uf-rol-recep:checked) .uf-section-recep { display: flex; }
+
+/* ===== Filas y campos ===== */
+.uf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.uf-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.uf-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.uf-hint {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.uf-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background-color: #ffffff;
+    color: #1f2937;
+    font-size: 0.85rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.uf-input:focus {
+    outline: none;
+    border-color: #1976ef;
+    box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.15);
+}
+
+.uf-input::placeholder {
+    color: #9ca3af;
+}
+
+/* ===== Password con ojito ===== */
+.uf-pwd-wrap {
+    position: relative;
+}
+
+.uf-pwd-input {
+    padding-right: 2.4rem;
+}
+
+.uf-pwd-toggle {
+    position: absolute;
+    right: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    padding: 0;
+}
+
+.uf-pwd-toggle:hover {
+    background: #f3f4f6;
+    color: #2563eb;
+}
+
+/* ===== Checkbox ===== */
+.uf-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85rem;
+    color: #1f2937;
+}
+
+.uf-check-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.uf-check-visual {
+    width: 17px;
+    height: 17px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 4px;
+    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    position: relative;
+}
+
+.uf-check-input:checked + .uf-check-visual {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.uf-check-input:checked + .uf-check-visual::after {
+    content: "";
+    width: 4px;
+    height: 8px;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* ===== Botones del modal ===== */
+.btn-usr {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+    text-decoration: none !important;
+}
+
+.btn-usr-ghost {
+    background: #ffffff;
+    color: #4b5563;
+    border-color: #e5e7eb;
+}
+
+.btn-usr-ghost:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.btn-usr-primary {
+    background: #2563eb;
+    color: #ffffff !important;
+    border-color: #2563eb;
+}
+
+.btn-usr-primary:hover {
+    background: #1d4ed8;
+}
+
+@keyframes usr-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes usr-pop {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* En pantallas medianas (tablet) volvemos a 1 columna en el body
+   para que no se vea apretado. */
+@media (max-width: 860px) {
+    .usr-modal-body {
+        grid-template-columns: 1fr;
+    }
+
+    .uf-section-datos,
+    .uf-section-roles,
+    .uf-section-admin,
+    .uf-section-vet,
+    .uf-section-recep {
+        grid-column: 1;
+        grid-row: auto;
+    }
+}
+
+@media (max-width: 560px) {
+    .uf-row {
+        grid-template-columns: 1fr;
+    }
+
+    .usr-modal-card {
+        max-height: 95vh;
+    }
+
+    .usr-modal-body {
+        padding: 1rem 1.1rem;
+    }
+}

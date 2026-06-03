@@ -1,0 +1,109 @@
+@*
+    Modal para reasignar la cita a otro veterinario manteniendo
+    fecha/hora/servicio. Se abre con <label for="cambiar-vet-modal">.
+*@
+
+<input type="checkbox" id="cambiar-vet-modal" class="cv-modal-toggle" aria-hidden="true" />
+
+<div class="cv-modal-backdrop">
+    <div class="cv-modal-card" role="dialog" aria-modal="true" aria-labelledby="cv-modal-title">
+
+        <header class="cv-modal-head">
+            <div class="cv-head-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="m22 11-3-3m0 0-3 3m3-3v6" />
+                </svg>
+            </div>
+            <div class="cv-head-text">
+                <h2 id="cv-modal-title" class="cv-modal-title">Cambiar Veterinario</h2>
+                <p class="cv-modal-subtitle">Cita #1001 · Max (Perro) · Lun 12/05 — 10:30</p>
+            </div>
+            <label for="cambiar-vet-modal" class="cv-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="cv-modal-body">
+
+            <div class="cv-info">
+                <strong>Veterinario actual:</strong> Dr. Sánchez (Medicina General)
+                <span class="cv-info-sub">La fecha y hora se mantienen; solo se reasigna el profesional.</span>
+            </div>
+
+            <div class="cv-field">
+                <label class="cv-label" for="cv-buscar">Buscar veterinario</label>
+                <div class="cv-search-wrap">
+                    <svg class="cv-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                    </svg>
+                    <input id="cv-buscar" type="text" class="cv-input cv-input-search" placeholder="Nombre o especialidad..." />
+                </div>
+            </div>
+
+            <span class="cv-list-title">Veterinarios disponibles en ese horario</span>
+
+            <div class="cv-vet-list">
+
+                <label class="cv-vet-row">
+                    <input type="radio" name="cv-vet" class="cv-radio-input" checked />
+                    <span class="cv-radio-visual" aria-hidden="true"></span>
+                    <div class="cv-vet-info">
+                        <div class="cv-vet-head">
+                            <span class="cv-vet-name">Dra. Ramírez</span>
+                            <span class="cv-vet-badge cv-badge-ok">Disponible</span>
+                        </div>
+                        <span class="cv-vet-meta">Medicina General · CMPV-3421</span>
+                    </div>
+                </label>
+
+                <label class="cv-vet-row">
+                    <input type="radio" name="cv-vet" class="cv-radio-input" />
+                    <span class="cv-radio-visual" aria-hidden="true"></span>
+                    <div class="cv-vet-info">
+                        <div class="cv-vet-head">
+                            <span class="cv-vet-name">Dr. Castillo</span>
+                            <span class="cv-vet-badge cv-badge-ok">Disponible</span>
+                        </div>
+                        <span class="cv-vet-meta">Cirugía · CMPV-2890</span>
+                    </div>
+                </label>
+
+                <label class="cv-vet-row cv-vet-row-busy">
+                    <input type="radio" name="cv-vet" class="cv-radio-input" disabled />
+                    <span class="cv-radio-visual" aria-hidden="true"></span>
+                    <div class="cv-vet-info">
+                        <div class="cv-vet-head">
+                            <span class="cv-vet-name">Dr. Pérez</span>
+                            <span class="cv-vet-badge cv-badge-busy">Ocupado 10:30</span>
+                        </div>
+                        <span class="cv-vet-meta">Dermatología · CMPV-4102</span>
+                    </div>
+                </label>
+
+                <label class="cv-vet-row cv-vet-row-busy">
+                    <input type="radio" name="cv-vet" class="cv-radio-input" disabled />
+                    <span class="cv-radio-visual" aria-hidden="true"></span>
+                    <div class="cv-vet-info">
+                        <div class="cv-vet-head">
+                            <span class="cv-vet-name">Dra. Torres</span>
+                            <span class="cv-vet-badge cv-badge-off">No labora ese día</span>
+                        </div>
+                        <span class="cv-vet-meta">Oncología · CMPV-5210</span>
+                    </div>
+                </label>
+
+            </div>
+
+            <label class="cv-check">
+                <input type="checkbox" class="cv-check-input" checked />
+                <span class="cv-check-visual" aria-hidden="true"></span>
+                <span class="cv-check-text">Notificar al cliente sobre el cambio de veterinario</span>
+            </label>
+
+        </div>
+
+        <footer class="cv-modal-foot">
+            <button type="button" class="btn-cv btn-cv-primary">Confirmar Cambio</button>
+        </footer>
+    </div>
+</div>

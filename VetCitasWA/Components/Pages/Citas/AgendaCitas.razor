@@ -1,0 +1,627 @@
+@page "/agenda-citas"
+
+<PageTitle>Agenda de Citas - VetCitas</PageTitle>
+
+<SectionContent SectionName="breadcrumb">
+    <span class="crumb">VetCitas</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb current">Agenda de Citas</span>
+</SectionContent>
+
+@*
+    Checkboxes invisibles que controlan los modales.
+    "agenda-nueva-modal" abre el formulario de Nueva Cita; los seis
+    "agenda-det-*" abren un modal de detalle distinto según el estado.
+*@
+<input type="checkbox" id="agenda-nueva-modal"        class="ac-modal-toggle" />
+<input type="checkbox" id="agenda-det-pendiente"      class="ac-modal-toggle" />
+<input type="checkbox" id="agenda-det-confirmada"     class="ac-modal-toggle" />
+<input type="checkbox" id="agenda-det-enconsulta"     class="ac-modal-toggle" />
+<input type="checkbox" id="agenda-det-atendida"       class="ac-modal-toggle" />
+<input type="checkbox" id="agenda-det-cancelada"      class="ac-modal-toggle" />
+<input type="checkbox" id="agenda-det-noasistio"      class="ac-modal-toggle" />
+
+<div class="page-section">
+
+    <div class="page-head">
+        <h1 class="page-title">Gestión de Citas - Vista Semanal</h1>
+        <label for="agenda-nueva-modal" class="btn-new-cita">
+            <span class="btn-plus" aria-hidden="true">+</span>
+            <span>Nueva Cita</span>
+        </label>
+    </div>
+
+    @* ----- Toolbar superior: filtros + rango de fechas ----- *@
+    <div class="cal-toolbar">
+
+        @* === Rango de fechas: Desde — Hasta === *@
+        <div class="tb-range" role="group" aria-label="Filtro de fechas">
+            <div class="tb-field tb-field-date">
+                <label class="tb-label" for="dateFrom">Desde</label>
+                <div class="tb-control">
+                    <input id="dateFrom" type="date" class="tb-input" value="2026-05-12" />
+                </div>
+            </div>
+            <span class="tb-range-sep" aria-hidden="true">→</span>
+            <div class="tb-field tb-field-date">
+                <label class="tb-label" for="dateTo">Hasta</label>
+                <div class="tb-control">
+                    <input id="dateTo" type="date" class="tb-input" value="2026-05-18" />
+                </div>
+            </div>
+        </div>
+
+        @* === Presets rápidos === *@
+        <div class="tb-field tb-field-presets">
+            <label class="tb-label">Presets</label>
+            <div class="tb-presets">
+                <button type="button" class="tb-preset">Hoy</button>
+                <button type="button" class="tb-preset tb-preset-active">Esta semana</button>
+                <button type="button" class="tb-preset">Próx. 7 días</button>
+                <button type="button" class="tb-preset">Este mes</button>
+            </div>
+        </div>
+
+        @* === Veterinario === *@
+        <div class="tb-field tb-field-vet">
+            <label class="tb-label" for="vetFilter">Veterinario</label>
+            <div class="tb-control">
+                <select id="vetFilter" class="tb-select">
+                    <option>Todos</option>
+                    <option>Dr. Carlos</option>
+                    <option>Dra. Sofía</option>
+                    <option>Dr. Ricardo</option>
+                </select>
+            </div>
+        </div>
+
+        @* === Estado === *@
+        <div class="tb-field tb-field-state">
+            <label class="tb-label" for="stateFilter">Estado</label>
+            <div class="tb-control">
+                <select id="stateFilter" class="tb-select">
+                    <option>Todos</option>
+                    <option>Pendiente</option>
+                    <option>Confirmada</option>
+                    <option>En consulta</option>
+                    <option>Atendida</option>
+                    <option>Cancelada</option>
+                    <option>No asistió</option>
+                </select>
+            </div>
+        </div>
+
+        @* === Navegación rápida === *@
+        <div class="tb-field tb-field-nav">
+            <label class="tb-label">Navegación</label>
+            <div class="tb-nav">
+                <button type="button" class="tb-nav-btn" aria-label="Período anterior">‹</button>
+                <button type="button" class="tb-nav-btn tb-nav-today">Hoy</button>
+                <button type="button" class="tb-nav-btn" aria-label="Período siguiente">›</button>
+            </div>
+        </div>
+
+    </div>
+
+    @* Resumen del rango activo *@
+    <div class="cal-range-summary">
+        <span class="range-label">Mostrando:</span>
+        <strong class="range-value">12 May 2026 — 18 May 2026</strong>
+        <span class="range-sub">(7 días · 6 citas)</span>
+    </div>
+
+    @* ----- Grilla del calendario ----- *@
+    <div class="cal-card">
+        <div class="cal-grid">
+
+            @* Header con nombres de días *@
+            <div class="cal-cell cal-head cal-corner"></div>
+            <div class="cal-cell cal-head">Lunes<span class="cal-head-date">12 May</span></div>
+            <div class="cal-cell cal-head">Martes<span class="cal-head-date">13 May</span></div>
+            <div class="cal-cell cal-head">Miércoles<span class="cal-head-date">14 May</span></div>
+            <div class="cal-cell cal-head">Jueves<span class="cal-head-date">15 May</span></div>
+            <div class="cal-cell cal-head">Viernes<span class="cal-head-date">16 May</span></div>
+
+            @* === 08:00 === *@
+            <div class="cal-cell cal-time">08:00</div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+
+            @* === 09:00 === *@
+            <div class="cal-cell cal-time">09:00</div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot">
+                <label for="agenda-det-confirmada" class="cita cita-confirmada">
+                    <div class="cita-title">Mimi (Gata)</div>
+                    <div class="cita-sub">Ana Martínez · Control</div>
+                    <div class="cita-foot">09:00 · Confirmada</div>
+                </label>
+            </div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+
+            @* === 10:00 === *@
+            <div class="cal-cell cal-time">10:00</div>
+            <div class="cal-cell cal-slot">
+                <label for="agenda-det-confirmada" class="cita cita-confirmada">
+                    <div class="cita-title">Max (Perro)</div>
+                    <div class="cita-sub">Juan Pérez · Consulta General</div>
+                    <div class="cita-foot">10:30 · Confirmada</div>
+                </label>
+            </div>
+            <div class="cal-cell cal-slot">
+                <label for="agenda-det-enconsulta" class="cita cita-enconsulta">
+                    <div class="cita-title">Bobby (Perro)</div>
+                    <div class="cita-sub">Pedro Salas · Esterilización</div>
+                    <div class="cita-foot">10:00 · En Consulta</div>
+                </label>
+            </div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+
+            @* === 11:00 === *@
+            <div class="cal-cell cal-time">11:00</div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot">
+                <label for="agenda-det-pendiente" class="cita cita-pendiente">
+                    <div class="cita-title">Luna (Gato)</div>
+                    <div class="cita-sub">María García · Vacunación</div>
+                    <div class="cita-foot">11:30 · Pendiente</div>
+                </label>
+            </div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot">
+                <label for="agenda-det-cancelada" class="cita cita-cancelada">
+                    <div class="cita-title">Thor (Perro)</div>
+                    <div class="cita-sub">Juan Pérez · Vacunación</div>
+                    <div class="cita-foot">11:00 · Cancelada</div>
+                </label>
+            </div>
+
+            @* === 12:00 === *@
+            <div class="cal-cell cal-time">12:00</div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+
+            @* === 13:00 — REFRIGERIO === *@
+            <div class="cal-cell cal-time">13:00</div>
+            <div class="cal-cell cal-break cal-break-start">REFRIGERIO (No Disponible)</div>
+            <div class="cal-cell cal-break"></div>
+            <div class="cal-cell cal-break"></div>
+            <div class="cal-cell cal-break"></div>
+            <div class="cal-cell cal-break"></div>
+
+            @* === 14:00 === *@
+            <div class="cal-cell cal-time">14:00</div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot">
+                <label for="agenda-det-atendida" class="cita cita-atendida">
+                    <div class="cita-title">Rocky (Perro)</div>
+                    <div class="cita-sub">Carlos López · Cirugía</div>
+                    <div class="cita-foot">14:30 · Atendida</div>
+                </label>
+            </div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+
+            @* === 15:00 === *@
+            <div class="cal-cell cal-time">15:00</div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot">
+                <label for="agenda-det-noasistio" class="cita cita-noasistio">
+                    <div class="cita-title">Coco (Gato)</div>
+                    <div class="cita-sub">Sara Vega · Consulta</div>
+                    <div class="cita-foot">15:30 · No asistió</div>
+                </label>
+            </div>
+
+            @* === 16:00 === *@
+            <div class="cal-cell cal-time">16:00</div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+
+        </div>
+    </div>
+
+    @* ----- Leyenda de estados ----- *@
+    <div class="cal-legend">
+        <span class="legend-item"><span class="dot dot-pendiente"></span> Pendiente</span>
+        <span class="legend-item"><span class="dot dot-confirmada"></span> Confirmada</span>
+        <span class="legend-item"><span class="dot dot-enconsulta"></span> En consulta</span>
+        <span class="legend-item"><span class="dot dot-atendida"></span> Atendida</span>
+        <span class="legend-item"><span class="dot dot-cancelada"></span> Cancelada</span>
+        <span class="legend-item"><span class="dot dot-noasistio"></span> No asistió</span>
+    </div>
+
+</div>
+
+@* ============================================================ *@
+@* =============== MODAL: Agendar Nueva Cita ================= *@
+@* ============================================================ *@
+<div class="ac-modal-backdrop ac-modal-nueva">
+    <div class="ac-modal-card" role="dialog" aria-modal="true" aria-labelledby="nueva-title">
+        <header class="ac-modal-head">
+            <div>
+                <h2 id="nueva-title" class="ac-modal-title">Agendar Nueva Cita</h2>
+                <p class="ac-modal-subtitle">Completa los datos para reservar el slot</p>
+            </div>
+            <label for="agenda-nueva-modal" class="ac-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="ac-modal-body">
+
+            <div class="ff">
+                <label class="ff-label" for="m-client">Cliente</label>
+                <input id="m-client" type="text" class="ff-input" placeholder="Buscar por nombre o DNI..." />
+                <span class="ff-hint">Busca por DNI (8 dígitos) o nombre</span>
+            </div>
+
+            <div class="ff">
+                <label class="ff-label" for="m-pet">Mascota</label>
+                <div class="ff-select-wrap">
+                    <select id="m-pet" class="ff-select">
+                        <option value="" selected disabled hidden>Primero selecciona un cliente...</option>
+                        <option>Max (Perro - Golden Retriever)</option>
+                        <option>Thor (Perro - Pastor Alemán)</option>
+                    </select>
+                </div>
+                <span class="ff-hint">Solo las mascotas activas del cliente</span>
+            </div>
+
+            <div class="ff">
+                <label class="ff-label" for="m-srv">Servicio</label>
+                <div class="ff-select-wrap">
+                    <select id="m-srv" class="ff-select">
+                        <option value="" selected disabled hidden>Seleccionar servicio...</option>
+                        <option>Consulta General — 30 min · S/ 50.00</option>
+                        <option>Esterilización Canina — 120 min · S/ 250.00</option>
+                        <option>Vacunación Múltiple — 15 min · S/ 35.00</option>
+                        <option>Cirugía Menor — 60 min · S/ 300.00</option>
+                        <option>Control Post-Operatorio — 20 min · S/ 30.00</option>
+                    </select>
+                </div>
+                <span class="ff-hint">Muestra duración y precio referencial</span>
+            </div>
+
+            <div class="ff ff-row">
+                <div class="ff-col">
+                    <label class="ff-label" for="m-date">Fecha</label>
+                    <input id="m-date" type="date" class="ff-input" value="2026-05-13" />
+                </div>
+                <div class="ff-col">
+                    <label class="ff-label" for="m-time">Hora</label>
+                    <input id="m-time" type="time" class="ff-input" value="10:00" step="900" />
+                </div>
+            </div>
+
+            <div class="ff">
+                <label class="ff-label" for="m-vet">Veterinario</label>
+                <div class="ff-select-wrap">
+                    <select id="m-vet" class="ff-select">
+                        <option>Dr. Carlos — Medicina general</option>
+                        <option>Dra. Sofía — Cirugía</option>
+                        <option>Dr. Ricardo — Cardiología</option>
+                    </select>
+                </div>
+                <span class="ff-hint">Se valida disponibilidad y horario</span>
+            </div>
+
+        </div>
+
+        <footer class="ac-modal-foot">
+            <button type="button" class="btn-modal btn-modal-primary">Confirmar Cita</button>
+        </footer>
+    </div>
+</div>
+
+@* ============================================================ *@
+@* === MODALES DE DETALLE (uno por estado de cita) ============ *@
+@* ============================================================ *@
+
+@* ----- 1) PENDIENTE: cliente aún no ha confirmado ----- *@
+<div class="ac-modal-backdrop ac-modal-detalle" data-state="pendiente">
+    <div class="ac-modal-card" role="dialog" aria-modal="true" aria-labelledby="det-pendiente-title">
+        <header class="ac-modal-head">
+            <div class="ac-detalle-head">
+                <h2 id="det-pendiente-title" class="ac-modal-title">Cita #1003</h2>
+                <span class="dt-badge dt-pendiente">Pendiente</span>
+            </div>
+            <label for="agenda-det-pendiente" class="ac-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="ac-modal-body">
+
+            <div class="dt-banner dt-banner-warn">
+                <strong>Cliente aún no confirma.</strong>
+                Recomendamos enviarle un recordatorio antes del día de la cita.
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Mascota</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Luna</span></div>
+                <div class="dt-row"><span class="dt-label">Especie / Raza</span><span class="dt-value">Gato · Siamés</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Cliente</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">María García</span></div>
+                <div class="dt-row"><span class="dt-label">Teléfono</span><span class="dt-value">+51 987 612 543</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Servicio</h3>
+                <div class="dt-row"><span class="dt-label">Servicio</span><span class="dt-value">Vacunación</span></div>
+                <div class="dt-row"><span class="dt-label">Duración</span><span class="dt-value">15 min</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Programación</h3>
+                <div class="dt-row"><span class="dt-label">Veterinario</span><span class="dt-value">Dr. Carlos</span></div>
+                <div class="dt-row"><span class="dt-label">Fecha</span><span class="dt-value">Mar 13/05/2026</span></div>
+                <div class="dt-row"><span class="dt-label">Hora</span><span class="dt-value">11:30 — 11:45</span></div>
+            </div>
+
+        </div>
+
+        @* Cancelar/Reprogramar son acciones de gestión — solo rol Recepcionista. *@
+        <footer class="ac-modal-foot ac-modal-foot-detail">
+            <label for="cancelar-cita-modal" class="btn-modal btn-modal-danger recep-only">Cancelar Cita</label>
+            <label for="reprogramar-cita-modal" class="btn-modal btn-modal-secondary recep-only">Reprogramar</label>
+            <button type="button" class="btn-modal btn-modal-primary recep-only">Marcar Confirmada</button>
+        </footer>
+    </div>
+</div>
+
+@* ----- 2) CONFIRMADA: lista para el día de la cita ----- *@
+<div class="ac-modal-backdrop ac-modal-detalle" data-state="confirmada">
+    <div class="ac-modal-card" role="dialog" aria-modal="true" aria-labelledby="det-confirmada-title">
+        <header class="ac-modal-head">
+            <div class="ac-detalle-head">
+                <h2 id="det-confirmada-title" class="ac-modal-title">Cita #1001</h2>
+                <span class="dt-badge dt-confirmada">Confirmada</span>
+            </div>
+            <label for="agenda-det-confirmada" class="ac-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="ac-modal-body">
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Mascota</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Max</span></div>
+                <div class="dt-row"><span class="dt-label">Especie / Raza</span><span class="dt-value">Perro · Golden Retriever</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Cliente</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Juan Pérez</span></div>
+                <div class="dt-row"><span class="dt-label">DNI</span><span class="dt-value">12345678</span></div>
+                <div class="dt-row"><span class="dt-label">Teléfono</span><span class="dt-value">+51 987 654 321</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Servicio</h3>
+                <div class="dt-row"><span class="dt-label">Servicio</span><span class="dt-value">Consulta General</span></div>
+                <div class="dt-row"><span class="dt-label">Duración</span><span class="dt-value">30 min</span></div>
+                <div class="dt-row"><span class="dt-label">Precio ref.</span><span class="dt-value">S/ 50.00</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Programación</h3>
+                <div class="dt-row"><span class="dt-label">Veterinario</span><span class="dt-value">Dr. Carlos</span></div>
+                <div class="dt-row"><span class="dt-label">Fecha</span><span class="dt-value">Lun 12/05/2026</span></div>
+                <div class="dt-row"><span class="dt-label">Hora</span><span class="dt-value">10:30 — 11:00</span></div>
+            </div>
+
+        </div>
+
+        @* Cancelar/Reprogramar/Cambiar Vet son acciones de gestión — solo rol Recepcionista. *@
+        <footer class="ac-modal-foot ac-modal-foot-detail">
+            <label for="cancelar-cita-modal" class="btn-modal btn-modal-danger recep-only">Cancelar Cita</label>
+            <label for="cambiar-vet-modal" class="btn-modal btn-modal-secondary recep-only">Cambiar Vet</label>
+            <label for="reprogramar-cita-modal" class="btn-modal btn-modal-primary recep-only">Reprogramar</label>
+        </footer>
+    </div>
+</div>
+
+@* ----- 3) EN CONSULTA: atención en curso (solo lectura para recep) ----- *@
+<div class="ac-modal-backdrop ac-modal-detalle" data-state="enconsulta">
+    <div class="ac-modal-card" role="dialog" aria-modal="true" aria-labelledby="det-enconsulta-title">
+        <header class="ac-modal-head">
+            <div class="ac-detalle-head">
+                <h2 id="det-enconsulta-title" class="ac-modal-title">Cita #1002</h2>
+                <span class="dt-badge dt-enconsulta">
+                    <span class="dt-pulse-dot" aria-hidden="true"></span>
+                    En Consulta
+                </span>
+            </div>
+            <label for="agenda-det-enconsulta" class="ac-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="ac-modal-body">
+
+            <div class="dt-banner dt-banner-info">
+                <strong>Atención en curso.</strong>
+                Iniciada a las 10:05 — el veterinario está atendiendo a la mascota.
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Mascota</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Bobby</span></div>
+                <div class="dt-row"><span class="dt-label">Especie / Raza</span><span class="dt-value">Perro · Labrador</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Cliente</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Pedro Salas</span></div>
+                <div class="dt-row"><span class="dt-label">Teléfono</span><span class="dt-value">+51 942 110 233</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Servicio</h3>
+                <div class="dt-row"><span class="dt-label">Servicio</span><span class="dt-value">Esterilización</span></div>
+                <div class="dt-row"><span class="dt-label">Duración est.</span><span class="dt-value">120 min</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Programación</h3>
+                <div class="dt-row"><span class="dt-label">Veterinario</span><span class="dt-value">Dr. Carlos</span></div>
+                <div class="dt-row"><span class="dt-label">Hora</span><span class="dt-value">10:00 — 12:00</span></div>
+            </div>
+
+        </div>
+
+        @* Footer vacío — la X cierra el modal. *@
+    </div>
+</div>
+
+@* ----- 4) ATENDIDA: completada ----- *@
+<div class="ac-modal-backdrop ac-modal-detalle" data-state="atendida">
+    <div class="ac-modal-card" role="dialog" aria-modal="true" aria-labelledby="det-atendida-title">
+        <header class="ac-modal-head">
+            <div class="ac-detalle-head">
+                <h2 id="det-atendida-title" class="ac-modal-title">Cita #1006</h2>
+                <span class="dt-badge dt-atendida">Atendida</span>
+            </div>
+            <label for="agenda-det-atendida" class="ac-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="ac-modal-body">
+
+            <div class="dt-banner dt-banner-success">
+                <strong>Cita completada.</strong>
+                Atendida el Jue 15/05 — 14:30 a 15:30 (60 min).
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Mascota</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Rocky</span></div>
+                <div class="dt-row"><span class="dt-label">Especie / Raza</span><span class="dt-value">Perro · Pitbull</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Cliente</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Carlos López</span></div>
+                <div class="dt-row"><span class="dt-label">Teléfono</span><span class="dt-value">+51 911 223 344</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Atención</h3>
+                <div class="dt-row"><span class="dt-label">Servicio</span><span class="dt-value">Cirugía Menor</span></div>
+                <div class="dt-row"><span class="dt-label">Veterinario</span><span class="dt-value">Dr. Carlos</span></div>
+                <div class="dt-row"><span class="dt-label">Próximo control</span><span class="dt-value">22/05/2026</span></div>
+            </div>
+
+        </div>
+
+        <footer class="ac-modal-foot ac-modal-foot-detail">
+            <a href="/atencion-registro" class="btn-modal btn-modal-primary">Ver Atención Médica</a>
+        </footer>
+    </div>
+</div>
+
+@* ----- 5) CANCELADA: solo lectura con motivo ----- *@
+<div class="ac-modal-backdrop ac-modal-detalle" data-state="cancelada">
+    <div class="ac-modal-card" role="dialog" aria-modal="true" aria-labelledby="det-cancelada-title">
+        <header class="ac-modal-head">
+            <div class="ac-detalle-head">
+                <h2 id="det-cancelada-title" class="ac-modal-title">Cita #1004</h2>
+                <span class="dt-badge dt-cancelada">Cancelada</span>
+            </div>
+            <label for="agenda-det-cancelada" class="ac-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="ac-modal-body">
+
+            <div class="dt-banner dt-banner-danger">
+                <strong>Motivo de cancelación:</strong>
+                Cliente reportó emergencia familiar y solicitó reagendar. Se contactará el lunes.
+                <span class="dt-banner-meta">Cancelada por <strong>Carlos Mendoza</strong> · 11/05/2026 14:22</span>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Mascota</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Thor</span></div>
+                <div class="dt-row"><span class="dt-label">Especie / Raza</span><span class="dt-value">Perro · Husky</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Cliente</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Juan Pérez</span></div>
+                <div class="dt-row"><span class="dt-label">Teléfono</span><span class="dt-value">+51 987 654 321</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Programación cancelada</h3>
+                <div class="dt-row"><span class="dt-label">Servicio</span><span class="dt-value">Vacunación</span></div>
+                <div class="dt-row"><span class="dt-label">Fecha</span><span class="dt-value">Mié 14/05/2026</span></div>
+                <div class="dt-row"><span class="dt-label">Hora</span><span class="dt-value">11:00 — 11:15</span></div>
+            </div>
+
+        </div>
+
+        @* Footer vacío — la X cierra el modal. *@
+    </div>
+</div>
+
+@* ----- 6) NO ASISTIÓ: cliente no se presentó ----- *@
+<div class="ac-modal-backdrop ac-modal-detalle" data-state="noasistio">
+    <div class="ac-modal-card" role="dialog" aria-modal="true" aria-labelledby="det-noasistio-title">
+        <header class="ac-modal-head">
+            <div class="ac-detalle-head">
+                <h2 id="det-noasistio-title" class="ac-modal-title">Cita #1007</h2>
+                <span class="dt-badge dt-noasistio">No asistió</span>
+            </div>
+            <label for="agenda-det-noasistio" class="ac-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="ac-modal-body">
+
+            <div class="dt-banner dt-banner-muted">
+                <strong>El cliente no se presentó.</strong>
+                Marcado automáticamente 30 min después de la hora programada.
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Mascota</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Coco</span></div>
+                <div class="dt-row"><span class="dt-label">Especie / Raza</span><span class="dt-value">Gato · Persa</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Cliente</h3>
+                <div class="dt-row"><span class="dt-label">Nombre</span><span class="dt-value">Sara Vega</span></div>
+                <div class="dt-row"><span class="dt-label">Teléfono</span><span class="dt-value">+51 956 433 211</span></div>
+            </div>
+
+            <div class="dt-section">
+                <h3 class="dt-section-title">Programación original</h3>
+                <div class="dt-row"><span class="dt-label">Servicio</span><span class="dt-value">Consulta</span></div>
+                <div class="dt-row"><span class="dt-label">Veterinario</span><span class="dt-value">Dr. Carlos</span></div>
+                <div class="dt-row"><span class="dt-label">Fecha</span><span class="dt-value">Vie 16/05/2026</span></div>
+                <div class="dt-row"><span class="dt-label">Hora</span><span class="dt-value">15:30 — 16:00</span></div>
+            </div>
+
+        </div>
+
+        @* Reprogramar es acción de gestión — solo rol Recepcionista. *@
+        <footer class="ac-modal-foot ac-modal-foot-detail">
+            <label for="reprogramar-cita-modal" class="btn-modal btn-modal-primary recep-only">Reprogramar</label>
+        </footer>
+    </div>
+</div>

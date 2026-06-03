@@ -1,0 +1,3053 @@
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #006bb7;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+h1:focus {
+    outline: none;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid #e50000;
+}
+
+.validation-message {
+    color: #e50000;
+}
+
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+.darker-border-checkbox.form-check-input {
+    border-color: #929292;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* ============================================================
+   ===== Sweep global: iconos más grandes en botones =========
+   Los iconos inline en SVG vienen con width/height pequeños
+   (14-16px). El selector :root + class sube specificity sobre
+   el scoped CSS [b-XXX]. Aumentamos a 18px estándar.
+   ============================================================ */
+:root .btn-act svg,
+:root .btn-icon svg,
+:root .btn-pencil svg,
+:root .btn-eye svg,
+:root .btn-edit svg,
+:root .btn-delete svg,
+:root .btn-whatsapp svg,
+:root .btn-icon-edit svg,
+:root .btn-icon-delete svg,
+:root .btn-eye-label svg,
+:root .pet-card-edit svg,
+:root .ed-pwd-toggle svg,
+:root .uf-pwd-toggle svg,
+:root .btn-toggle-password svg,
+:root .topbar-user-btn svg,
+:root .topbar-theme-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Botones icon-only — aumentar el área clickeable también */
+:root .btn-act,
+:root .btn-pencil,
+:root .btn-icon,
+:root .btn-icon-edit,
+:root .btn-icon-delete,
+:root .pet-card-edit {
+    width: 34px;
+    height: 34px;
+}
+
+/* Iconos del sidebar */
+:root .sidebar .nav-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+:root .sidebar .nav-icon {
+    width: 22px;
+    height: 22px;
+}
+
+/* Iconos del topbar */
+:root .topbar-user-btn,
+:root .topbar-theme-btn {
+    width: 40px;
+    height: 40px;
+}
+
+/* ============================================================
+   ====== Visibilidad de elementos según rol activo ==========
+   Los elementos con clase .admin-only solo se muestran si el
+   usuario tiene el rol Administrador activo en este momento.
+   Similar para .recep-only (Recepcionista).
+   Las clases role-X-active se aplican al <html> desde App.razor
+   según los checkboxes del role picker (viven en localStorage).
+   ============================================================ */
+/* Usamos !important porque las páginas pueden definir display propio
+   sobre la misma clase via CSS scoped (ej. .btn-new { display: inline-flex }).
+   Sin !important el scoped CSS de Blazor (selector con [b-XXX]) gana en
+   specificity y el botón se vería aunque NO tenga el rol activo. */
+.admin-only,
+.recep-only,
+.vet-only {
+    display: none !important;
+}
+
+/* ----- Admin activo ----- */
+:root.role-admin-active a.admin-only,
+:root.role-admin-active button.admin-only,
+:root.role-admin-active label.admin-only,
+:root.role-admin-active .btn-new.admin-only {
+    display: inline-flex !important;
+}
+
+:root.role-admin-active th.admin-only,
+:root.role-admin-active td.admin-only {
+    display: table-cell !important;
+}
+
+:root.role-admin-active div.admin-only,
+:root.role-admin-active section.admin-only {
+    display: block !important;
+}
+
+/* ----- Recepcionista activo ----- */
+:root.role-recep-active a.recep-only,
+:root.role-recep-active button.recep-only,
+:root.role-recep-active label.recep-only,
+:root.role-recep-active .btn-new.recep-only {
+    display: inline-flex !important;
+}
+
+:root.role-recep-active th.recep-only,
+:root.role-recep-active td.recep-only {
+    display: table-cell !important;
+}
+
+:root.role-recep-active div.recep-only,
+:root.role-recep-active section.recep-only {
+    display: block !important;
+}
+
+/* ----- Veterinario activo ----- */
+:root.role-vet-active a.vet-only,
+:root.role-vet-active button.vet-only,
+:root.role-vet-active label.vet-only,
+:root.role-vet-active .btn-new.vet-only {
+    display: inline-flex !important;
+}
+
+:root.role-vet-active th.vet-only,
+:root.role-vet-active td.vet-only {
+    display: table-cell !important;
+}
+
+:root.role-vet-active div.vet-only,
+:root.role-vet-active section.vet-only,
+:root.role-vet-active article.vet-only {
+    display: block !important;
+}
+
+/* Si necesitamos un grid/flex, lo decidimos por el tag */
+:root.role-admin-active article.admin-only,
+:root.role-recep-active article.recep-only {
+    display: block !important;
+}
+
+/* En móvil las tablas se convierten en cards y los td pasan a flex */
+@media (max-width: 640px) {
+    :root.role-admin-active td.admin-only,
+    :root.role-recep-active td.recep-only,
+    :root.role-vet-active td.vet-only {
+        display: flex !important;
+    }
+}
+
+/* ============================================================
+   ===================== MODO OSCURO =========================
+   Overrides globales activados con la clase .dark en <html>
+   ============================================================ */
+
+:root.dark {
+    color-scheme: dark;
+}
+
+:root.dark body {
+    background: #0a0a0b;
+    color: #e2e8f0;
+}
+
+/* ===== Layout base ===== */
+:root.dark .page {
+    background: #0a0a0b;
+}
+
+:root.dark .content {
+    background: #0a0a0b;
+}
+
+/* ===== Sidebar ===== */
+:root.dark .sidebar {
+    background: #0d0d10;
+    border-right-color: #1c1c1f;
+}
+
+/* Header de marca: tono profundo unificado con la topbar */
+:root.dark .brand-row {
+    background: #0a0a0c;
+    border-bottom: 1px solid #1c1c1f;
+}
+
+:root.dark .brand-name,
+:root.dark .brand-toggle {
+    color: #ffffff;
+}
+
+/* Avatar del usuario en el sidebar */
+:root.dark .user-avatar {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+}
+
+:root.dark .user-card {
+    border-bottom-color: #1c1c1f;
+}
+
+:root.dark .user-name {
+    color: #ffffff;
+}
+
+:root.dark .user-role {
+    color: #cbd5e1;
+}
+
+:root.dark .nav-section-title {
+    color: #94a3b8;
+}
+
+/* NavMenu — usamos .sidebar como prefijo para ganar specificity
+   al scoped CSS de Blazor (.nav-list[b-X] .nav-item-link.active) */
+:root.dark .sidebar .nav-item-link {
+    color: #ffffff !important;
+}
+
+:root.dark .sidebar .nav-item-link .nav-icon {
+    color: #ffffff !important;
+}
+
+:root.dark .sidebar .nav-item-link:hover {
+    background: #1c1c1f !important;
+    color: #ffffff !important;
+}
+
+:root.dark .sidebar .nav-item-link:hover .nav-icon {
+    color: #ffffff !important;
+}
+
+:root.dark .sidebar .nav-item-link.active {
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.28), rgba(37, 99, 235, 0.06)) !important;
+    color: #93c5fd !important;
+    box-shadow: inset 3px 0 0 #3b82f6;
+    border-radius: 6px;
+}
+
+:root.dark .sidebar .nav-item-link.active .nav-icon {
+    color: #93c5fd !important;
+}
+
+:root.dark .nav-footer {
+    border-top-color: #1c1c1f;
+}
+
+/* ===== Role picker (dark mode) ===== */
+:root.dark .role-picker {
+    border-bottom-color: #1c1c1f;
+}
+
+:root.dark .role-summary {
+    background: #1c1c1f;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+:root.dark .role-summary:hover {
+    border-color: #4b5563;
+    background: #27272a;
+}
+
+:root.dark .role-chevron {
+    color: #9ca3af;
+}
+
+:root.dark .role-chip {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+}
+
+:root.dark .role-options {
+    background: #1c1c1f;
+    border-color: #374151;
+}
+
+:root.dark .role-option {
+    color: #e5e7eb;
+}
+
+:root.dark .role-option:hover {
+    background: #27272a;
+}
+
+:root.dark .role-check-visual {
+    background: #0a0a0b;
+    border-color: #3f3f46;
+}
+
+:root.dark .role-checkbox:checked + .role-check-visual {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+:root.dark .logout-link {
+    color: #f87171 !important;
+}
+
+:root.dark .logout-link:hover {
+    background: rgba(248, 113, 113, 0.12);
+    color: #fca5a5 !important;
+}
+
+/* ===== Topbar (mantenemos azul, ligeramente más oscuro) ===== */
+:root.dark .topbar {
+    background: #0a0a0c;
+    border-bottom: 1px solid #1c1c1f;
+}
+
+/* ===== Cards / paneles ===== */
+:root.dark .panel,
+:root.dark .card,
+:root.dark .card-wrapper,
+:root.dark .agenda-card,
+:root.dark .legend,
+:root.dark .schedule-wrapper,
+:root.dark .kpi-card.kpi-fallback {
+    background: #18181b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+/* ===== Textos generales ===== */
+:root.dark .page-title,
+:root.dark .pet-name,
+:root.dark .agenda-title,
+:root.dark .card-title,
+:root.dark .info-value,
+:root.dark .closing-final,
+:root.dark .pet-data .pet-name {
+    color: #f1f5f9;
+}
+
+:root.dark .page-subtitle,
+:root.dark .info-label,
+:root.dark .filter-label,
+:root.dark .date-label,
+:root.dark .field-label,
+:root.dark .pet-key,
+:root.dark .pet-row,
+:root.dark .pet-age,
+:root.dark .closing-value,
+:root.dark .closing-label {
+    color: #cbd5e1;
+}
+
+:root.dark .block-title,
+:root.dark .back-link,
+:root.dark .cost {
+    color: #60a5fa !important;
+}
+
+:root.dark .divider {
+    border-top-color: #27272a;
+}
+
+/* ===== Búsqueda / inputs / selects =====
+   Usamos background-color (NO la shorthand) para no resetear
+   el background-image/position/repeat del scoped CSS. */
+:root.dark .search-input,
+:root.dark .input,
+:root.dark .textarea,
+:root.dark .date-input {
+    background-color: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .filter-select,
+:root.dark .select {
+    background-color: #0a0a0b;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .search-input::placeholder,
+:root.dark .input::placeholder,
+:root.dark .textarea::placeholder,
+:root.dark .date-input::placeholder {
+    color: #64748b;
+}
+
+:root.dark .filter-icon,
+:root.dark .search-icon,
+:root.dark .date-icon {
+    color: #94a3b8;
+}
+
+/* ===== Tabs ===== */
+:root.dark .tabs {
+    border-bottom-color: #27272a;
+}
+
+:root.dark .tab {
+    color: #94a3b8;
+}
+
+:root.dark .tab:hover {
+    color: #cbd5e1;
+}
+
+:root.dark .tab-active {
+    color: #60a5fa;
+    border-bottom-color: #60a5fa;
+}
+
+/* ===== Tablas (desktop) ===== */
+:root.dark .vet-table thead th,
+:root.dark .history-table thead th {
+    color: #94a3b8;
+    border-bottom-color: #27272a;
+    background: #1f1f23;
+}
+
+:root.dark .vet-table tbody td,
+:root.dark .history-table tbody td {
+    color: #cbd5e1;
+    border-bottom-color: #27272a;
+    background: transparent;
+}
+
+:root.dark .vet-table tbody tr:hover {
+    background: #27272a;
+}
+
+:root.dark .vet-table .pet-name,
+:root.dark .history-table tbody td:first-child {
+    color: #f1f5f9;
+}
+
+/* Mini-labels de mobile */
+:root.dark .vet-table tbody td::before {
+    color: #94a3b8 !important;
+}
+
+/* ===== Tablas en cards (mobile) ===== */
+@media (max-width: 640px) {
+    :root.dark .vet-table tbody tr,
+    :root.dark .history-table tbody tr {
+        background: #18181b;
+        border-color: #27272a;
+    }
+
+    :root.dark .vet-table tbody td,
+    :root.dark .history-table tbody td {
+        background: transparent;
+        color: #e2e8f0;
+    }
+
+    :root.dark .vet-table tbody td[data-label="Paciente"],
+    :root.dark .vet-table tbody td[data-label="Mascota"] {
+        border-bottom-color: #27272a;
+    }
+
+    :root.dark .vet-table tbody td[data-label="Especie"],
+    :root.dark .vet-table tbody td[data-label="Dueño"] {
+        border-bottom-color: #27272a;
+    }
+
+    :root.dark .vet-table tbody td[data-label="Acciones"] {
+        border-top-color: #27272a;
+    }
+}
+
+/* ===== Agenda items ===== */
+:root.dark .agenda-time {
+    color: #94a3b8;
+}
+
+:root.dark .agenda-item-empty,
+:root.dark .agenda-break {
+    background: #27272a;
+    color: #94a3b8;
+    border-left-color: #3f3f46;
+}
+
+:root.dark .agenda-break-time {
+    color: #94a3b8;
+}
+
+:root.dark .agenda-item-blue {
+    background: #1e3a5f;
+    color: #93c5fd;
+}
+
+:root.dark .agenda-item-green {
+    background: #14532d;
+    color: #86efac;
+}
+
+/* ===== Calendario / horarios ===== */
+:root.dark .schedule .cell-head,
+:root.dark .schedule .cell-time-head,
+:root.dark .schedule .cell-time {
+    background: #1f1f23;
+    color: #cbd5e1;
+    border-bottom-color: #27272a;
+}
+
+:root.dark .schedule .cell-off {
+    background: #27272a;
+    border-right-color: #18181b;
+    border-bottom-color: #18181b;
+}
+
+:root.dark .schedule .cell-work {
+    border-right-color: #18181b;
+    border-bottom-color: #18181b;
+}
+
+:root.dark .schedule-wrapper {
+    border-color: #3b82f6;
+}
+
+/* Leyenda */
+:root.dark .legend-label {
+    color: #cbd5e1;
+}
+
+/* ===== History items (lista colapsable) ===== */
+:root.dark .history-item {
+    background: #0a0a0b !important;
+    border-color: #27272a !important;
+    color: #cbd5e1 !important;
+}
+
+:root.dark .history-item:hover {
+    background: #27272a !important;
+}
+
+/* ===== Inline collapse (link Notas de Procedimiento) ===== */
+:root.dark .inline-collapse-summary,
+:root.dark .inline-arrow {
+    color: #60a5fa;
+}
+
+:root.dark .collapse-chevron,
+:root.dark .history-arrow {
+    color: #94a3b8;
+}
+
+/* ===== Botones ===== */
+:root.dark .btn-reminder {
+    background: #27272a;
+    border-color: #3f3f46;
+    color: #cbd5e1;
+}
+
+:root.dark .btn-reminder:hover {
+    background: #3f3f46;
+}
+
+:root.dark .bell-icon {
+    color: #cbd5e1;
+}
+
+:root.dark .btn-clear {
+    background: transparent;
+    color: #f87171;
+    border-color: #f87171;
+}
+
+:root.dark .btn-clear:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* ===== Paginador ===== */
+:root.dark .pager-btn {
+    background: #18181b;
+    border-color: #27272a;
+    color: #cbd5e1;
+}
+
+:root.dark .pager-btn:hover {
+    background: #27272a;
+}
+
+:root.dark .pager-dots {
+    color: #64748b;
+}
+
+/* ===== Botón "ver detalle" en lista de mascotas (mobile) ===== */
+@media (max-width: 640px) {
+    :root.dark .btn-eye {
+        background: #2563eb;
+        color: #ffffff !important;
+    }
+}
+
+/* Ojito desktop */
+:root.dark .btn-eye {
+    color: #60a5fa !important;
+}
+
+:root.dark .btn-eye:hover {
+    background: #1e3a5f;
+}
+
+/* ===== Avatar mascota (naranja en claro - ajustamos) ===== */
+:root.dark .pet-avatar:not(.pet-dog):not(.pet-cat) {
+    background: #7c2d12;
+    color: #fdba74;
+}
+
+/* ===== Tipo badge en Servicios ===== */
+:root.dark .type-badge {
+    background: #1e3a5f;
+    color: #93c5fd;
+}
+
+/* ===== Form / detalle - bordes en cards de info ===== */
+:root.dark .info-list .info-item {
+    border-color: #27272a;
+}
+
+/* ===== Gestionar Horarios - tabla resumen ===== */
+:root.dark .schedule-table thead th {
+    color: #94a3b8;
+    border-bottom-color: #27272a;
+    background: #1f1f23;
+}
+
+:root.dark .schedule-table tbody td {
+    color: #cbd5e1;
+    border-bottom-color: #27272a;
+}
+
+:root.dark .schedule-table tbody tr.row-inactive td {
+    color: #64748b;
+}
+
+:root.dark .editor-title {
+    color: #60a5fa;
+}
+
+:root.dark .check-visual {
+    background: #0a0a0b;
+    border-color: #3f3f46;
+}
+
+:root.dark .check-input:checked + .check-visual {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+:root.dark .check-label {
+    color: #f1f5f9;
+}
+
+:root.dark .section-title {
+    color: #f1f5f9;
+}
+
+:root.dark .btn-inactivar-disabled {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+/* En móvil las cards de Gestionar Horarios también */
+@media (max-width: 640px) {
+    :root.dark .schedule-table tbody tr {
+        background: #18181b;
+        border-color: #27272a;
+    }
+
+    :root.dark .schedule-table tbody td[data-label="Horario"],
+    :root.dark .schedule-table tbody td[data-label="Refrigerio"],
+    :root.dark .schedule-table tbody td[data-label="Activo"] {
+        border-top-color: #27272a;
+    }
+
+    :root.dark .schedule-table tbody td[data-label="Día"] {
+        color: #f9fafb;
+    }
+}
+
+/* ===== Recordatorios ===== */
+:root.dark .rem-table thead th {
+    color: #f1f5f9;
+    border-bottom-color: #27272a;
+    background: transparent;
+}
+
+:root.dark .rem-table tbody td {
+    color: #cbd5e1;
+    border-bottom-color: #27272a;
+}
+
+:root.dark .rem-table tbody tr:hover {
+    background: #27272a;
+}
+
+:root.dark .msg-cell {
+    color: #cbd5e1;
+}
+
+/* Botones de acción en oscuro */
+:root.dark .btn-whatsapp:hover {
+    background: rgba(37, 211, 102, 0.18);
+}
+
+:root.dark .btn-edit:hover {
+    background: rgba(59, 130, 246, 0.18);
+}
+
+:root.dark .btn-delete:hover {
+    background: rgba(239, 68, 68, 0.18);
+}
+
+/* Status badges mantienen colores brand */
+
+/* Cards mobile de Recordatorios */
+@media (max-width: 700px) {
+    :root.dark .rem-table tbody tr {
+        background: #18181b;
+        border-color: #27272a;
+    }
+
+    :root.dark .rem-table tbody tr:hover {
+        background: #18181b;
+    }
+
+    :root.dark .rem-table tbody td {
+        color: #cbd5e1;
+    }
+
+    :root.dark .rem-table tbody td[data-label="Mascota"] {
+        color: #f9fafb;
+    }
+
+    :root.dark .rem-table tbody td[data-label="Cliente"] {
+        color: #94a3b8;
+    }
+
+    :root.dark .rem-table tbody td[data-label="Cliente"]::after {
+        background: #27272a;
+    }
+
+    :root.dark .rem-table tbody td[data-label="Fecha Programada"],
+    :root.dark .rem-table tbody td[data-label="Acciones"] {
+        border-top-color: #27272a;
+    }
+
+    :root.dark .rem-table tbody td[data-label="Fecha Programada"] {
+        color: #f1f5f9;
+    }
+
+    :root.dark .rem-table tbody td[data-label="Fecha Programada"]::before {
+        color: #94a3b8;
+    }
+}
+
+/* ===== Gestión de Usuarios y Roles ===== */
+:root.dark .users-table thead th {
+    color: #94a3b8;
+    border-bottom-color: #27272a;
+    background: transparent;
+}
+
+:root.dark .users-table tbody td {
+    color: #cbd5e1;
+    border-bottom-color: #27272a;
+}
+
+:root.dark .user-username {
+    color: #f1f5f9;
+}
+
+:root.dark .user-avatar-small {
+    background: #1e3a5f;
+    color: #93c5fd;
+}
+
+/* Pills suaves en oscuro */
+:root.dark .role-pill-admin {
+    background: rgba(168, 85, 247, 0.15);
+    color: #d8b4fe;
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+:root.dark .role-pill-vet {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+:root.dark .role-pill-recep {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fcd34d;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+:root.dark .status-active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #86efac;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+:root.dark .status-inactive {
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+/* Botones de acción ghost en oscuro */
+:root.dark .btn-act {
+    color: #94a3b8;
+}
+
+:root.dark .btn-act:hover {
+    background: #27272a;
+}
+
+:root.dark .btn-act-edit:hover {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+}
+
+:root.dark .btn-act-perms:hover {
+    background: rgba(168, 85, 247, 0.15);
+    color: #d8b4fe;
+}
+
+:root.dark .btn-act-toggle:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+}
+
+:root.dark .btn-act-on:hover {
+    background: rgba(16, 185, 129, 0.15);
+    color: #86efac;
+}
+
+/* Editor de usuario */
+:root.dark .ed-title,
+:root.dark .panel-title {
+    color: #f1f5f9;
+}
+
+:root.dark .ed-subtitle,
+:root.dark .ed-hint {
+    color: #94a3b8;
+}
+
+:root.dark .ed-chevron {
+    color: #94a3b8;
+}
+
+:root.dark .ed-section {
+    background: #1f1f23;
+    border-color: #27272a;
+}
+
+:root.dark .ed-legend {
+    color: #94a3b8;
+}
+
+:root.dark .ed-label {
+    color: #e2e8f0;
+}
+
+:root.dark .ed-input {
+    background: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark select.ed-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+}
+
+:root.dark .ed-input::placeholder {
+    color: #64748b;
+}
+
+:root.dark .ed-check {
+    color: #e2e8f0;
+}
+
+:root.dark .ed-check-visual {
+    background: #0a0a0b;
+    border-color: #3f3f46;
+}
+
+:root.dark .ed-check-input:checked + .ed-check-visual {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+:root.dark .btn-soft-secondary {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .btn-soft-secondary:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+/* Lista de permisos */
+:root.dark .perm-list {
+    color: #cbd5e1;
+}
+
+:root.dark .perm-list li {
+    background: #0a0a0b;
+    border-color: #27272a;
+}
+
+:root.dark .perm-off {
+    background: #3f3f46;
+}
+
+/* Cards mobile */
+@media (max-width: 700px) {
+    :root.dark .users-table tbody tr {
+        background: #18181b;
+        border-color: #27272a;
+    }
+
+    :root.dark .users-table tbody td[data-label="Usuario"] {
+        color: #f9fafb;
+    }
+
+    :root.dark .users-table tbody td[data-label="Nombre"] {
+        color: #94a3b8;
+    }
+
+    :root.dark .users-table tbody td[data-label="ID"],
+    :root.dark .users-table tbody td[data-label="Correo"],
+    :root.dark .users-table tbody td[data-label="Roles"],
+    :root.dark .users-table tbody td[data-label="Acciones"] {
+        border-top-color: #27272a;
+    }
+
+    :root.dark .users-table tbody td[data-label="ID"]::before,
+    :root.dark .users-table tbody td[data-label="Correo"]::before,
+    :root.dark .users-table tbody td[data-label="Roles"]::before {
+        color: #94a3b8;
+    }
+}
+
+/* ===== Reportes ===== */
+:root.dark .report-card {
+    background: #18181b;
+    border-color: #27272a;
+}
+
+:root.dark .report-head {
+    border-bottom-color: #27272a;
+}
+
+:root.dark .report-title {
+    color: #f1f5f9;
+}
+
+:root.dark .filter-input,
+:root.dark .filter-select {
+    background-color: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .filter-input::placeholder {
+    color: #64748b;
+}
+
+:root.dark .filter-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+}
+
+:root.dark .records-wrapper {
+    border-color: #27272a;
+}
+
+:root.dark .records-table thead th {
+    background: #1f1f23;
+    color: #94a3b8;
+    border-bottom-color: #27272a;
+}
+
+:root.dark .records-table tbody td {
+    color: #cbd5e1;
+    border-bottom-color: #27272a;
+}
+
+:root.dark .records-table tbody tr:hover {
+    background: #27272a;
+}
+
+:root.dark .count-badge {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+:root.dark .report-note {
+    background: #1f1f23;
+    color: #cbd5e1;
+    border-left-color: #3b82f6;
+}
+
+:root.dark .report-note-label {
+    color: #f1f5f9;
+}
+
+/* Cards mobile de Reportes */
+@media (max-width: 560px) {
+    :root.dark .records-table tbody tr {
+        background: #18181b;
+        border-color: #27272a;
+    }
+
+    :root.dark .records-table tbody tr:hover {
+        background: #18181b;
+    }
+
+    :root.dark .records-table tbody td::before {
+        color: #94a3b8;
+    }
+}
+
+/* ===== Agenda de Citas ===== */
+:root.dark .cal-card,
+:root.dark .cal-legend,
+:root.dark .side-card {
+    background: #18181b;
+    border-color: #27272a;
+}
+
+:root.dark .cal-grid {
+    background: #18181b;
+}
+
+:root.dark .cal-cell {
+    border-right-color: #27272a;
+    border-bottom-color: #27272a;
+}
+
+:root.dark .cal-head,
+:root.dark .cal-corner,
+:root.dark .cal-time {
+    background: #1f1f23;
+    color: #cbd5e1;
+    border-bottom-color: #27272a;
+    border-right-color: #27272a;
+}
+
+:root.dark .cal-head {
+    color: #f1f5f9;
+}
+
+:root.dark .cal-head-date {
+    color: #94a3b8;
+}
+
+:root.dark .cal-break {
+    background: #0a0a0b;
+    color: #94a3b8;
+}
+
+:root.dark .cal-break-start {
+    color: #cbd5e1;
+}
+
+:root.dark .cal-slot:hover:not(:has(.cita)) {
+    background: rgba(96, 165, 250, 0.08);
+}
+
+:root.dark .cal-slot:hover:not(:has(.cita))::after {
+    color: #60a5fa;
+}
+
+/* Citas en oscuro: fondos más oscuros con texto claro */
+:root.dark .cita-pendiente {
+    background: #78350f;
+    color: #fcd34d;
+    border-left-color: #f59e0b;
+}
+
+:root.dark .cita-confirmada {
+    background: #1e3a8a;
+    color: #93c5fd;
+    border-left-color: #3b82f6;
+}
+
+:root.dark .cita-enconsulta {
+    background: #581c87;
+    color: #d8b4fe;
+    border-left-color: #a855f7;
+}
+
+:root.dark .cita-atendida {
+    background: #064e3b;
+    color: #86efac;
+    border-left-color: #10b981;
+}
+
+:root.dark .cita-cancelada {
+    background: #7f1d1d;
+    color: #fca5a5;
+    border-left-color: #ef4444;
+}
+
+:root.dark .cita-noasistio {
+    background: #374151;
+    color: #cbd5e1;
+    border-left-color: #6b7280;
+}
+
+/* Popover en oscuro */
+:root.dark .cita-pop {
+    background: #18181b;
+    border-color: #27272a;
+    color: #cbd5e1;
+}
+
+:root.dark .cita-pop::after {
+    background: #18181b;
+    border-right-color: #27272a;
+    border-bottom-color: #27272a;
+}
+
+:root.dark .pop-head {
+    color: #f1f5f9;
+    border-bottom-color: #27272a;
+}
+
+:root.dark .pop-row {
+    color: #cbd5e1;
+}
+
+:root.dark .pop-row strong {
+    color: #f1f5f9;
+}
+
+:root.dark .pop-link {
+    color: #60a5fa !important;
+}
+
+/* Toolbar y inputs en oscuro */
+:root.dark .tb-input,
+:root.dark .tb-select,
+:root.dark .ff-input,
+:root.dark .ff-select {
+    background-color: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .tb-select,
+:root.dark .ff-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+}
+
+:root.dark .tb-input::placeholder,
+:root.dark .ff-input::placeholder {
+    color: #64748b;
+}
+
+:root.dark .tb-icon,
+:root.dark .tb-label,
+:root.dark .ff-hint {
+    color: #94a3b8;
+}
+
+:root.dark .ff-label {
+    color: #f1f5f9;
+}
+
+:root.dark .cal-legend {
+    color: #cbd5e1;
+}
+
+/* ============================================================ */
+/* ===== Dashboard role-based (Home.razor) — dark mode ======== */
+/* ============================================================ */
+:root.dark .dash-block-title { color: #f1f5f9; }
+:root.dark .dash-block-sub   { color: #94a3b8; }
+
+:root.dark .dash-role-vet {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+    border-color: rgba(147, 197, 253, 0.32);
+}
+
+:root.dark .dash-role-recep {
+    background: rgba(139, 92, 246, 0.2);
+    color: #c4b5fd;
+    border-color: rgba(196, 181, 253, 0.34);
+}
+
+:root.dark .dash-role-admin {
+    background: rgba(245, 158, 11, 0.16);
+    color: #fcd34d;
+    border-color: rgba(252, 211, 77, 0.3);
+}
+
+/* Cards de KPI y paneles */
+:root.dark .kpi-card,
+:root.dark .panel {
+    background: #18181b;
+    border-color: #27272a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+:root.dark .kpi-title   { color: #94a3b8; }
+:root.dark .kpi-value   { color: #f1f5f9; }
+:root.dark .kpi-sub     { color: #94a3b8; }
+
+/* Iconos dentro del círculo — fondos translúcidos */
+:root.dark .kpi-blue-soft   .kpi-icon-circle { background: rgba(59, 130, 246, 0.18); color: #93c5fd; }
+:root.dark .kpi-green-soft  .kpi-icon-circle { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; }
+:root.dark .kpi-amber-soft  .kpi-icon-circle { background: rgba(245, 158, 11, 0.18); color: #fcd34d; }
+:root.dark .kpi-violet-soft .kpi-icon-circle { background: rgba(139, 92, 246, 0.2);  color: #c4b5fd; }
+:root.dark .kpi-rose-soft   .kpi-icon-circle { background: rgba(239, 68, 68, 0.18);  color: #fca5a5; }
+
+:root.dark .panel-head      { border-bottom-color: #27272a; }
+:root.dark .panel-title     { color: #f1f5f9; }
+:root.dark .panel-sub       { color: #94a3b8; }
+:root.dark .panel-link      { color: #60a5fa; }
+
+/* Mi agenda del día (vet) */
+:root.dark .ag-item           { border-bottom-color: #27272a; }
+:root.dark .ag-time           { color: #cbd5e1; }
+:root.dark .ag-pet            { color: #f1f5f9; }
+:root.dark .ag-info-sub       { color: #94a3b8; }
+:root.dark .ag-item-break     { background: #0a0a0b; }
+:root.dark .ag-break-title    { color: #cbd5e1; }
+
+/* Atenciones recientes (vet) */
+:root.dark .rec-item          { border-bottom-color: #27272a; }
+:root.dark .rec-pet-avatar    { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; }
+:root.dark .rec-pet           { color: #f1f5f9; }
+:root.dark .rec-date          { color: #94a3b8; }
+:root.dark .rec-diag          { color: #cbd5e1; }
+:root.dark .rec-control {
+    background: rgba(139, 92, 246, 0.14);
+    color: #c4b5fd;
+    border-color: rgba(196, 181, 253, 0.32);
+}
+
+/* Bar list */
+:root.dark .bar-label   { color: #cbd5e1; }
+:root.dark .bar-track   { background: #27272a; }
+:root.dark .bar-value   { color: #f1f5f9; }
+
+/* Stat list */
+:root.dark .stat-count  { color: #f1f5f9; }
+:root.dark .stat-pct    { color: #94a3b8; }
+
+/* Cola pendientes (recep) */
+:root.dark .cola-item   { border-bottom-color: #27272a; }
+:root.dark .cola-date   { color: #94a3b8; }
+:root.dark .cola-time   { color: #f1f5f9; }
+:root.dark .cola-pet    { color: #f1f5f9; }
+:root.dark .cola-meta   { color: #94a3b8; }
+
+/* Recordatorios (recep) */
+:root.dark .rem-item    { border-bottom-color: #27272a; }
+:root.dark .rem-icon    { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; }
+:root.dark .rem-msg     { color: #cbd5e1; }
+:root.dark .rem-meta    { color: #94a3b8; }
+
+/* Top veterinarios (admin) */
+:root.dark .top-item    { border-bottom-color: #27272a; }
+:root.dark .top-rank    { background: rgba(245, 158, 11, 0.16); color: #fcd34d; }
+:root.dark .top-item:nth-child(2) .top-rank { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+:root.dark .top-item:nth-child(3) .top-rank { background: rgba(249, 115, 22, 0.18); color: #fdba74; }
+:root.dark .top-name    { color: #f1f5f9; }
+:root.dark .top-meta    { color: #94a3b8; }
+:root.dark .top-value   { color: #f1f5f9; }
+:root.dark .top-label   { color: #94a3b8; }
+
+/* Métricas (admin) */
+:root.dark .metric-row   { border-bottom-color: #27272a; }
+:root.dark .metric-label { color: #f1f5f9; }
+:root.dark .metric-sub   { color: #94a3b8; }
+:root.dark .metric-value { color: #f1f5f9; }
+:root.dark .metric-good  { color: #6ee7b7; }
+:root.dark .metric-warn  { color: #fcd34d; }
+:root.dark .metric-danger{ color: #fca5a5; }
+
+/* Empty state */
+:root.dark .dash-empty {
+    background: #18181b;
+    border-color: #27272a;
+}
+:root.dark .dash-empty-icon  { background: #27272a; color: #64748b; }
+:root.dark .dash-empty-title { color: #f1f5f9; }
+:root.dark .dash-empty-text  { color: #94a3b8; }
+
+/* Pulse en dark */
+:root.dark .dash-pulse-dot {
+    animation-name: dash-pulse-dark;
+}
+
+@keyframes dash-pulse-dark {
+    0%   { box-shadow: 0 0 0 0 rgba(196, 181, 253, 0.55); }
+    70%  { box-shadow: 0 0 0 6px rgba(196, 181, 253, 0);  }
+    100% { box-shadow: 0 0 0 0 rgba(196, 181, 253, 0);    }
+}
+
+/* ============================================================ */
+/* === Badges de estado — base global (soft pill) ============= */
+/* Vive en app.css para que funcione en cualquier vista sin    */
+/* depender del scoped CSS (Home, modales, etc.)               */
+/* ============================================================ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    line-height: 1;
+    text-align: center;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+}
+
+/* Pendiente (warm amber) */
+.badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+/* Confirmada (azul) */
+.badge-confirmada {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+
+/* En consulta (violeta) */
+.badge-enconsulta {
+    background: #ede9fe;
+    color: #5b21b6;
+    border-color: #ddd6fe;
+}
+
+/* Atendida (verde) */
+.badge-atendida {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+/* Cancelada (rojo) */
+.badge-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+/* No asistio (slate) */
+.badge-noshow {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+
+/* Aliases por compat con clases antiguas */
+.badge-waiting {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.badge-inconsultation {
+    background: #ede9fe;
+    color: #5b21b6;
+    border-color: #ddd6fe;
+}
+
+.badge-attended {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+/* Status-* (usado en Recordatorios) — mismo lenguaje visual */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.32rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.status-sent {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+/* ============================================================ */
+/* === Badges de estado — dark mode (todas las vistas) ======== */
+/* Cubre Mis Horarios (.mh-badge-*), Agenda Citas (.dt-*),     */
+/* Citas Hoy (.badge-*) y Recordatorios (.status-*)            */
+/* ============================================================ */
+:root.dark .mh-badge-pendiente,
+:root.dark .dt-pendiente,
+:root.dark .badge-pending,
+:root.dark .badge-waiting,
+:root.dark .status-pending {
+    background: rgba(245, 158, 11, 0.16);
+    color: #fcd34d;
+    border-color: rgba(252, 211, 77, 0.3);
+}
+
+:root.dark .mh-badge-confirmada,
+:root.dark .dt-confirmada,
+:root.dark .badge-confirmada {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+    border-color: rgba(147, 197, 253, 0.32);
+}
+
+:root.dark .mh-badge-enconsulta,
+:root.dark .dt-enconsulta,
+:root.dark .badge-enconsulta,
+:root.dark .badge-inconsultation {
+    background: rgba(139, 92, 246, 0.2);
+    color: #c4b5fd;
+    border-color: rgba(196, 181, 253, 0.34);
+}
+
+:root.dark .mh-badge-atendida,
+:root.dark .dt-atendida,
+:root.dark .badge-atendida,
+:root.dark .badge-attended,
+:root.dark .status-sent {
+    background: rgba(16, 185, 129, 0.18);
+    color: #6ee7b7;
+    border-color: rgba(110, 231, 183, 0.32);
+}
+
+:root.dark .mh-badge-cancelada,
+:root.dark .dt-cancelada,
+:root.dark .badge-cancelled {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+    border-color: rgba(252, 165, 165, 0.32);
+}
+
+:root.dark .mh-badge-noasistio,
+:root.dark .dt-noasistio,
+:root.dark .badge-noshow {
+    background: rgba(100, 116, 139, 0.22);
+    color: #cbd5e1;
+    border-color: rgba(203, 213, 225, 0.22);
+}
+
+/* Pulse del "En Consulta" en dark — usa el violeta del badge */
+:root.dark .mh-pulse-dot,
+:root.dark .dt-pulse-dot {
+    box-shadow: 0 0 0 0 rgba(196, 181, 253, 0.55);
+}
+
+@keyframes mh-pulse-dark {
+    0%   { box-shadow: 0 0 0 0 rgba(196, 181, 253, 0.55); }
+    70%  { box-shadow: 0 0 0 7px rgba(196, 181, 253, 0);  }
+    100% { box-shadow: 0 0 0 0 rgba(196, 181, 253, 0);    }
+}
+
+:root.dark .mh-pulse-dot { animation-name: mh-pulse-dark; }
+:root.dark .dt-pulse-dot { animation-name: mh-pulse-dark; }
+
+/* ===== Filtro por rango de fechas (Agenda Citas) — dark ===== */
+:root.dark .tb-range-sep {
+    color: #52525b;
+}
+
+:root.dark .tb-preset {
+    background: #18181b;
+    border-color: #27272a;
+    color: #cbd5e1;
+}
+
+:root.dark .tb-preset:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+    color: #f1f5f9;
+}
+
+:root.dark .tb-preset-active {
+    background: rgba(37, 99, 235, 0.18);
+    border-color: rgba(96, 165, 250, 0.5);
+    color: #93c5fd;
+}
+
+:root.dark .tb-nav-btn {
+    background: #18181b;
+    border-color: #27272a;
+    color: #cbd5e1;
+}
+
+:root.dark .tb-nav-btn:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+:root.dark .tb-nav-today {
+    background: rgba(37, 99, 235, 0.18);
+    border-color: rgba(96, 165, 250, 0.5);
+    color: #93c5fd;
+}
+
+:root.dark .tb-nav-today:hover {
+    background: rgba(37, 99, 235, 0.28);
+    border-color: rgba(96, 165, 250, 0.7);
+}
+
+/* ===== Resumen del rango ("Mostrando: ...") — dark ===== */
+:root.dark .cal-range-summary {
+    background: #18181b;
+    border-color: #27272a;
+    color: #cbd5e1;
+}
+
+:root.dark .cal-range-summary .range-label {
+    color: #94a3b8;
+}
+
+:root.dark .cal-range-summary .range-value {
+    color: #f1f5f9;
+}
+
+:root.dark .cal-range-summary .range-sub {
+    color: #64748b;
+}
+
+/* Inputs de fecha (calendar picker) — el icono nativo se ve oscuro */
+:root.dark .tb-field-date .tb-input::-webkit-calendar-picker-indicator {
+    filter: invert(0.85);
+    opacity: 0.7;
+}
+
+/* Side panel */
+:root.dark .side-title {
+    color: #60a5fa;
+}
+
+:root.dark .side-chevron {
+    color: #94a3b8;
+}
+
+:root.dark .btn-ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .btn-ghost:hover {
+    background: #27272a;
+}
+
+/* Detalle */
+:root.dark .dt-cita-id {
+    color: #f1f5f9;
+}
+
+:root.dark .dt-row {
+    border-bottom-color: #27272a;
+}
+
+:root.dark .dt-label {
+    color: #94a3b8;
+}
+
+:root.dark .dt-value {
+    color: #f1f5f9;
+}
+
+:root.dark .btn-reprog {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+:root.dark .btn-reprog:hover {
+    background: #2563eb;
+}
+
+:root.dark .btn-vet {
+    background: transparent;
+    color: #60a5fa !important;
+    border-color: #60a5fa;
+}
+
+:root.dark .btn-vet:hover {
+    background: rgba(96, 165, 250, 0.1);
+}
+
+:root.dark .btn-cancel {
+    background: transparent;
+    color: #f87171 !important;
+    border-color: #f87171;
+}
+
+:root.dark .btn-cancel:hover {
+    background: rgba(239, 68, 68, 0.12);
+}
+
+/* ===== Modales de Agenda de Citas en oscuro ===== */
+:root.dark .ac-modal-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+}
+
+:root.dark .ac-modal-head,
+:root.dark .ac-modal-foot {
+    border-color: #27272a;
+}
+
+:root.dark .ac-modal-title,
+:root.dark .dt-value {
+    color: #f1f5f9;
+}
+
+:root.dark .ac-modal-subtitle,
+:root.dark .dt-section-title,
+:root.dark .dt-label {
+    color: #94a3b8;
+}
+
+:root.dark .ac-modal-close {
+    color: #94a3b8;
+}
+
+:root.dark .ac-modal-close:hover {
+    background: #27272a;
+    color: #f1f5f9;
+}
+
+:root.dark .dt-section {
+    background: #0a0a0b;
+    border-color: #27272a;
+}
+
+:root.dark .btn-modal-ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .btn-modal-ghost:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+:root.dark .btn-modal-secondary {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd !important;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+:root.dark .btn-modal-secondary:hover {
+    background: rgba(59, 130, 246, 0.25);
+}
+
+:root.dark .btn-modal-danger {
+    background: transparent;
+    color: #fca5a5 !important;
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+:root.dark .btn-modal-danger:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #ef4444;
+}
+
+/* ===== Modales Cliente/Mascota (CRUD recep) en oscuro ===== */
+:root.dark .cli-modal-card,
+:root.dark .mas-modal-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+}
+
+:root.dark .cli-modal-head,
+:root.dark .cli-modal-foot,
+:root.dark .mas-modal-head,
+:root.dark .mas-modal-foot {
+    border-color: #27272a;
+}
+
+:root.dark .cli-modal-title,
+:root.dark .mas-modal-title {
+    color: #f1f5f9;
+}
+
+:root.dark .cli-modal-subtitle,
+:root.dark .mas-modal-subtitle {
+    color: #94a3b8;
+}
+
+:root.dark .cli-modal-close,
+:root.dark .mas-modal-close {
+    color: #94a3b8;
+}
+
+:root.dark .cli-modal-close:hover,
+:root.dark .mas-modal-close:hover {
+    background: #27272a;
+    color: #f1f5f9;
+}
+
+:root.dark .cf-label,
+:root.dark .mf-label {
+    color: #f1f5f9;
+}
+
+:root.dark .cf-hint,
+:root.dark .mf-hint {
+    color: #64748b;
+}
+
+:root.dark .cf-input,
+:root.dark .cf-textarea,
+:root.dark .mf-input,
+:root.dark .mf-select {
+    background-color: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .mf-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+}
+
+:root.dark .cf-check,
+:root.dark .mf-check {
+    color: #e2e8f0;
+}
+
+:root.dark .cf-check-visual,
+:root.dark .mf-check-visual {
+    background: #0a0a0b;
+    border-color: #3f3f46;
+}
+
+:root.dark .btn-cli-ghost,
+:root.dark .btn-mas-ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .btn-cli-ghost:hover,
+:root.dark .btn-mas-ghost:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+/* Botones de editar (recep) en oscuro */
+:root.dark .btn-edit-cli,
+:root.dark .btn-edit-mas {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd !important;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+:root.dark .btn-edit-cli:hover,
+:root.dark .btn-edit-mas:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: #3b82f6;
+}
+
+:root.dark .pet-card-edit {
+    background: #18181b;
+    color: #94a3b8;
+    border-color: #27272a;
+}
+
+:root.dark .pet-card-edit:hover {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+:root.dark .btn-pencil:hover {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+}
+
+/* ===== Form de servicio en oscuro ===== */
+:root.dark .form-card {
+    background: #18181b;
+    border-color: #27272a;
+}
+
+:root.dark .form-section {
+    background: #1f1f23;
+    border-color: #27272a;
+}
+
+:root.dark .form-legend {
+    color: #94a3b8;
+}
+
+:root.dark .form-label {
+    color: #f1f5f9;
+}
+
+:root.dark .form-hint {
+    color: #64748b;
+}
+
+:root.dark .form-input,
+:root.dark .form-textarea,
+:root.dark .form-select {
+    background-color: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+}
+
+:root.dark .form-input::placeholder,
+:root.dark .form-textarea::placeholder {
+    color: #64748b;
+}
+
+:root.dark .prefix-symbol {
+    color: #94a3b8;
+}
+
+:root.dark .form-check {
+    color: #e2e8f0;
+}
+
+:root.dark .form-check-visual {
+    background: #0a0a0b;
+    border-color: #3f3f46;
+}
+
+:root.dark .form-actions {
+    border-top-color: #27272a;
+}
+
+:root.dark .btn-form-ghost {
+    background: transparent;
+    color: #cbd5e1 !important;
+    border-color: #27272a;
+}
+
+:root.dark .btn-form-ghost:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+/* ===== Password toggle (Gestión Usuarios) en oscuro ===== */
+:root.dark .ed-pwd-toggle {
+    color: #94a3b8;
+}
+
+:root.dark .ed-pwd-toggle:hover {
+    background: #27272a;
+    color: #93c5fd;
+}
+
+:root.dark .ed-pwd-hint {
+    color: #64748b;
+}
+
+/* ===== Modal Usuario en oscuro ===== */
+:root.dark .usr-modal-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+}
+
+:root.dark .usr-modal-head,
+:root.dark .usr-modal-foot {
+    border-color: #27272a;
+}
+
+:root.dark .usr-modal-title {
+    color: #f1f5f9;
+}
+
+:root.dark .usr-modal-subtitle {
+    color: #94a3b8;
+}
+
+:root.dark .usr-modal-close {
+    color: #94a3b8;
+}
+
+:root.dark .usr-modal-close:hover {
+    background: #27272a;
+    color: #f1f5f9;
+}
+
+:root.dark .uf-section {
+    background: #1f1f23;
+    border-color: #27272a;
+}
+
+:root.dark .uf-legend {
+    color: #94a3b8;
+}
+
+:root.dark .uf-label {
+    color: #f1f5f9;
+}
+
+:root.dark .uf-hint {
+    color: #64748b;
+}
+
+:root.dark .uf-input {
+    background-color: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .uf-input::placeholder {
+    color: #64748b;
+}
+
+:root.dark .uf-check {
+    color: #e2e8f0;
+}
+
+:root.dark .uf-check-visual {
+    background: #0a0a0b;
+    border-color: #3f3f46;
+}
+
+:root.dark .uf-pwd-toggle {
+    color: #94a3b8;
+}
+
+:root.dark .uf-pwd-toggle:hover {
+    background: #27272a;
+    color: #93c5fd;
+}
+
+:root.dark .btn-usr-ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .btn-usr-ghost:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+/* ===== Botones de acción de Citas de Hoy en oscuro ===== */
+:root.dark .btn-start {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7 !important;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+:root.dark .btn-start:hover {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: #10b981;
+}
+
+:root.dark .btn-continue {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd !important;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+:root.dark .btn-continue:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: #3b82f6;
+}
+
+:root.dark .btn-view {
+    background: transparent;
+    color: #cbd5e1 !important;
+    border-color: #27272a;
+}
+
+:root.dark .btn-view:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+    color: #f1f5f9 !important;
+}
+
+/* ====================================================================
+   ======== PASADA COMPLETA DE BOTONES EN OSCURO (todas las vistas) ===
+   ====================================================================
+   Patrón:
+   • Botones primarios (solid blue) → azul ligeramente más claro en oscuro
+   • Botones de guardar (solid verde) → mantienen verde brand
+   • Botones destructivos (solid rojo) → mantienen rojo brand
+   • Botones soft / pastel → fondo rgba traslúcido + texto claro
+   • Botones ghost → transparente + borde slate + texto gris claro
+   • Botones icon-only → hover con burbuja rgba del color de su acción
+*/
+
+/* ===== Primary "+ Nuevo X" — usado en Servicios, Recordatorios,
+   Clientes y Mascotas, Gestión Usuarios, Agenda Citas ===== */
+:root.dark .btn-new,
+:root.dark .btn-new-cita {
+    background: #3b82f6;
+    color: #ffffff !important;
+}
+
+:root.dark .btn-new:hover,
+:root.dark .btn-new-cita:hover {
+    background: #2563eb;
+}
+
+/* ===== Primary del Login ===== */
+:root.dark .btn-login {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff !important;
+}
+
+:root.dark .btn-login:hover,
+:root.dark .btn-login:focus {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+:root.dark .btn-toggle-password {
+    color: #94a3b8;
+}
+
+:root.dark .btn-toggle-password:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #93c5fd;
+}
+
+/* ===== Primary de formularios (Cliente / Mascota / Usuario / Servicio) ===== */
+:root.dark .btn-cli-primary,
+:root.dark .btn-mas-primary,
+:root.dark .btn-usr-primary,
+:root.dark .btn-form-primary,
+:root.dark .btn-soft-primary {
+    background: #3b82f6;
+    color: #ffffff !important;
+    border-color: #3b82f6;
+}
+
+:root.dark .btn-cli-primary:hover,
+:root.dark .btn-mas-primary:hover,
+:root.dark .btn-usr-primary:hover,
+:root.dark .btn-form-primary:hover,
+:root.dark .btn-soft-primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+/* ===== Botón "+ Agregar Mascota" (Cliente Detalle) ===== */
+:root.dark .btn-add-pet {
+    background: #3b82f6;
+    color: #ffffff !important;
+}
+
+:root.dark .btn-add-pet:hover {
+    background: #2563eb;
+}
+
+/* ===== Botón "GENERAR REPORTE PDF" ===== */
+:root.dark .btn-generar {
+    background: #3b82f6;
+    color: #ffffff !important;
+}
+
+:root.dark .btn-generar:hover {
+    background: #2563eb;
+}
+
+/* ===== Botones de Atención Registro ===== */
+:root.dark .btn-save {
+    background: #10b981;
+    color: #ffffff !important;
+}
+
+:root.dark .btn-save:hover {
+    background: #0e9d70;
+}
+
+/* btn-clear ya tenía override, lo mantenemos */
+
+/* btn-reminder (Crear Recordatorio en Atención Registro) */
+:root.dark .btn-reminder {
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+:root.dark .btn-reminder:hover {
+    background: rgba(148, 163, 184, 0.25);
+    border-color: #3f3f46;
+}
+
+:root.dark .bell-icon {
+    color: #94a3b8;
+}
+
+/* ===== Botones de Gestionar Horarios (Recepcionista) ===== */
+:root.dark .btn-save-h {
+    background: #10b981;
+    color: #ffffff !important;
+}
+
+:root.dark .btn-save-h:hover {
+    background: #0e9d70;
+}
+
+:root.dark .btn-reset-h {
+    background: #3b82f6;
+    color: #ffffff !important;
+}
+
+:root.dark .btn-reset-h:hover {
+    background: #2563eb;
+}
+
+:root.dark .btn-inactivar {
+    background: #ef4444;
+    color: #ffffff !important;
+}
+
+:root.dark .btn-inactivar:hover {
+    background: #dc2626;
+}
+
+:root.dark .btn-inactivar-disabled {
+    background: #7f1d1d;
+    color: #fca5a5 !important;
+}
+
+:root.dark .btn-inactivar-disabled:hover {
+    background: #7f1d1d;
+}
+
+/* ===== Botones icon-only de Servicios (Editar / Eliminar) ===== */
+:root.dark .btn-icon {
+    color: #94a3b8;
+}
+
+:root.dark .btn-icon:hover {
+    background: #27272a;
+}
+
+:root.dark .btn-icon-edit:hover {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+}
+
+:root.dark .btn-icon-delete:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+}
+
+/* ===== Recordatorios — botones icon-only ===== */
+:root.dark .btn-whatsapp {
+    color: #25d366;
+}
+
+:root.dark .btn-whatsapp:hover {
+    background: rgba(37, 211, 102, 0.15);
+}
+
+:root.dark .btn-edit:hover {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+}
+
+:root.dark .btn-delete {
+    color: #f87171;
+}
+
+:root.dark .btn-delete:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+}
+
+/* ============================================================ */
+/* ===== Confirm Delete Modal — dark mode completo ============ */
+/* ============================================================ */
+
+/* Card del modal */
+:root.dark .modal-card {
+    background: #18181b;
+    color: #e2e8f0;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55);
+}
+
+/* Icono superior (papelera) — tinte rojo más suave en oscuro */
+:root.dark .modal-icon {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+}
+
+/* Título y mensaje */
+:root.dark .modal-title {
+    color: #f1f5f9;
+}
+
+:root.dark .modal-message {
+    color: #94a3b8;
+}
+
+/* X de cerrar (esquina superior derecha) */
+:root.dark .modal-close-x {
+    color: #94a3b8;
+}
+
+:root.dark .modal-close-x:hover {
+    background: #27272a;
+    color: #f1f5f9;
+}
+
+/* Botón "Cancelar" (conservado por compat, no se usa en este modal) */
+:root.dark .btn-modal-cancel {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .btn-modal-cancel:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+/* Botón principal "Sí, eliminar" — destructivo refinado */
+:root.dark .btn-modal-confirm {
+    background: #dc2626;
+    color: #ffffff !important;
+    border-color: #dc2626;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.45);
+}
+
+:root.dark .btn-modal-confirm:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.55);
+}
+
+:root.dark .btn-modal-confirm:active {
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.45);
+}
+
+/* ===== Tab links (ClientesMascotas) ===== */
+:root.dark .tab-link {
+    color: #94a3b8;
+}
+
+:root.dark .tab-link:hover {
+    color: #cbd5e1;
+}
+
+:root.dark #cm-tab-clientes:checked ~ .tabs .tab-clientes,
+:root.dark #cm-tab-mascotas:checked ~ .tabs .tab-mascotas {
+    color: #60a5fa;
+    border-bottom-color: #60a5fa;
+}
+
+/* ===== Pager (paginador) ===== */
+:root.dark .pager-btn {
+    background: #18181b;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .pager-btn:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+:root.dark .pager-active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+:root.dark .pager-active:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+:root.dark .pager-arrow {
+    color: #94a3b8;
+}
+
+:root.dark .pager-dots {
+    color: #64748b;
+}
+
+/* ===== Botón "Ver detalle" del ojito (Clientes y Mascotas list) ===== */
+:root.dark .btn-eye {
+    color: #94a3b8;
+}
+
+:root.dark .btn-eye:hover {
+    background: rgba(59, 130, 246, 0.12);
+    color: #93c5fd;
+}
+
+/* En móvil el .btn-eye se vuelve un botón sólido azul */
+@media (max-width: 640px) {
+    :root.dark .btn-eye {
+        background: #3b82f6;
+        color: #ffffff !important;
+    }
+
+    :root.dark .btn-eye:hover {
+        background: #2563eb;
+    }
+}
+
+/* ===== Atención Registro - botón Limpiar ===== */
+:root.dark .btn-clear {
+    background: transparent;
+    color: #f87171;
+    border-color: #f87171;
+}
+
+:root.dark .btn-clear:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #ef4444;
+}
+
+/* ===== Modal Recordatorio en oscuro ===== */
+:root.dark .rec-modal-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+}
+
+:root.dark .rec-modal-head,
+:root.dark .rec-modal-foot {
+    border-color: #27272a;
+}
+
+:root.dark .rec-modal-title {
+    color: #f1f5f9;
+}
+
+:root.dark .rec-modal-subtitle {
+    color: #94a3b8;
+}
+
+:root.dark .rec-modal-close {
+    color: #94a3b8;
+}
+
+:root.dark .rec-modal-close:hover {
+    background: #27272a;
+    color: #f1f5f9;
+}
+
+:root.dark .rf-label {
+    color: #f1f5f9;
+}
+
+:root.dark .rf-hint {
+    color: #64748b;
+}
+
+:root.dark .rf-input,
+:root.dark .rf-textarea,
+:root.dark .rf-select {
+    background-color: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .rf-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+}
+
+:root.dark .rf-info {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #86efac;
+}
+
+:root.dark .rf-info-icon {
+    color: #34d399;
+}
+
+:root.dark .rf-info strong {
+    color: #bbf7d0;
+}
+
+:root.dark .btn-rec-ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .btn-rec-ghost:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+:root.dark .btn-rec-primary {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+:root.dark .btn-rec-primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+/* ===== Mis Horarios (dark) — celdas del calendario ===== */
+:root.dark .cal-work {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+:root.dark .cal-work:not(:has(.cita)) {
+    background-image: linear-gradient(
+        135deg,
+        rgba(16, 185, 129, 0.12) 0%,
+        rgba(16, 185, 129, 0.12) 50%,
+        transparent 50%,
+        transparent 100%
+    );
+    background-size: 12px 12px;
+    background-color: rgba(16, 185, 129, 0.06);
+}
+
+:root.dark .cal-work:hover:not(:has(.cita)) {
+    background-color: rgba(16, 185, 129, 0.16);
+}
+
+:root.dark .cal-off {
+    background: #1f1f23;
+}
+
+:root.dark .cal-break {
+    background: rgba(244, 114, 182, 0.1);
+    color: #f9a8d4;
+    border-right-color: rgba(244, 114, 182, 0.25);
+}
+
+:root.dark .cal-break-end {
+    border-right-color: rgba(244, 114, 182, 0.25);
+}
+
+/* Navegación de semana */
+:root.dark .tb-nav-btn {
+    background: #18181b;
+    color: #d4d4d8;
+    border-color: #27272a;
+}
+
+:root.dark .tb-nav-btn:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+:root.dark .tb-nav-today {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+:root.dark .tb-nav-today:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: #3b82f6;
+}
+
+/* Leyenda combinada en oscuro */
+:root.dark .legend-card {
+    background: #18181b;
+    border-color: #27272a;
+}
+
+:root.dark .legend-title {
+    color: #a1a1aa;
+}
+
+:root.dark .legend-item {
+    color: #d4d4d8;
+}
+
+:root.dark .legend-work-swatch {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+:root.dark .legend-break-swatch {
+    background: rgba(244, 114, 182, 0.15);
+    border-color: rgba(244, 114, 182, 0.3);
+}
+
+:root.dark .legend-off-swatch {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+/* ===== Modal de Detalle de Cita en Mis Horarios (dark) ===== */
+:root.dark .mh-modal-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+}
+
+:root.dark .mh-modal-head,
+:root.dark .mh-modal-foot {
+    border-color: #27272a;
+}
+
+:root.dark .mh-modal-title,
+:root.dark .mh-value {
+    color: #fafafa;
+}
+
+:root.dark .mh-modal-close {
+    color: #a1a1aa;
+}
+
+:root.dark .mh-modal-close:hover {
+    background: #27272a;
+    color: #fafafa;
+}
+
+:root.dark .mh-section {
+    background: #0a0a0b;
+    border-color: #27272a;
+}
+
+:root.dark .mh-section-title,
+:root.dark .mh-label {
+    color: #a1a1aa;
+}
+
+:root.dark .btn-mh-ghost {
+    background: transparent;
+    color: #d4d4d8;
+    border-color: #27272a;
+}
+
+:root.dark .btn-mh-ghost:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+:root.dark .btn-mh-primary {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7 !important;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+:root.dark .btn-mh-primary:hover {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: #10b981;
+}
+
+/* ===== Modal Cancelar Cita en oscuro ===== */
+:root.dark .cc-modal-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+}
+
+:root.dark .cc-modal-foot {
+    background: #1f1f23;
+    border-color: #27272a;
+}
+
+:root.dark .cc-modal-title {
+    color: #fafafa;
+}
+
+:root.dark .cc-modal-subtitle {
+    color: #a1a1aa;
+}
+
+:root.dark .cc-modal-close {
+    color: #a1a1aa;
+}
+
+:root.dark .cc-modal-close:hover {
+    background: #27272a;
+    color: #fafafa;
+}
+
+:root.dark .cc-head-icon {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+}
+
+:root.dark .cc-warning {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+:root.dark .cc-warning strong {
+    color: #fecaca;
+}
+
+:root.dark .cc-label {
+    color: #fafafa;
+}
+
+:root.dark .cc-hint {
+    color: #71717a;
+}
+
+:root.dark .cc-hint strong {
+    color: #d4d4d8;
+}
+
+:root.dark .cc-textarea {
+    background-color: #0a0a0b;
+    border-color: #27272a;
+    color: #e4e4e7;
+}
+
+:root.dark .cc-textarea:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+}
+
+:root.dark .cc-textarea::placeholder {
+    color: #52525b;
+}
+
+:root.dark .cc-check {
+    color: #e4e4e7;
+}
+
+:root.dark .cc-check-visual {
+    background: #0a0a0b;
+    border-color: #3f3f46;
+}
+
+:root.dark .btn-cc-ghost {
+    background: transparent;
+    color: #d4d4d8;
+    border-color: #27272a;
+}
+
+:root.dark .btn-cc-ghost:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+:root.dark .btn-cc-danger {
+    background: #ef4444;
+    border-color: #ef4444;
+}
+
+:root.dark .btn-cc-danger:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* ============================================================ */
+/* ===== Modal Reprogramar Cita (rp-) — dark ================== */
+/* ============================================================ */
+:root.dark .rp-modal-card {
+    background: #18181b;
+    color: #e2e8f0;
+}
+
+:root.dark .rp-modal-foot {
+    background: #0a0a0b;
+    border-color: #27272a;
+}
+
+:root.dark .rp-modal-title { color: #f1f5f9; }
+:root.dark .rp-modal-subtitle { color: #94a3b8; }
+
+:root.dark .rp-modal-close { color: #94a3b8; }
+:root.dark .rp-modal-close:hover {
+    background: #27272a;
+    color: #f1f5f9;
+}
+
+:root.dark .rp-head-icon {
+    background: rgba(37, 99, 235, 0.18);
+    color: #93c5fd;
+}
+
+:root.dark .rp-info {
+    background: rgba(37, 99, 235, 0.12);
+    border-color: rgba(96, 165, 250, 0.35);
+    color: #bfdbfe;
+}
+
+:root.dark .rp-info strong { color: #93c5fd; }
+
+:root.dark .rp-label { color: #f1f5f9; }
+:root.dark .rp-hint { color: #94a3b8; }
+:root.dark .rp-hint strong { color: #cbd5e1; }
+
+:root.dark .rp-input,
+:root.dark .rp-textarea {
+    background: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .rp-input:focus,
+:root.dark .rp-textarea:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+}
+
+:root.dark .rp-input::placeholder,
+:root.dark .rp-textarea::placeholder { color: #64748b; }
+
+:root.dark .rp-input:disabled {
+    background: #18181b;
+    color: #64748b;
+}
+
+/* Calendar icon nativo */
+:root.dark .rp-input::-webkit-calendar-picker-indicator {
+    filter: invert(0.85);
+    opacity: 0.7;
+}
+
+:root.dark .rp-slots-block {
+    background: #0a0a0b;
+    border-color: #27272a;
+}
+
+:root.dark .rp-slots-title { color: #f1f5f9; }
+
+:root.dark .rp-slot {
+    background: #18181b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .rp-slot:hover:not(:disabled) {
+    background: rgba(37, 99, 235, 0.15);
+    border-color: rgba(96, 165, 250, 0.5);
+    color: #93c5fd;
+}
+
+:root.dark .rp-slot-selected {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff !important;
+}
+
+:root.dark .rp-slot-taken {
+    background: #18181b;
+    color: #52525b;
+    border-color: #27272a;
+}
+
+:root.dark .rp-check { color: #e2e8f0; }
+
+:root.dark .rp-check-visual {
+    background: #18181b;
+    border-color: #3f3f46;
+}
+
+:root.dark .btn-rp-ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .btn-rp-ghost:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+:root.dark .btn-rp-primary {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+:root.dark .btn-rp-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+/* ============================================================ */
+/* ===== Modal Cambiar Veterinario (cv-) — dark =============== */
+/* ============================================================ */
+:root.dark .cv-modal-card {
+    background: #18181b;
+    color: #e2e8f0;
+}
+
+:root.dark .cv-modal-foot {
+    background: #0a0a0b;
+    border-color: #27272a;
+}
+
+:root.dark .cv-modal-title { color: #f1f5f9; }
+:root.dark .cv-modal-subtitle { color: #94a3b8; }
+
+:root.dark .cv-modal-close { color: #94a3b8; }
+:root.dark .cv-modal-close:hover {
+    background: #27272a;
+    color: #f1f5f9;
+}
+
+:root.dark .cv-head-icon {
+    background: rgba(124, 58, 237, 0.22);
+    color: #c4b5fd;
+}
+
+:root.dark .cv-info {
+    background: rgba(124, 58, 237, 0.14);
+    border-color: rgba(167, 139, 250, 0.35);
+    color: #ddd6fe;
+}
+
+:root.dark .cv-info strong { color: #c4b5fd; }
+:root.dark .cv-info-sub { color: #a78bfa; }
+
+:root.dark .cv-label { color: #f1f5f9; }
+:root.dark .cv-hint { color: #94a3b8; }
+
+:root.dark .cv-input,
+:root.dark .cv-textarea {
+    background: #0a0a0b;
+    border-color: #27272a;
+    color: #e2e8f0;
+}
+
+:root.dark .cv-input:focus,
+:root.dark .cv-textarea:focus {
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+}
+
+:root.dark .cv-input::placeholder,
+:root.dark .cv-textarea::placeholder { color: #64748b; }
+
+:root.dark .cv-search-icon { color: #64748b; }
+
+:root.dark .cv-list-title { color: #94a3b8; }
+
+:root.dark .cv-vet-row {
+    background: #0a0a0b;
+    border-color: #27272a;
+}
+
+:root.dark .cv-vet-row:hover:not(.cv-vet-row-busy) {
+    background: rgba(124, 58, 237, 0.12);
+    border-color: rgba(167, 139, 250, 0.4);
+}
+
+:root.dark .cv-vet-row:has(.cv-radio-input:checked) {
+    background: rgba(124, 58, 237, 0.18);
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.22);
+}
+
+:root.dark .cv-vet-row-busy {
+    opacity: 0.5;
+}
+
+:root.dark .cv-radio-visual {
+    background: #18181b;
+    border-color: #3f3f46;
+}
+
+:root.dark .cv-radio-input:checked + .cv-radio-visual {
+    border-color: #a78bfa;
+}
+
+:root.dark .cv-radio-input:checked + .cv-radio-visual::after {
+    background: #a78bfa;
+}
+
+:root.dark .cv-vet-name { color: #f1f5f9; }
+:root.dark .cv-vet-meta { color: #94a3b8; }
+
+:root.dark .cv-badge-ok {
+    background: rgba(16, 185, 129, 0.22);
+    color: #6ee7b7;
+}
+
+:root.dark .cv-badge-busy {
+    background: rgba(239, 68, 68, 0.22);
+    color: #fca5a5;
+}
+
+:root.dark .cv-badge-off {
+    background: #27272a;
+    color: #94a3b8;
+}
+
+:root.dark .cv-check { color: #e2e8f0; }
+
+:root.dark .cv-check-visual {
+    background: #18181b;
+    border-color: #3f3f46;
+}
+
+:root.dark .cv-check-input:checked + .cv-check-visual {
+    background: #7c3aed;
+    border-color: #7c3aed;
+}
+
+:root.dark .btn-cv-ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #27272a;
+}
+
+:root.dark .btn-cv-ghost:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+}
+
+:root.dark .btn-cv-primary {
+    background: #7c3aed;
+    border-color: #7c3aed;
+}
+
+:root.dark .btn-cv-primary:hover {
+    background: #6d28d9;
+    border-color: #6d28d9;
+}
+
+/* ===== Detalle de Cliente + Pets cards en oscuro ===== */
+:root.dark .pet-count-badge {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+}
+
+:root.dark .pet-list-inline {
+    color: #94a3b8;
+}
+
+:root.dark .client-name,
+:root.dark .pet-card-name {
+    color: #f1f5f9;
+}
+
+:root.dark .client-badge {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fcd34d;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+:root.dark .client-id,
+:root.dark .pets-count {
+    color: #94a3b8;
+}
+
+:root.dark .pet-card {
+    background: #18181b;
+    border-color: #27272a;
+}
+
+:root.dark .pet-card:hover {
+    border-color: #3b82f6;
+}
+
+:root.dark .pet-card-head {
+    border-bottom-color: #27272a;
+}
+
+:root.dark .pet-row-info {
+    color: #f1f5f9;
+}
+
+:root.dark .pet-row-label {
+    color: #94a3b8;
+}
+
+:root.dark .pet-card-link {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd !important;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+:root.dark .pet-card-link:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: #3b82f6;
+}

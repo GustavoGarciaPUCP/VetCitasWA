@@ -1,0 +1,318 @@
+/* ================== Contenedor ================== */
+.page-section[b-mksnlskf3l] {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* ================== Cabecera ================== */
+.page-head[b-mksnlskf3l] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.page-title[b-mksnlskf3l] {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.page-subtitle[b-mksnlskf3l] {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.4;
+    max-width: 70ch;
+}
+
+/* ================== Panel ================== */
+.panel[b-mksnlskf3l] {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+/* ================== Tabla ================== */
+.table-wrapper[b-mksnlskf3l] {
+    overflow-x: auto;
+    padding: 0.5rem;
+}
+
+.rem-table[b-mksnlskf3l] {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    min-width: 880px;
+}
+
+.rem-table thead th[b-mksnlskf3l] {
+    text-align: left;
+    color: #111827;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 1rem 1rem 0.85rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+}
+
+.rem-table tbody td[b-mksnlskf3l] {
+    padding: 1.1rem 1rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.rem-table tbody tr:last-child td[b-mksnlskf3l] {
+    border-bottom: none;
+}
+
+.rem-table tbody tr:hover[b-mksnlskf3l] {
+    background: #fafbfc;
+}
+
+.msg-cell[b-mksnlskf3l] {
+    color: #4b5563;
+    line-height: 1.45;
+    max-width: 360px;
+}
+
+/* ===== Status badges — soft pill ===== */
+.status-badge[b-mksnlskf3l] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.32rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    min-width: 80px;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.status-sent[b-mksnlskf3l] {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.status-pending[b-mksnlskf3l] {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+/* ===== Botones de acción ===== */
+.actions[b-mksnlskf3l] {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.btn-icon[b-mksnlskf3l] {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.05s ease;
+}
+
+.btn-icon:active[b-mksnlskf3l] {
+    transform: scale(0.96);
+}
+
+.btn-whatsapp[b-mksnlskf3l] {
+    color: #25d366;
+}
+
+.btn-whatsapp:hover[b-mksnlskf3l] {
+    background: rgba(37, 211, 102, 0.12);
+}
+
+.btn-edit[b-mksnlskf3l] {
+    color: #2563eb;
+}
+
+.btn-edit:hover[b-mksnlskf3l] {
+    background: #e8f0ff;
+}
+
+.btn-delete[b-mksnlskf3l] {
+    color: #ef4444;
+}
+
+.btn-delete:hover[b-mksnlskf3l] {
+    background: #fee2e2;
+}
+
+/* ================== Responsive ================== */
+@media (max-width: 991.98px) {
+    .page-title[b-mksnlskf3l] {
+        font-size: 1.35rem;
+    }
+}
+
+/* Tabla → cards en móvil */
+@media (max-width: 700px) {
+    .page-head[b-mksnlskf3l] {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-new[b-mksnlskf3l] {
+        width: 100%;
+        justify-content: center;
+        padding: 0.7rem 1rem;
+    }
+
+    .page-title[b-mksnlskf3l] {
+        font-size: 1.2rem;
+    }
+
+    .table-wrapper[b-mksnlskf3l] {
+        overflow-x: visible;
+        padding: 0.75rem;
+    }
+
+    .rem-table[b-mksnlskf3l] {
+        min-width: 0;
+        display: block;
+    }
+
+    .rem-table thead[b-mksnlskf3l] {
+        display: none;
+    }
+
+    .rem-table tbody[b-mksnlskf3l] {
+        display: block;
+    }
+
+    /* Cada fila → card en grid de 2 columnas */
+    .rem-table tbody tr[b-mksnlskf3l] {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        column-gap: 0.85rem;
+        row-gap: 0.5rem;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 0.85rem 1rem 0.9rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        align-items: center;
+    }
+
+    .rem-table tbody tr:hover[b-mksnlskf3l] {
+        background: #ffffff;
+    }
+
+    .rem-table tbody td[b-mksnlskf3l] {
+        padding: 0;
+        border: none;
+        font-size: 0.85rem;
+        color: #1f2937;
+        display: block;
+        min-width: 0;
+    }
+
+    .rem-table tbody td[b-mksnlskf3l]::before {
+        display: none;
+    }
+
+    /* Fila 1: Mascota (negrita) + Estado a la derecha */
+    .rem-table tbody td[data-label="Mascota"][b-mksnlskf3l] {
+        grid-column: 1;
+        grid-row: 1;
+        font-weight: 700;
+        color: #111827;
+        font-size: 1rem;
+    }
+
+    .rem-table tbody td[data-label="Estado"][b-mksnlskf3l] {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    /* Fila 2: Cliente como subtítulo */
+    .rem-table tbody td[data-label="Cliente"][b-mksnlskf3l] {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        margin-top: -0.3rem;
+        color: #6b7280;
+        font-size: 0.82rem;
+    }
+
+    .rem-table tbody td[data-label="Cliente"][b-mksnlskf3l]::after {
+        content: "";
+        display: block;
+        height: 1px;
+        background: #f3f4f6;
+        margin: 0.55rem -1rem 0 -1rem;
+    }
+
+    /* Fila 3: Mensaje (todo el ancho) */
+    .rem-table tbody td[data-label="Mensaje"][b-mksnlskf3l] {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        color: #374151;
+        line-height: 1.45;
+        max-width: none;
+        font-size: 0.85rem;
+    }
+
+    /* Fila 4: Fecha label + value */
+    .rem-table tbody td[data-label="Fecha Programada"][b-mksnlskf3l] {
+        grid-column: 1 / -1;
+        grid-row: 4;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.55rem;
+        border-top: 1px solid #f3f4f6;
+        font-size: 0.82rem;
+        color: #1f2937;
+    }
+
+    .rem-table tbody td[data-label="Fecha Programada"][b-mksnlskf3l]::before {
+        content: "Fecha Programada";
+        display: block;
+        color: #6b7280;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    /* Fila 5: Acciones (botones a la derecha) */
+    .rem-table tbody td[data-label="Acciones"][b-mksnlskf3l] {
+        grid-column: 1 / -1;
+        grid-row: 5;
+        padding-top: 0.6rem;
+        margin-top: 0.1rem;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .actions[b-mksnlskf3l] {
+        justify-content: flex-end;
+        gap: 0.45rem;
+    }
+
+    .btn-icon[b-mksnlskf3l] {
+        width: 36px;
+        height: 36px;
+    }
+}

@@ -1,0 +1,338 @@
+/* ================== Contenedor ================== */
+.page-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+/* ================== Grid de reportes ================== */
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+/* ================== Card de reporte ================== */
+.report-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+.report-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.report-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.report-icon-blue {
+    background: #2563eb;
+}
+
+.report-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.report-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ================== Filtros (grilla 2 columnas) ================== */
+.filters-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.filter-field-full {
+    grid-column: 1 / -1;
+}
+
+.filter-label {
+    font-size: 0.78rem;
+    color: #6b7280;
+    font-weight: 500;
+    padding-left: 0.2rem;
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+    height: 42px;
+    padding: 0 0.85rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #1f2937;
+    font-size: 0.9rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.filter-select {
+    appearance: none;
+    padding-right: 2.25rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236b7280' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    cursor: pointer;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: #1976ef;
+    box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.15);
+}
+
+/* ================== Tabla de registros ================== */
+.records-wrapper {
+    overflow-x: auto;
+    border: 1px solid #f3f4f6;
+    border-radius: 8px;
+}
+
+.records-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    min-width: 0;
+}
+
+.records-table thead th {
+    text-align: left;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.72rem;
+    padding: 0.7rem 0.85rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #f3f4f6;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.records-table tbody td {
+    padding: 0.7rem 0.85rem;
+    color: #1f2937;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.records-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.records-table tbody tr:hover {
+    background: #fafbfc;
+}
+
+/* Badges de estado (subset de los de Atenciones) */
+.state {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.3;
+    letter-spacing: 0.3px;
+}
+
+.state-attended {
+    background: #10b981;
+}
+
+.state-cancelled {
+    background: #ef4444;
+}
+
+.state-noshow {
+    background: #6b7280;
+}
+
+.state-pending {
+    background: #94a3b8;
+}
+
+.state-confirmed {
+    background: #f59e0b;
+}
+
+.state-inconsultation {
+    background: #2563eb;
+}
+
+/* Contador de citas (badge azul) */
+.count-badge {
+    display: inline-block;
+    min-width: 28px;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+/* ================== Botón Generar PDF ================== */
+.btn-generar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    width: 100%;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.btn-generar:hover {
+    background: #1d4ed8;
+}
+
+.pdf-icon {
+    display: inline-flex;
+}
+
+/* ================== Nota informativa ================== */
+.report-note {
+    margin: 0;
+    padding: 0.7rem 0.95rem;
+    background: #f9fafb;
+    border-left: 3px solid #2563eb;
+    border-radius: 4px;
+    color: #4b5563;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.report-note-label {
+    display: block;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.2rem;
+}
+
+/* ================== Responsive ================== */
+@media (max-width: 1199.98px) {
+    .reports-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .page-title {
+        font-size: 1.25rem;
+    }
+
+    .report-body {
+        padding: 1rem;
+    }
+
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tabla → cards en móvil */
+@media (max-width: 560px) {
+    .records-wrapper {
+        border: none;
+        overflow-x: visible;
+        background: transparent;
+    }
+
+    .records-table {
+        display: block;
+    }
+
+    .records-table thead {
+        display: none;
+    }
+
+    .records-table tbody {
+        display: block;
+    }
+
+    .records-table tbody tr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        column-gap: 0.85rem;
+        row-gap: 0.35rem;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0.75rem 0.85rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .records-table tbody tr:hover {
+        background: #ffffff;
+    }
+
+    .records-table tbody td {
+        padding: 0;
+        border: none;
+        font-size: 0.82rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .records-table tbody td::before {
+        content: attr(data-label);
+        color: #6b7280;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+    }
+}

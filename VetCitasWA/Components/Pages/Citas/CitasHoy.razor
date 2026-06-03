@@ -1,0 +1,272 @@
+@page "/citas-hoy"
+
+<PageTitle>Citas de Hoy - VetCitas</PageTitle>
+
+<SectionContent SectionName="breadcrumb">
+    <span class="crumb">VetCitas</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb current">Citas de Hoy</span>
+</SectionContent>
+
+<div class="page-section">
+
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Citas de Hoy</h1>
+            <p class="page-subtitle">Inicia las atenciones según vayan llegando los pacientes. Al iniciar se cambia el estado de la cita.</p>
+        </div>
+    </div>
+
+    <section class="panel">
+
+        @* ================= Filtros ================= *@
+        <div class="filters">
+            <div class="filter-field">
+                <label class="filter-label" for="filterEstado">Estado</label>
+                <div class="filter-control">
+                    <span class="filter-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                        </svg>
+                    </span>
+                    <select id="filterEstado" class="filter-select">
+                        <option>Todos los estados</option>
+                        <option>Pendiente</option>
+                        <option>Confirmada</option>
+                        <option>En consulta</option>
+                        <option>Atendida</option>
+                        <option>Cancelada</option>
+                        <option>No asistió</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-field filter-field-fecha">
+                <label class="filter-label" for="filterFecha">Fecha</label>
+                <div class="filter-control">
+                    <span class="filter-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                        </svg>
+                    </span>
+                    <select id="filterFecha" class="filter-select">
+                        <option>Hoy</option>
+                        <option>Ayer</option>
+                        <option>Esta semana</option>
+                        <option>Este mes</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        @* ================= Tabla de citas ================= *@
+        <div class="table-wrapper">
+            <table class="vet-table">
+                <thead>
+                    <tr>
+                        <th>Hora Cita</th>
+                        <th>Paciente</th>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @* CONFIRMADA — listo para iniciar atención *@
+                    <tr>
+                        <td data-label="Hora Cita" class="cell-hora">10:30</td>
+                        <td data-label="Paciente">
+                            <div class="patient-cell">
+                                <span class="pet-avatar" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="11" cy="4" r="2"></circle>
+                                        <circle cx="18" cy="8" r="2"></circle>
+                                        <circle cx="4" cy="8" r="2"></circle>
+                                        <circle cx="20" cy="16" r="2"></circle>
+                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <div class="pet-name">Max</div>
+                                    <div class="pet-meta">Perro · Consulta General</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Cliente">Juan Pérez</td>
+                        <td data-label="Servicio">Consulta General</td>
+                        <td data-label="Estado">
+                            <span class="badge badge-confirmada">Confirmada</span>
+                        </td>
+                        <td data-label="Acciones">
+                            <a href="/citas-hoy/atender" class="btn-action btn-start">Iniciar Atención</a>
+                        </td>
+                    </tr>
+
+                    @* EN_CONSULTA — siendo atendido *@
+                    <tr>
+                        <td data-label="Hora Cita" class="cell-hora">10:00</td>
+                        <td data-label="Paciente">
+                            <div class="patient-cell">
+                                <span class="pet-avatar" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="11" cy="4" r="2"></circle>
+                                        <circle cx="18" cy="8" r="2"></circle>
+                                        <circle cx="4" cy="8" r="2"></circle>
+                                        <circle cx="20" cy="16" r="2"></circle>
+                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <div class="pet-name">Luna</div>
+                                    <div class="pet-meta">Gato · Cirugía Menor</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Cliente">María García</td>
+                        <td data-label="Servicio">Cirugía Menor</td>
+                        <td data-label="Estado">
+                            <span class="badge badge-enconsulta">En consulta</span>
+                        </td>
+                        <td data-label="Acciones">
+                            <a href="/citas-hoy/atender" class="btn-action btn-continue">Continuar</a>
+                        </td>
+                    </tr>
+
+                    @* CONFIRMADA — esperando *@
+                    <tr>
+                        <td data-label="Hora Cita" class="cell-hora">11:30</td>
+                        <td data-label="Paciente">
+                            <div class="patient-cell">
+                                <span class="pet-avatar" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="11" cy="4" r="2"></circle>
+                                        <circle cx="18" cy="8" r="2"></circle>
+                                        <circle cx="4" cy="8" r="2"></circle>
+                                        <circle cx="20" cy="16" r="2"></circle>
+                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <div class="pet-name">Rocky</div>
+                                    <div class="pet-meta">Perro · Vacunación</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Cliente">Carlos López</td>
+                        <td data-label="Servicio">Vacunación Múltiple</td>
+                        <td data-label="Estado">
+                            <span class="badge badge-confirmada">Confirmada</span>
+                        </td>
+                        <td data-label="Acciones">
+                            <a href="/citas-hoy/atender" class="btn-action btn-start">Iniciar Atención</a>
+                        </td>
+                    </tr>
+
+                    @* ATENDIDA — ya finalizada (la atención fue creada) *@
+                    <tr>
+                        <td data-label="Hora Cita" class="cell-hora">09:00</td>
+                        <td data-label="Paciente">
+                            <div class="patient-cell">
+                                <span class="pet-avatar" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="11" cy="4" r="2"></circle>
+                                        <circle cx="18" cy="8" r="2"></circle>
+                                        <circle cx="4" cy="8" r="2"></circle>
+                                        <circle cx="20" cy="16" r="2"></circle>
+                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <div class="pet-name">Mimi</div>
+                                    <div class="pet-meta">Gato · Control</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Cliente">Ana Martínez</td>
+                        <td data-label="Servicio">Control Post-Operatorio</td>
+                        <td data-label="Estado">
+                            <span class="badge badge-atendida">Atendida</span>
+                        </td>
+                        <td data-label="Acciones">
+                            <a href="/citas-hoy/atender" class="btn-action btn-view">Ver Atención</a>
+                        </td>
+                    </tr>
+
+                    @* PENDIENTE — sin confirmar todavía *@
+                    <tr>
+                        <td data-label="Hora Cita" class="cell-hora">12:00</td>
+                        <td data-label="Paciente">
+                            <div class="patient-cell">
+                                <span class="pet-avatar" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="11" cy="4" r="2"></circle>
+                                        <circle cx="18" cy="8" r="2"></circle>
+                                        <circle cx="4" cy="8" r="2"></circle>
+                                        <circle cx="20" cy="16" r="2"></circle>
+                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <div class="pet-name">Bobby</div>
+                                    <div class="pet-meta">Perro · Esterilización</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Cliente">Pedro Salas</td>
+                        <td data-label="Servicio">Esterilización Canina</td>
+                        <td data-label="Estado">
+                            <span class="badge badge-pending">Pendiente</span>
+                        </td>
+                        <td data-label="Acciones">
+                            <span class="action-hint">Esperando confirmación</span>
+                        </td>
+                    </tr>
+
+                    @* CANCELADA — sin acción *@
+                    <tr class="row-disabled">
+                        <td data-label="Hora Cita" class="cell-hora">14:00</td>
+                        <td data-label="Paciente">
+                            <div class="patient-cell">
+                                <span class="pet-avatar" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="11" cy="4" r="2"></circle>
+                                        <circle cx="18" cy="8" r="2"></circle>
+                                        <circle cx="4" cy="8" r="2"></circle>
+                                        <circle cx="20" cy="16" r="2"></circle>
+                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <div class="pet-name">Thor</div>
+                                    <div class="pet-meta">Perro · Vacunación</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Cliente">Juan Pérez</td>
+                        <td data-label="Servicio">Vacunación Múltiple</td>
+                        <td data-label="Estado">
+                            <span class="badge badge-cancelled">Cancelada</span>
+                        </td>
+                        <td data-label="Acciones">
+                            <span class="action-hint">—</span>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        @* ================= Paginación ================= *@
+        <nav class="pager" aria-label="Paginación">
+            <button type="button" class="pager-btn pager-arrow" aria-label="Anterior">‹</button>
+            <button type="button" class="pager-btn pager-active">1</button>
+            <button type="button" class="pager-btn">2</button>
+            <span class="pager-dots">…</span>
+            <button type="button" class="pager-btn pager-arrow" aria-label="Siguiente">›</button>
+        </nav>
+
+    </section>
+
+</div>

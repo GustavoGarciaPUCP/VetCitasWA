@@ -1,0 +1,172 @@
+@page "/gestionar-horarios"
+
+<PageTitle>Gestionar Horarios - VetCitas</PageTitle>
+
+<SectionContent SectionName="breadcrumb">
+    <span class="crumb">VetCitas</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb current">Gestionar Horarios</span>
+</SectionContent>
+
+<div class="page-section">
+
+    @* ================= Resumen Semanal ================= *@
+    <section class="panel">
+
+        <div class="vet-field">
+            <label class="field-label" for="veterinario">Veterinario</label>
+            <div class="select-wrap">
+                <select id="veterinario" class="select">
+                    <option>Dr. Carlos</option>
+                    <option>Dra. Sofía</option>
+                    <option>Dr. Ricardo</option>
+                </select>
+            </div>
+        </div>
+
+        <h2 class="section-title">Resumen Semanal de Horarios</h2>
+
+        <div class="table-wrapper">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Día</th>
+                        <th>Horario</th>
+                        <th>Refrigerio</th>
+                        <th>Activo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td data-label="Día">Lunes</td>
+                        <td data-label="Horario">08:00-18:00</td>
+                        <td data-label="Refrigerio">13:00-14:00</td>
+                        <td data-label="Activo">Si</td>
+                        <td data-label="Acciones">
+                            <button type="button" class="btn-inactivar">Inactivar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="Día">Martes</td>
+                        <td data-label="Horario">08:00-18:00</td>
+                        <td data-label="Refrigerio">13:00-14:00</td>
+                        <td data-label="Activo">Si</td>
+                        <td data-label="Acciones">
+                            <button type="button" class="btn-inactivar">Inactivar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="Día">Miercoles</td>
+                        <td data-label="Horario">08:00-18:00</td>
+                        <td data-label="Refrigerio">13:00-14:00</td>
+                        <td data-label="Activo">Si</td>
+                        <td data-label="Acciones">
+                            <button type="button" class="btn-inactivar">Inactivar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="Día">Jueves</td>
+                        <td data-label="Horario">08:00-18:00</td>
+                        <td data-label="Refrigerio">13:00-14:00</td>
+                        <td data-label="Activo">Si</td>
+                        <td data-label="Acciones">
+                            <button type="button" class="btn-inactivar">Inactivar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="Día">Sábado</td>
+                        <td data-label="Horario">08:00-18:00</td>
+                        <td data-label="Refrigerio">13:00-14:00</td>
+                        <td data-label="Activo">Si</td>
+                        <td data-label="Acciones">
+                            <button type="button" class="btn-inactivar">Inactivar</button>
+                        </td>
+                    </tr>
+                    <tr class="row-inactive">
+                        <td data-label="Día">Domingo</td>
+                        <td data-label="Horario">-</td>
+                        <td data-label="Refrigerio">-</td>
+                        <td data-label="Activo">No</td>
+                        <td data-label="Acciones">
+                            <button type="button" class="btn-inactivar btn-inactivar-disabled">Inactivar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ================= Editar Horario ================= *@
+    <section class="panel">
+        <details class="editor-collapse" open>
+            <summary class="editor-summary">
+                <span class="editor-title">Editar Horario</span>
+                <span class="editor-chevron" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1.646 6.646a.5.5 0 0 1 .708 0L8 12.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                    </svg>
+                </span>
+            </summary>
+
+            <div class="editor-body">
+
+                <div class="form-field">
+                    <label class="field-label" for="dia">Día:</label>
+                    <div class="select-wrap">
+                        <select id="dia" class="select">
+                            <option>Lunes</option>
+                            <option>Martes</option>
+                            <option>Miércoles</option>
+                            <option>Jueves</option>
+                            <option>Viernes</option>
+                            <option>Sábado</option>
+                            <option>Domingo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label class="check-row">
+                    <input type="checkbox" class="check-input" checked />
+                    <span class="check-visual" aria-hidden="true"></span>
+                    <span class="check-label">Horario Laboral Activo</span>
+                </label>
+
+                <div class="time-grid">
+                    <div class="form-field">
+                        <label class="field-label-sm" for="horaInicio">Hora Inicio</label>
+                        <input id="horaInicio" type="time" class="input" value="08:00" />
+                    </div>
+                    <div class="form-field">
+                        <label class="field-label-sm" for="horaFin">Hora Fin</label>
+                        <input id="horaFin" type="time" class="input" value="18:00" />
+                    </div>
+                </div>
+
+                <label class="check-row">
+                    <input type="checkbox" class="check-input" checked />
+                    <span class="check-visual" aria-hidden="true"></span>
+                    <span class="check-label">Incluye Refrigerio</span>
+                </label>
+
+                <div class="time-grid">
+                    <div class="form-field">
+                        <label class="field-label-sm" for="refrigerioInicio">Refrigerio Inicio</label>
+                        <input id="refrigerioInicio" type="time" class="input" value="13:00" />
+                    </div>
+                    <div class="form-field">
+                        <label class="field-label-sm" for="refrigerioFin">Refrigerio Fin</label>
+                        <input id="refrigerioFin" type="time" class="input" value="14:00" />
+                    </div>
+                </div>
+
+                <div class="actions-stack">
+                    <button type="button" class="btn-save-h">Guardar Horario</button>
+                    <button type="button" class="btn-reset-h">Restablecer Predeterminado</button>
+                </div>
+
+            </div>
+        </details>
+    </section>
+
+</div>

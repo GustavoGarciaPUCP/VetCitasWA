@@ -1,0 +1,255 @@
+/* ================== Modal Recordatorio ================== */
+.rec-modal-toggle {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.rec-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: rec-fade 0.18s ease-out;
+}
+
+.rec-modal-toggle:checked ~ .rec-modal-backdrop {
+    display: flex;
+}
+
+/* Backdrop click area eliminado — solo la X cierra el modal */
+
+.rec-modal-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.35);
+    animation: rec-pop 0.22s ease-out;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.rec-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+.rec-modal-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.rec-modal-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+.rec-modal-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 1.4rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.rec-modal-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.rec-modal-body {
+    padding: 1.1rem 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.rec-modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+/* ===== Form fields ===== */
+.rf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+}
+
+.rf-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.rf-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.rf-hint {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    line-height: 1.35;
+}
+
+.rf-input,
+.rf-textarea,
+.rf-select {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background-color: #ffffff;
+    color: #1f2937;
+    font-size: 0.85rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.rf-input {
+    height: 38px;
+}
+
+.rf-textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.45;
+}
+
+.rf-select-wrap {
+    position: relative;
+}
+
+.rf-select {
+    height: 38px;
+    padding-right: 2rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236b7280' d='M5 6 0 0h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    cursor: pointer;
+}
+
+.rf-input:focus,
+.rf-textarea:focus,
+.rf-select:focus {
+    outline: none;
+    border-color: #1976ef;
+    box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.15);
+}
+
+/* Nota informativa (canal WhatsApp) */
+.rf-info {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem 0.85rem;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: #166534;
+}
+
+.rf-info-icon {
+    color: #16a34a;
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.rf-info strong {
+    color: #14532d;
+}
+
+/* ===== Botones ===== */
+.btn-rec {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+    text-decoration: none !important;
+}
+
+.btn-rec-ghost {
+    background: #ffffff;
+    color: #4b5563;
+    border-color: #e5e7eb;
+}
+
+.btn-rec-ghost:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.btn-rec-primary {
+    background: #2563eb;
+    color: #ffffff !important;
+    border-color: #2563eb;
+}
+
+.btn-rec-primary:hover {
+    background: #1d4ed8;
+}
+
+@keyframes rec-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes rec-pop {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 560px) {
+    .rf-row {
+        grid-template-columns: 1fr;
+    }
+}

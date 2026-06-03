@@ -1,0 +1,91 @@
+@*
+    Modal reutilizable para crear/editar mascota.
+    Se abre con <label for="mascota-form-modal">. Demo pre-llenado
+    con datos de Max para el modo "Editar".
+*@
+
+<input type="checkbox" id="mascota-form-modal" class="mas-modal-toggle" aria-hidden="true" />
+
+<div class="mas-modal-backdrop">
+    <div class="mas-modal-card" role="dialog" aria-modal="true" aria-labelledby="mas-modal-title">
+
+        <header class="mas-modal-head">
+            <div>
+                <h2 id="mas-modal-title" class="mas-modal-title">Editar Mascota</h2>
+                <p class="mas-modal-subtitle">Permiso requerido: MASCOTA_GESTIONAR</p>
+            </div>
+            <label for="mascota-form-modal" class="mas-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="mas-modal-body">
+
+            <div class="mf-field">
+                <label class="mf-label" for="mf-cliente">Cliente *</label>
+                <div class="mf-select-wrap">
+                    <select id="mf-cliente" class="mf-select" required>
+                        <option value="" disabled hidden>Selecciona un cliente...</option>
+                        <option selected>Juan Pérez — DNI 12345678</option>
+                        <option>María García — DNI 23456789</option>
+                        <option>Carlos López — DNI 34567890</option>
+                        <option>Ana Martínez — DNI 45678901</option>
+                        <option>Pedro Salas — DNI 56789012</option>
+                    </select>
+                </div>
+                <span class="mf-hint">La mascota queda asociada a este cliente.</span>
+            </div>
+
+            <div class="mf-row">
+                <div class="mf-field">
+                    <label class="mf-label" for="mf-nombre">Nombre *</label>
+                    <input id="mf-nombre" type="text" class="mf-input" value="Max" required />
+                </div>
+                <div class="mf-field">
+                    <label class="mf-label" for="mf-especie">Especie *</label>
+                    <div class="mf-select-wrap">
+                        <select id="mf-especie" class="mf-select" required>
+                            <option>Perro</option>
+                            <option>Gato</option>
+                            <option>Conejo</option>
+                            <option>Ave</option>
+                            <option>Otro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mf-row">
+                <div class="mf-field">
+                    <label class="mf-label" for="mf-raza">Raza</label>
+                    <input id="mf-raza" type="text" class="mf-input" value="Golden Retriever" />
+                </div>
+                <div class="mf-field">
+                    <label class="mf-label" for="mf-fecha">Fecha de nacimiento</label>
+                    <input id="mf-fecha" type="date" class="mf-input" value="2023-05-12" />
+                </div>
+            </div>
+
+            <div class="mf-field">
+                <label class="mf-label" for="mf-peso">Peso (kg)</label>
+                <input id="mf-peso" type="number" class="mf-input" value="28.5" step="0.1" min="0" />
+                <span class="mf-hint">Se actualizará en cada control veterinario.</span>
+            </div>
+
+            <label class="mf-check">
+                <input type="checkbox" class="mf-check-input" />
+                <span class="mf-check-visual" aria-hidden="true"></span>
+                <span class="mf-check-text">Esterilizado</span>
+            </label>
+
+            <label class="mf-check">
+                <input type="checkbox" class="mf-check-input" checked />
+                <span class="mf-check-visual" aria-hidden="true"></span>
+                <span class="mf-check-text">Mascota activa</span>
+            </label>
+
+        </div>
+
+        <footer class="mas-modal-foot">
+            <button type="button" class="btn-mas btn-mas-primary">Guardar Mascota</button>
+        </footer>
+    </div>
+</div>

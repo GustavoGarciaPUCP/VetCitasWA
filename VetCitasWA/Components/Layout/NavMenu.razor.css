@@ -1,0 +1,387 @@
+/* ================== Encabezado de marca ================== */
+.brand-row {
+    height: 56px;
+    background: #1976ef;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    flex-shrink: 0;
+}
+
+.brand-row-left {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.brand-toggle {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
+
+.brand-name {
+    letter-spacing: 0.2px;
+}
+
+/* ================== Tarjeta de usuario ================== */
+.user-card {
+    padding: 1rem 1rem 0.85rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    border-bottom: 1px solid #eef0f3;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+}
+
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #1976ef;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.user-meta {
+    min-width: 0;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #111827;
+    font-size: 0.95rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-role {
+    color: #6b7280;
+    font-size: 0.78rem;
+    margin-top: 0.1rem;
+}
+
+/* ================== Selector múltiple de roles ================== */
+.role-picker {
+    margin-top: 0.35rem;
+    min-width: 0;
+}
+
+.role-dropdown {
+    width: 100%;
+    position: relative;
+}
+
+.role-summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 0.75rem;
+    color: #374151;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.role-summary::-webkit-details-marker {
+    display: none;
+}
+
+.role-summary:hover {
+    border-color: #9ca3af;
+}
+
+.role-summary-label {
+    flex-shrink: 0;
+    font-weight: 500;
+}
+
+.role-chips {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+/* Chips: ocultas por defecto; se muestran si el rol correspondiente está marcado.
+   Si ningún rol está marcado, mostramos el label "Roles activos" tal cual. */
+.role-chip {
+    display: none;
+    background: #e8f0ff;
+    color: #1976ef;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0.08rem 0.35rem;
+    border-radius: 999px;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* El estado real vive en clases del <html> (puestas por App.razor)
+   y NO en los checkboxes — porque Blazor repinta el sidebar tras
+   cada navegación. */
+:root.role-vet-active .role-summary-label,
+:root.role-recep-active .role-summary-label,
+:root.role-admin-active .role-summary-label {
+    display: none;
+}
+
+:root.role-vet-active .role-chip-vet,
+:root.role-recep-active .role-chip-recep,
+:root.role-admin-active .role-chip-admin {
+    display: inline-block;
+}
+
+.role-chevron {
+    display: inline-flex;
+    color: #6b7280;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.role-dropdown[open] .role-chevron {
+    transform: rotate(180deg);
+}
+
+/* Opciones — flotan sobre el menú para no empujar los items */
+.role-options {
+    position: absolute;
+    top: calc(100% + 0.3rem);
+    left: 0;
+    right: 0;
+    margin-top: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    z-index: 10;
+    min-width: 170px;
+}
+
+.role-option {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.45rem 0.55rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #374151;
+    transition: background 0.15s ease;
+}
+
+.role-option:hover {
+    background: #f3f4f6;
+}
+
+.role-checkbox {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.role-check-visual {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 4px;
+    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    position: relative;
+}
+
+.role-checkbox:checked + .role-check-visual {
+    background: #1976ef;
+    border-color: #1976ef;
+}
+
+.role-checkbox:checked + .role-check-visual::after {
+    content: "";
+    width: 4px;
+    height: 8px;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.role-checkbox:focus-visible + .role-check-visual {
+    outline: 2px solid #1976ef;
+    outline-offset: 1px;
+}
+
+.role-option-text {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ================== Visibilidad de items según roles ================== */
+/* Items con clase de rol están ocultos por defecto */
+.nav-list li.role-vet,
+.nav-list li.role-recep,
+.nav-list li.role-admin {
+    display: none;
+}
+
+/* Se muestran si el rol correspondiente está activo en <html> */
+:root.role-vet-active .nav-list li.role-vet,
+:root.role-recep-active .nav-list li.role-recep,
+:root.role-admin-active .nav-list li.role-admin {
+    display: block;
+}
+
+/* === Visibilidad de secciones (oculta título + lista si no hay items aplicables) === */
+/* OPERACIONES: solo si vet o recep están activos */
+.nav-section-operaciones {
+    display: none;
+}
+
+:root.role-vet-active .nav-section-operaciones,
+:root.role-recep-active .nav-section-operaciones {
+    display: block;
+}
+
+/* CATÁLOGOS: visible si vet, recep o admin (Servicios es de los 3) */
+.nav-section-catalogos {
+    display: none;
+}
+
+:root.role-vet-active .nav-section-catalogos,
+:root.role-recep-active .nav-section-catalogos,
+:root.role-admin-active .nav-section-catalogos {
+    display: block;
+}
+
+/* SISTEMA: solo admin */
+.nav-section-sistema {
+    display: none;
+}
+
+:root.role-admin-active .nav-section-sistema {
+    display: block;
+}
+
+/* ================== Navegación ================== */
+.nav-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.85rem 0.5rem 1rem;
+}
+
+.nav-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.6px;
+    padding: 0.6rem 0.85rem 0.35rem;
+}
+
+.nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-list li {
+    margin-bottom: 0.15rem;
+}
+
+/* Usamos ::deep porque NavLink es un componente Blazor y su <a> raíz
+   no recibe el atributo de scope. Sin ::deep no podemos pisar el
+   estilo global de <a> definido en app.css. */
+.nav-list ::deep .nav-item-link {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    color: #000000 !important;
+    text-decoration: none !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-list ::deep .nav-item-link .nav-icon {
+    color: #000000;
+}
+
+.nav-list ::deep .nav-item-link:hover {
+    background: #f3f4f6;
+    color: #000000 !important;
+}
+
+/* Link activo (Blazor NavLink añade la clase active) */
+.nav-list ::deep .nav-item-link.active {
+    background: #e8f0ff;
+    color: #1976ef !important;
+}
+
+.nav-list ::deep .nav-item-link.active .nav-icon {
+    color: #1976ef;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ================== Footer / Salir ================== */
+.nav-footer {
+    border-top: 1px solid #eef0f3;
+    padding: 0.75rem 0.85rem;
+    flex-shrink: 0;
+}
+
+.logout-link {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: #dc2626 !important;
+    text-decoration: none !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.45rem 0.5rem;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.logout-link:hover {
+    background: #fef2f2;
+    color: #b91c1c !important;
+}

@@ -1,0 +1,591 @@
+@page "/"
+
+<PageTitle>Inicio - VetCitas</PageTitle>
+
+<SectionContent SectionName="breadcrumb">
+    <span class="crumb">VetCitas</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb current">Inicio</span>
+</SectionContent>
+
+@*
+    Dashboard role-aware:
+    - Cada bloque marcado con .vet-only / .recep-only / .admin-only se
+      muestra solo si el rol correspondiente esta activo (clases
+      :root.role-X-active definidas en App.razor).
+    - Los KPI y widgets reflejan campos del modelo Java
+      (Cita, Atencion, Cliente, Mascota, Servicio, Veterinario,
+       Recordatorio, EstadoCita) — ver comentarios al lado.
+*@
+
+<div class="dashboard">
+
+    @* ================================================================ *@
+    @* ============ DASHBOARD: VETERINARIO ============================ *@
+    @* ================================================================ *@
+    <article class="dash-block vet-only">
+
+        <header class="dash-block-head">
+            <h2 class="dash-block-title">
+                <span class="dash-role-pill dash-role-vet">Veterinario</span>
+                Hola, Dr. Carlos — esto es lo tuyo de hoy
+            </h2>
+            <span class="dash-block-sub">Lunes 12 de Mayo de 2026</span>
+        </header>
+
+        @* ----- KPIs del Veterinario ----- *@
+        @* Datos: Cita.estado, Cita.fechaHoraInicio, Cita.veterinario,
+                 Atencion.fechaHora, Atencion.montoReferencial,
+                 Atencion.descuentoAplicado, Atencion.recomendacionControl *@
+        <div class="kpi-grid">
+
+            <article class="kpi-card kpi-blue-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Mis citas hoy</div>
+                    <div class="kpi-value">6</div>
+                    <div class="kpi-sub">2 atendidas · 1 en consulta · 3 confirmadas</div>
+                </div>
+            </article>
+
+            <article class="kpi-card kpi-violet-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Atenciones del mes</div>
+                    <div class="kpi-value">73</div>
+                    <div class="kpi-sub">+12 vs. mes anterior</div>
+                </div>
+            </article>
+
+            <article class="kpi-card kpi-green-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2v6m0 14v-6M2 12h6m14 0h-6" stroke-linecap="round" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Próximos controles</div>
+                    <div class="kpi-value">9</div>
+                    <div class="kpi-sub">Programados en los próximos 7 días</div>
+                </div>
+            </article>
+
+            <article class="kpi-card kpi-amber-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke-linecap="round" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Mascotas únicas</div>
+                    <div class="kpi-value">128</div>
+                    <div class="kpi-sub">Atendidas este año</div>
+                </div>
+            </article>
+
+        </div>
+
+        @* ----- Fila 2: Mi Agenda + Servicios que más realizo ----- *@
+        <div class="dash-two-col">
+
+            @* === Agenda del día === *@
+            <section class="panel">
+                <header class="panel-head">
+                    <h3 class="panel-title">Mi agenda del día</h3>
+                    <a href="/mis-horarios" class="panel-link">Ver semana completa →</a>
+                </header>
+                <div class="panel-body">
+
+                    <div class="ag-item">
+                        <div class="ag-time">09:00</div>
+                        <div class="ag-info">
+                            <div class="ag-info-head">
+                                <span class="ag-pet">Mimi · Gata</span>
+                                <span class="badge badge-atendida">Atendida</span>
+                            </div>
+                            <span class="ag-info-sub">Ana Martínez · Control Post-Operatorio · 20 min</span>
+                        </div>
+                    </div>
+
+                    <div class="ag-item">
+                        <div class="ag-time">10:00</div>
+                        <div class="ag-info">
+                            <div class="ag-info-head">
+                                <span class="ag-pet">Bobby · Perro</span>
+                                <span class="badge badge-enconsulta">
+                                    <span class="dash-pulse-dot" aria-hidden="true"></span>
+                                    En consulta
+                                </span>
+                            </div>
+                            <span class="ag-info-sub">Pedro Salas · Esterilización · 120 min</span>
+                        </div>
+                    </div>
+
+                    <div class="ag-item">
+                        <div class="ag-time">10:30</div>
+                        <div class="ag-info">
+                            <div class="ag-info-head">
+                                <span class="ag-pet">Max · Perro</span>
+                                <span class="badge badge-confirmada">Confirmada</span>
+                            </div>
+                            <span class="ag-info-sub">Juan Pérez · Consulta General · 30 min</span>
+                        </div>
+                    </div>
+
+                    <div class="ag-item ag-item-break">
+                        <div class="ag-time">13:00</div>
+                        <div class="ag-info">
+                            <div class="ag-break-title">Refrigerio</div>
+                            <span class="ag-info-sub">13:00 — 14:00</span>
+                        </div>
+                    </div>
+
+                    <div class="ag-item">
+                        <div class="ag-time">14:30</div>
+                        <div class="ag-info">
+                            <div class="ag-info-head">
+                                <span class="ag-pet">Rocky · Perro</span>
+                                <span class="badge badge-confirmada">Confirmada</span>
+                            </div>
+                            <span class="ag-info-sub">Carlos López · Cirugía Menor · 60 min</span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            @* Datos: count by Cita.servicio.nombre WHERE veterinario = me AND estado = ATENDIDA *@
+            <section class="panel">
+                <header class="panel-head">
+                    <h3 class="panel-title">Servicios que más realizo</h3>
+                    <span class="panel-sub">Este mes</span>
+                </header>
+                <div class="panel-body">
+                    <div class="bar-list">
+                        <div class="bar-row">
+                            <span class="bar-label">Consulta General</span>
+                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 92%"></div></div>
+                            <span class="bar-value">28</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Vacunación</span>
+                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 68%"></div></div>
+                            <span class="bar-value">21</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Control Post-Operatorio</span>
+                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 44%"></div></div>
+                            <span class="bar-value">14</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Esterilización</span>
+                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 23%"></div></div>
+                            <span class="bar-value">7</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Cirugía Menor</span>
+                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 10%"></div></div>
+                            <span class="bar-value">3</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+    </article>
+
+
+    @* ================================================================ *@
+    @* ============ DASHBOARD: RECEPCIONISTA ========================== *@
+    @* ================================================================ *@
+    <article class="dash-block recep-only">
+
+        <header class="dash-block-head">
+            <h2 class="dash-block-title">
+                <span class="dash-role-pill dash-role-recep">Recepción</span>
+                Centro de operaciones del día
+            </h2>
+            <span class="dash-block-sub">Lunes 12 de Mayo de 2026</span>
+        </header>
+
+        @* ----- KPIs del Recepcionista ----- *@
+        @* Datos: Cita.estado (todas las del día), Cita.veterinario,
+                 Recordatorio (estado pendiente), Cliente.activo *@
+        <div class="kpi-grid">
+
+            <article class="kpi-card kpi-blue-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Citas hoy</div>
+                    <div class="kpi-value">23</div>
+                    <div class="kpi-sub">4 vets · 5 servicios</div>
+                </div>
+            </article>
+
+            <article class="kpi-card kpi-amber-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 9v4m0 4h.01" stroke-linecap="round" />
+                        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Sin confirmar</div>
+                    <div class="kpi-value">7</div>
+                    <div class="kpi-sub">Estado: PENDIENTE</div>
+                </div>
+            </article>
+
+            <article class="kpi-card kpi-violet-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Recordatorios</div>
+                    <div class="kpi-value">12</div>
+                    <div class="kpi-sub">Pendientes de envío</div>
+                </div>
+            </article>
+
+            <article class="kpi-card kpi-rose-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18" stroke-linecap="round" />
+                        <line x1="6" y1="6" x2="18" y2="18" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Cancelaciones</div>
+                    <div class="kpi-value">3</div>
+                    <div class="kpi-sub">Hoy · ver motivos</div>
+                </div>
+            </article>
+
+        </div>
+
+        @* ----- Fila 2: Cola sin confirmar + Carga por veterinario ----- *@
+        <div class="dash-two-col">
+
+            @* Datos: SELECT Cita WHERE estado = PENDIENTE ORDER BY fechaHoraInicio *@
+            <section class="panel">
+                <header class="panel-head">
+                    <h3 class="panel-title">Pendientes de confirmación</h3>
+                    <a href="/agenda-citas" class="panel-link">Ver agenda →</a>
+                </header>
+                <div class="panel-body">
+
+                    <div class="cola-item">
+                        <div class="cola-when">
+                            <span class="cola-date">Hoy</span>
+                            <span class="cola-time">15:30</span>
+                        </div>
+                        <div class="cola-info">
+                            <span class="cola-pet">Coco · Gato</span>
+                            <span class="cola-meta">Sara Vega · Consulta · Dr. Carlos</span>
+                        </div>
+                        <span class="badge badge-pending">Pendiente</span>
+                    </div>
+
+                    <div class="cola-item">
+                        <div class="cola-when">
+                            <span class="cola-date">Mañana</span>
+                            <span class="cola-time">09:00</span>
+                        </div>
+                        <div class="cola-info">
+                            <span class="cola-pet">Toby · Perro</span>
+                            <span class="cola-meta">Pedro Bravo · Vacunación · Dra. Ramírez</span>
+                        </div>
+                        <span class="badge badge-pending">Pendiente</span>
+                    </div>
+
+                    <div class="cola-item">
+                        <div class="cola-when">
+                            <span class="cola-date">Mar 13/05</span>
+                            <span class="cola-time">11:30</span>
+                        </div>
+                        <div class="cola-info">
+                            <span class="cola-pet">Luna · Gato</span>
+                            <span class="cola-meta">María García · Vacunación · Dr. Carlos</span>
+                        </div>
+                        <span class="badge badge-pending">Pendiente</span>
+                    </div>
+
+                    <div class="cola-item">
+                        <div class="cola-when">
+                            <span class="cola-date">Mié 14/05</span>
+                            <span class="cola-time">16:00</span>
+                        </div>
+                        <div class="cola-info">
+                            <span class="cola-pet">Bruno · Perro</span>
+                            <span class="cola-meta">Ana Vargas · Cirugía Menor · Dr. Castillo</span>
+                        </div>
+                        <span class="badge badge-pending">Pendiente</span>
+                    </div>
+
+                </div>
+            </section>
+
+            @* Datos: count(Cita) GROUP BY veterinario WHERE fecha = hoy *@
+            <section class="panel">
+                <header class="panel-head">
+                    <h3 class="panel-title">Carga por veterinario</h3>
+                    <span class="panel-sub">Citas asignadas hoy</span>
+                </header>
+                <div class="panel-body">
+                    <div class="bar-list">
+                        <div class="bar-row">
+                            <span class="bar-label">Dr. Carlos · Medicina general</span>
+                            <div class="bar-track"><div class="bar-fill bar-purple" style="width: 75%"></div></div>
+                            <span class="bar-value">6</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Dra. Ramírez · Medicina general</span>
+                            <div class="bar-track"><div class="bar-fill bar-purple" style="width: 87%"></div></div>
+                            <span class="bar-value">7</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Dr. Castillo · Cirugía</span>
+                            <div class="bar-track"><div class="bar-fill bar-purple" style="width: 50%"></div></div>
+                            <span class="bar-value">4</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Dr. Pérez · Dermatología</span>
+                            <div class="bar-track"><div class="bar-fill bar-purple" style="width: 75%"></div></div>
+                            <span class="bar-value">6</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+    </article>
+
+
+    @* ================================================================ *@
+    @* ============ DASHBOARD: ADMINISTRADOR ========================== *@
+    @* ================================================================ *@
+    <article class="dash-block admin-only">
+
+        <header class="dash-block-head">
+            <h2 class="dash-block-title">
+                <span class="dash-role-pill dash-role-admin">Administración</span>
+                Visión integral de la clínica
+            </h2>
+            <span class="dash-block-sub">Mayo 2026 · datos consolidados</span>
+        </header>
+
+        @* ----- KPIs del Admin ----- *@
+        @* Datos: count(Cita) mes, sum(Atencion.montoReferencial - descuentoAplicado),
+                 count(Veterinario activo), count(Cliente activo), count(Mascota activa) *@
+        <div class="kpi-grid">
+
+            <article class="kpi-card kpi-blue-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Citas del mes</div>
+                    <div class="kpi-value">487</div>
+                    <div class="kpi-sub">+12% vs. abril</div>
+                </div>
+            </article>
+
+            <article class="kpi-card kpi-green-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="12" y1="1" x2="12" y2="23" stroke-linecap="round" />
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Ingresos del mes</div>
+                    <div class="kpi-value">S/ 38,420</div>
+                    <div class="kpi-sub">Neto de descuentos aplicados</div>
+                </div>
+            </article>
+
+            <article class="kpi-card kpi-violet-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke-linecap="round" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Veterinarios</div>
+                    <div class="kpi-value">8</div>
+                    <div class="kpi-sub">Activos en plantilla</div>
+                </div>
+            </article>
+
+            <article class="kpi-card kpi-amber-soft">
+                <div class="kpi-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-3H5a2 2 0 0 0-2 2z" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div class="kpi-text">
+                    <div class="kpi-title">Clientes activos</div>
+                    <div class="kpi-value">342</div>
+                    <div class="kpi-sub">812 mascotas registradas</div>
+                </div>
+            </article>
+
+        </div>
+
+        @* ----- Fila 2: Top servicios + Top veterinarios ----- *@
+        <div class="dash-two-col">
+
+            @* Datos: count(Cita) GROUP BY Servicio ORDER BY count DESC LIMIT 5 *@
+            <section class="panel">
+                <header class="panel-head">
+                    <h3 class="panel-title">Top servicios</h3>
+                    <span class="panel-sub">Más demandados este mes</span>
+                </header>
+                <div class="panel-body">
+                    <div class="bar-list">
+                        <div class="bar-row">
+                            <span class="bar-label">Consulta General · S/ 50</span>
+                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 95%"></div></div>
+                            <span class="bar-value">182</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Vacunación · S/ 35</span>
+                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 78%"></div></div>
+                            <span class="bar-value">149</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Control Post-Op · S/ 30</span>
+                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 45%"></div></div>
+                            <span class="bar-value">86</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Esterilización · S/ 250</span>
+                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 25%"></div></div>
+                            <span class="bar-value">48</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Cirugía Menor · S/ 300</span>
+                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 12%"></div></div>
+                            <span class="bar-value">22</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Datos: count(Atencion) GROUP BY veterinario ORDER BY count DESC *@
+            <section class="panel">
+                <header class="panel-head">
+                    <h3 class="panel-title">Top veterinarios</h3>
+                    <span class="panel-sub">Por atenciones realizadas</span>
+                </header>
+                <div class="panel-body">
+                    <div class="top-list">
+
+                        <div class="top-item">
+                            <span class="top-rank">1</span>
+                            <div class="top-info">
+                                <span class="top-name">Dra. Ramírez</span>
+                                <span class="top-meta">Medicina general · CMPV-3421</span>
+                            </div>
+                            <div class="top-stat">
+                                <span class="top-value">112</span>
+                                <span class="top-label">atenciones</span>
+                            </div>
+                        </div>
+
+                        <div class="top-item">
+                            <span class="top-rank">2</span>
+                            <div class="top-info">
+                                <span class="top-name">Dr. Carlos Mendoza</span>
+                                <span class="top-meta">Medicina general · CMPV-1820</span>
+                            </div>
+                            <div class="top-stat">
+                                <span class="top-value">98</span>
+                                <span class="top-label">atenciones</span>
+                            </div>
+                        </div>
+
+                        <div class="top-item">
+                            <span class="top-rank">3</span>
+                            <div class="top-info">
+                                <span class="top-name">Dr. Castillo</span>
+                                <span class="top-meta">Cirugía · CMPV-2890</span>
+                            </div>
+                            <div class="top-stat">
+                                <span class="top-value">61</span>
+                                <span class="top-label">atenciones</span>
+                            </div>
+                        </div>
+
+                        <div class="top-item">
+                            <span class="top-rank">4</span>
+                            <div class="top-info">
+                                <span class="top-name">Dr. Pérez</span>
+                                <span class="top-meta">Dermatología · CMPV-4102</span>
+                            </div>
+                            <div class="top-stat">
+                                <span class="top-value">48</span>
+                                <span class="top-label">atenciones</span>
+                            </div>
+                        </div>
+
+                        <div class="top-item">
+                            <span class="top-rank">5</span>
+                            <div class="top-info">
+                                <span class="top-name">Dra. Torres</span>
+                                <span class="top-meta">Oncología · CMPV-5210</span>
+                            </div>
+                            <div class="top-stat">
+                                <span class="top-value">37</span>
+                                <span class="top-label">atenciones</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+    </article>
+
+
+    @* ================================================================ *@
+    @* === Fallback: si NO hay ningún rol activo ====================== *@
+    @* ================================================================ *@
+    <div class="dash-empty">
+        <div class="dash-empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" stroke-linecap="round" />
+                <line x1="12" y1="16" x2="12.01" y2="16" stroke-linecap="round" />
+            </svg>
+        </div>
+        <h2 class="dash-empty-title">Selecciona un rol para ver tu dashboard</h2>
+        <p class="dash-empty-text">Tu tablero depende del rol activo. Elige uno o más en el menú lateral para ver las métricas y accesos correspondientes.</p>
+    </div>
+
+</div>

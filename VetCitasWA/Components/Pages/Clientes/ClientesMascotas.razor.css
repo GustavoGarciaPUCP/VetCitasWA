@@ -1,0 +1,540 @@
+/* ================== Contenedor ================== */
+.page-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* ================== Cabecera: título + buscador ================== */
+.page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.search-box {
+    position: relative;
+    width: 260px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+    display: flex;
+}
+
+.search-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 0.9rem 0 2.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 0.9rem;
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #1976ef;
+    box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.15);
+}
+
+/* ================== Panel ================== */
+.panel {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+/* ================== Tabs (radio pattern, CSS-only) ================== */
+.cm-tab-radio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.tabs {
+    display: flex;
+    gap: 1.75rem;
+    padding: 0.75rem 1.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tab,
+.tab-link {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    padding: 0.65rem 0.25rem 0.85rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+}
+
+.tab:hover,
+.tab-link:hover {
+    color: #4b5563;
+}
+
+/* Tab activo según radio marcado */
+#cm-tab-clientes:checked ~ .tabs .tab-clientes,
+#cm-tab-mascotas:checked ~ .tabs .tab-mascotas {
+    color: #1976ef;
+    border-bottom-color: #1976ef;
+}
+
+/* Paneles ocultos por defecto, se muestran según radio */
+.tab-panel {
+    display: none;
+}
+
+#cm-tab-clientes:checked ~ .tab-panel-clientes,
+#cm-tab-mascotas:checked ~ .tab-panel-mascotas {
+    display: block;
+}
+
+/* Avatar del cliente (verde teal para diferenciar de mascotas) */
+.client-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #34d399 0%, #0d9488 100%);
+    letter-spacing: 0.5px;
+}
+
+/* Badge de # mascotas */
+.pet-count-badge {
+    display: inline-block;
+    min-width: 24px;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+.pet-list-inline {
+    color: #6b7280;
+    font-size: 0.8rem;
+}
+
+/* ===== Botones de "Nuevo Cliente / Nueva Mascota" en page-head ===== */
+.page-head-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.btn-new {
+    display: none; /* base — se muestra solo según tab + rol */
+    align-items: center;
+    gap: 0.4rem;
+    height: 42px;
+    background: #2563eb;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 8px;
+    padding: 0 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    user-select: none;
+    text-decoration: none !important;
+}
+
+.btn-new:hover {
+    background: #1d4ed8;
+}
+
+.btn-plus {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+/* Visibilidad condicional: solo el botón del tab activo, y solo si recep está activo */
+:root.role-recep-active .page-section:has(#cm-tab-clientes:checked) .btn-new-cliente,
+:root.role-recep-active .page-section:has(#cm-tab-mascotas:checked) .btn-new-mascota {
+    display: inline-flex;
+}
+
+/* ===== Fila de acciones (ojito + lápiz) ===== */
+.row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.btn-pencil {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-decoration: none !important;
+}
+
+.btn-pencil:hover {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+/* ================== Tabla ================== */
+.table-wrapper {
+    overflow-x: auto;
+    padding: 0 0.5rem 0.5rem;
+}
+
+.vet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    min-width: 880px;
+}
+
+.vet-table thead th {
+    text-align: left;
+    color: #9ca3af;
+    font-weight: 500;
+    font-size: 0.78rem;
+    padding: 1rem 1rem 0.85rem;
+    border-bottom: 1px solid #f3f4f6;
+    white-space: nowrap;
+}
+
+.vet-table tbody td {
+    padding: 0.95rem 1rem;
+    color: #4b5563;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.vet-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== Celda mascota (avatar + nombre) ===== */
+.pet-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.pet-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.pet-dog {
+    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+}
+
+.pet-cat {
+    background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+}
+
+.pet-name {
+    color: #111827;
+    font-weight: 600;
+}
+
+/* ===== Badge de especie ===== */
+.species {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.4;
+}
+
+.species-dog {
+    background: #3b82f6;
+}
+
+.species-cat {
+    background: #c084fc;
+}
+
+/* ===== Botón ojito ===== */
+.btn-eye {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    color: #1976ef !important;
+    background: transparent;
+    text-decoration: none !important;
+    transition: background 0.15s ease;
+}
+
+.btn-eye:hover {
+    background: #e8f0ff;
+}
+
+/* ================== Responsive ================== */
+@media (max-width: 991.98px) {
+    .page-title {
+        font-size: 1.35rem;
+    }
+
+    .search-box {
+        width: 220px;
+    }
+}
+
+@media (max-width: 640px) {
+    .page-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .page-title {
+        font-size: 1.2rem;
+    }
+
+    .tabs {
+        gap: 1.25rem;
+        padding: 0.5rem 1rem 0;
+    }
+
+    /* ================== Tabla → cards compactas con UX mejorada ================== */
+    .table-wrapper {
+        overflow-x: visible;
+        padding: 0.75rem;
+    }
+
+    .vet-table {
+        min-width: 0;
+        display: block;
+    }
+
+    .vet-table thead {
+        display: none;
+    }
+
+    .vet-table tbody {
+        display: block;
+    }
+
+    /* Card: grid de 2 columnas */
+    .vet-table tbody tr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        column-gap: 0.85rem;
+        row-gap: 0.55rem;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 0.85rem 1rem 0.9rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        align-items: center;
+    }
+
+    .vet-table tbody td {
+        padding: 0;
+        border: none;
+        font-size: 0.85rem;
+        color: #1f2937;
+        display: block;
+        min-width: 0;
+    }
+
+    /* Sin labels por defecto */
+    .vet-table tbody td::before {
+        display: none;
+    }
+
+    /* ===== Fila 1: Mascota + Especie ===== */
+    .vet-table tbody td[data-label="Mascota"] {
+        grid-column: 1;
+        grid-row: 1;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid #f3f4f6;
+        margin-right: -0.85rem;
+        padding-right: 0.85rem;
+    }
+
+    .vet-table tbody td[data-label="Especie"] {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        align-self: center;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid #f3f4f6;
+        margin-left: -0.85rem;
+        padding-left: 0.85rem;
+    }
+
+    /* ===== Filas 2 y 3: datos en grilla 2×2 ===== */
+    .vet-table tbody td[data-label="Raza"],
+    .vet-table tbody td[data-label="Edad"],
+    .vet-table tbody td[data-label="Peso"],
+    .vet-table tbody td[data-label="Dueño"] {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        min-width: 0;
+    }
+
+    .vet-table tbody td[data-label="Raza"] {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .vet-table tbody td[data-label="Edad"] {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    .vet-table tbody td[data-label="Peso"] {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    .vet-table tbody td[data-label="Dueño"] {
+        grid-column: 2;
+        grid-row: 3;
+    }
+
+    /* Mini-label en mayúsculas arriba de cada valor */
+    .vet-table tbody td[data-label="Raza"]::before,
+    .vet-table tbody td[data-label="Edad"]::before,
+    .vet-table tbody td[data-label="Peso"]::before,
+    .vet-table tbody td[data-label="Dueño"]::before {
+        display: block;
+        content: attr(data-label);
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1;
+    }
+
+    .vet-table tbody td[data-label="Edad"],
+    .vet-table tbody td[data-label="Peso"] {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .vet-table tbody td[data-label="Raza"],
+    .vet-table tbody td[data-label="Dueño"] {
+        font-size: 0.82rem;
+        color: #374151;
+    }
+
+    /* ===== Fila 4: acción full-width ===== */
+    .vet-table tbody td[data-label="Acciones"] {
+        grid-column: 1 / -1;
+        grid-row: 4;
+        padding-top: 0.7rem;
+        margin-top: 0.2rem;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    /* El ojito pasa a botón "Ver detalle" full-width en móvil */
+    .btn-eye {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        height: auto;
+        padding: 0.6rem 0.85rem;
+        background: #1976ef;
+        color: #ffffff !important;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .btn-eye::after {
+        content: "Ver detalle";
+    }
+
+    .btn-eye:hover {
+        background: #1567d3;
+    }
+
+    /* ===== Ajustes a sub-elementos ===== */
+    .pet-cell {
+        gap: 0.6rem;
+    }
+
+    .pet-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.82rem;
+    }
+
+    .pet-name {
+        font-size: 0.95rem;
+    }
+
+    /* Badge de especie más compacto */
+    .species {
+        padding: 0.22rem 0.6rem;
+        font-size: 0.68rem;
+    }
+}

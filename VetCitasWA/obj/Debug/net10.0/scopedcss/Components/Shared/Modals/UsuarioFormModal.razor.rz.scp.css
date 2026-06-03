@@ -1,0 +1,367 @@
+/* ================== Modal Usuario ================== */
+.usr-modal-toggle[b-x3swsun4m6] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.usr-modal-backdrop[b-x3swsun4m6] {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: usr-fade-b-x3swsun4m6 0.18s ease-out;
+}
+
+.usr-modal-toggle:checked ~ .usr-modal-backdrop[b-x3swsun4m6] {
+    display: flex;
+}
+
+/* Backdrop click area eliminado — solo la X cierra el modal */
+
+.usr-modal-card[b-x3swsun4m6] {
+    position: relative;
+    background: #ffffff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 960px;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.35);
+    animation: usr-pop-b-x3swsun4m6 0.22s ease-out;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.usr-modal-head[b-x3swsun4m6] {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+.usr-modal-title[b-x3swsun4m6] {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.3;
+}
+
+.usr-modal-subtitle[b-x3swsun4m6] {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+.usr-modal-close[b-x3swsun4m6] {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 1.4rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.usr-modal-close:hover[b-x3swsun4m6] {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.usr-modal-body[b-x3swsun4m6] {
+    padding: 1.25rem 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 1rem;
+    align-content: start;
+}
+
+/* La sección "Datos del usuario" ocupa toda la fila izquierda */
+.uf-section-datos[b-x3swsun4m6] {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+}
+
+/* Roles + datos específicos van en la columna derecha apilados */
+.uf-section-roles[b-x3swsun4m6] {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.uf-section-admin[b-x3swsun4m6],
+.uf-section-vet[b-x3swsun4m6],
+.uf-section-recep[b-x3swsun4m6] {
+    grid-column: 2;
+}
+
+.usr-modal-foot[b-x3swsun4m6] {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+/* ===== Form sections (igual estilo que usaba el editor previo) ===== */
+.uf-section[b-x3swsun4m6] {
+    border: 1px solid #f3f4f6;
+    border-radius: 10px;
+    padding: 0.85rem 0.95rem 0.95rem;
+    margin: 0;
+    background: #fafbfc;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.uf-legend[b-x3swsun4m6] {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 0 0.4rem;
+}
+
+/* Secciones por rol — visibles condicionalmente con :has() */
+.uf-section-admin[b-x3swsun4m6],
+.uf-section-vet[b-x3swsun4m6],
+.uf-section-recep[b-x3swsun4m6] {
+    display: none;
+}
+
+.usr-modal-card:has(#uf-rol-admin:checked) .uf-section-admin[b-x3swsun4m6] { display: flex; }
+.usr-modal-card:has(#uf-rol-vet:checked) .uf-section-vet[b-x3swsun4m6] { display: flex; }
+.usr-modal-card:has(#uf-rol-recep:checked) .uf-section-recep[b-x3swsun4m6] { display: flex; }
+
+/* ===== Filas y campos ===== */
+.uf-row[b-x3swsun4m6] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.uf-field[b-x3swsun4m6] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.uf-label[b-x3swsun4m6] {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.uf-hint[b-x3swsun4m6] {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.uf-input[b-x3swsun4m6] {
+    width: 100%;
+    height: 38px;
+    padding: 0 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background-color: #ffffff;
+    color: #1f2937;
+    font-size: 0.85rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.uf-input:focus[b-x3swsun4m6] {
+    outline: none;
+    border-color: #1976ef;
+    box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.15);
+}
+
+.uf-input[b-x3swsun4m6]::placeholder {
+    color: #9ca3af;
+}
+
+/* ===== Password con ojito ===== */
+.uf-pwd-wrap[b-x3swsun4m6] {
+    position: relative;
+}
+
+.uf-pwd-input[b-x3swsun4m6] {
+    padding-right: 2.4rem;
+}
+
+.uf-pwd-toggle[b-x3swsun4m6] {
+    position: absolute;
+    right: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    padding: 0;
+}
+
+.uf-pwd-toggle:hover[b-x3swsun4m6] {
+    background: #f3f4f6;
+    color: #2563eb;
+}
+
+/* ===== Checkbox ===== */
+.uf-check[b-x3swsun4m6] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85rem;
+    color: #1f2937;
+}
+
+.uf-check-input[b-x3swsun4m6] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.uf-check-visual[b-x3swsun4m6] {
+    width: 17px;
+    height: 17px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 4px;
+    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    position: relative;
+}
+
+.uf-check-input:checked + .uf-check-visual[b-x3swsun4m6] {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.uf-check-input:checked + .uf-check-visual[b-x3swsun4m6]::after {
+    content: "";
+    width: 4px;
+    height: 8px;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* ===== Botones del modal ===== */
+.btn-usr[b-x3swsun4m6] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+    text-decoration: none !important;
+}
+
+.btn-usr-ghost[b-x3swsun4m6] {
+    background: #ffffff;
+    color: #4b5563;
+    border-color: #e5e7eb;
+}
+
+.btn-usr-ghost:hover[b-x3swsun4m6] {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.btn-usr-primary[b-x3swsun4m6] {
+    background: #2563eb;
+    color: #ffffff !important;
+    border-color: #2563eb;
+}
+
+.btn-usr-primary:hover[b-x3swsun4m6] {
+    background: #1d4ed8;
+}
+
+@keyframes usr-fade-b-x3swsun4m6 {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes usr-pop-b-x3swsun4m6 {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* En pantallas medianas (tablet) volvemos a 1 columna en el body
+   para que no se vea apretado. */
+@media (max-width: 860px) {
+    .usr-modal-body[b-x3swsun4m6] {
+        grid-template-columns: 1fr;
+    }
+
+    .uf-section-datos[b-x3swsun4m6],
+    .uf-section-roles[b-x3swsun4m6],
+    .uf-section-admin[b-x3swsun4m6],
+    .uf-section-vet[b-x3swsun4m6],
+    .uf-section-recep[b-x3swsun4m6] {
+        grid-column: 1;
+        grid-row: auto;
+    }
+}
+
+@media (max-width: 560px) {
+    .uf-row[b-x3swsun4m6] {
+        grid-template-columns: 1fr;
+    }
+
+    .usr-modal-card[b-x3swsun4m6] {
+        max-height: 95vh;
+    }
+
+    .usr-modal-body[b-x3swsun4m6] {
+        padding: 1rem 1.1rem;
+    }
+}

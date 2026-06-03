@@ -1,0 +1,591 @@
+@page "/mis-horarios"
+
+<PageTitle>Mis Horarios - VetCitas</PageTitle>
+
+<SectionContent SectionName="breadcrumb">
+    <span class="crumb">VetCitas</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb current">Mis Horarios</span>
+</SectionContent>
+
+@*
+    Un toggle por estado de cita: cada cita del calendario abre el modal
+    que corresponde a su estado, con la información y CTAs específicos.
+*@
+<input type="checkbox" id="mh-modal-pendiente"   class="mh-modal-toggle" />
+<input type="checkbox" id="mh-modal-confirmada"  class="mh-modal-toggle" />
+<input type="checkbox" id="mh-modal-enconsulta"  class="mh-modal-toggle" />
+<input type="checkbox" id="mh-modal-atendida"    class="mh-modal-toggle" />
+<input type="checkbox" id="mh-modal-cancelada"   class="mh-modal-toggle" />
+<input type="checkbox" id="mh-modal-noasistio"   class="mh-modal-toggle" />
+
+<div class="page-section">
+
+    <div class="page-head">
+        <h1 class="page-title">Mi Agenda Semanal — Dr. Carlos</h1>
+        <p class="page-subtitle">Tu horario laboral y las citas programadas para esta semana. Hover sobre una cita para ver detalles.</p>
+    </div>
+
+    @* ================= Toolbar superior ================= *@
+    <div class="cal-toolbar">
+        <div class="tb-field">
+            <label class="tb-label" for="weekPicker">Semana</label>
+            <div class="tb-control">
+                <input id="weekPicker" type="text" class="tb-input" value="Semana del 12 al 18 de Mayo 2026" readonly />
+                <span class="tb-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                    </svg>
+                </span>
+            </div>
+        </div>
+        <div class="tb-field tb-field-nav">
+            <label class="tb-label">Navegación rápida</label>
+            <div class="tb-nav">
+                <button type="button" class="tb-nav-btn" aria-label="Semana anterior">‹ Anterior</button>
+                <button type="button" class="tb-nav-btn tb-nav-today">Hoy</button>
+                <button type="button" class="tb-nav-btn" aria-label="Semana siguiente">Siguiente ›</button>
+            </div>
+        </div>
+    </div>
+
+    @* ================= Card del calendario ================= *@
+    <div class="cal-card">
+        <div class="cal-grid">
+
+            @* Header con nombres de días *@
+            <div class="cal-cell cal-head cal-corner"></div>
+            <div class="cal-cell cal-head">Lunes<span class="cal-head-date">12 May</span></div>
+            <div class="cal-cell cal-head">Martes<span class="cal-head-date">13 May</span></div>
+            <div class="cal-cell cal-head">Miércoles<span class="cal-head-date">14 May</span></div>
+            <div class="cal-cell cal-head">Jueves<span class="cal-head-date">15 May</span></div>
+            <div class="cal-cell cal-head">Viernes<span class="cal-head-date">16 May</span></div>
+            <div class="cal-cell cal-head">Sábado<span class="cal-head-date">17 May</span></div>
+            <div class="cal-cell cal-head">Domingo<span class="cal-head-date">18 May</span></div>
+
+            @* === 08:00 === *@
+            <div class="cal-cell cal-time">08:00</div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 09:00 === *@
+            <div class="cal-cell cal-time">09:00</div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-work">
+                <label for="mh-modal-confirmada" class="cita cita-confirmada">
+                    <div class="cita-title">Mimi (Gata)</div>
+                    <div class="cita-foot">09:00 · Confirmada</div>
+                    <div class="cita-pop">
+                        <div class="pop-head">Cita #1005</div>
+                        <div class="pop-row"><strong>Cliente:</strong> Ana Martínez</div>
+                        <div class="pop-row"><strong>Servicio:</strong> Control Post-Operatorio</div>
+                        <div class="pop-row"><strong>Duración:</strong> 20 min</div>
+                    </div>
+                </label>
+            </div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 10:00 === *@
+            <div class="cal-cell cal-time">10:00</div>
+            <div class="cal-cell cal-work">
+                <label for="mh-modal-confirmada" class="cita cita-confirmada">
+                    <div class="cita-title">Max (Perro)</div>
+                    <div class="cita-foot">10:30 · Confirmada</div>
+                    <div class="cita-pop">
+                        <div class="pop-head">Cita #1001</div>
+                        <div class="pop-row"><strong>Cliente:</strong> Juan Pérez</div>
+                        <div class="pop-row"><strong>Servicio:</strong> Consulta General</div>
+                        <div class="pop-row"><strong>Duración:</strong> 30 min</div>
+                    </div>
+                </label>
+            </div>
+            <div class="cal-cell cal-work">
+                <label for="mh-modal-enconsulta" class="cita cita-enconsulta">
+                    <div class="cita-title">Bobby (Perro)</div>
+                    <div class="cita-foot">10:00 · En Consulta</div>
+                    <div class="cita-pop">
+                        <div class="pop-head">Cita #1002</div>
+                        <div class="pop-row"><strong>Cliente:</strong> Pedro Salas</div>
+                        <div class="pop-row"><strong>Servicio:</strong> Esterilización</div>
+                        <div class="pop-row"><strong>Duración:</strong> 120 min</div>
+                    </div>
+                </label>
+            </div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 11:00 === *@
+            <div class="cal-cell cal-time">11:00</div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work">
+                <label for="mh-modal-pendiente" class="cita cita-pendiente">
+                    <div class="cita-title">Luna (Gato)</div>
+                    <div class="cita-foot">11:30 · Pendiente</div>
+                    <div class="cita-pop">
+                        <div class="pop-head">Cita #1003</div>
+                        <div class="pop-row"><strong>Cliente:</strong> María García</div>
+                        <div class="pop-row"><strong>Servicio:</strong> Vacunación</div>
+                        <div class="pop-row"><strong>Duración:</strong> 15 min</div>
+                    </div>
+                </label>
+            </div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work">
+                <label for="mh-modal-cancelada" class="cita cita-cancelada">
+                    <div class="cita-title">Thor (Perro)</div>
+                    <div class="cita-foot">11:00 · Cancelada</div>
+                    <div class="cita-pop">
+                        <div class="pop-head">Cita #1004</div>
+                        <div class="pop-row"><strong>Cliente:</strong> Juan Pérez</div>
+                        <div class="pop-row"><strong>Servicio:</strong> Vacunación</div>
+                        <div class="pop-row"><strong>Duración:</strong> 15 min</div>
+                    </div>
+                </label>
+            </div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 12:00 === *@
+            <div class="cal-cell cal-time">12:00</div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 13:00 — REFRIGERIO === *@
+            <div class="cal-cell cal-time">13:00</div>
+            <div class="cal-cell cal-break cal-break-start">REFRIGERIO</div>
+            <div class="cal-cell cal-break"></div>
+            <div class="cal-cell cal-break"></div>
+            <div class="cal-cell cal-break"></div>
+            <div class="cal-cell cal-break cal-break-end"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 14:00 === *@
+            <div class="cal-cell cal-time">14:00</div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work">
+                <label for="mh-modal-atendida" class="cita cita-atendida">
+                    <div class="cita-title">Rocky (Perro)</div>
+                    <div class="cita-foot">14:30 · Atendida</div>
+                    <div class="cita-pop">
+                        <div class="pop-head">Cita #1006</div>
+                        <div class="pop-row"><strong>Cliente:</strong> Carlos López</div>
+                        <div class="pop-row"><strong>Servicio:</strong> Cirugía Menor</div>
+                        <div class="pop-row"><strong>Duración:</strong> 60 min</div>
+                    </div>
+                </label>
+            </div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 15:00 === *@
+            <div class="cal-cell cal-time">15:00</div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work">
+                <label for="mh-modal-noasistio" class="cita cita-noasistio">
+                    <div class="cita-title">Coco (Gato)</div>
+                    <div class="cita-foot">15:30 · No asistió</div>
+                    <div class="cita-pop">
+                        <div class="pop-head">Cita #1007</div>
+                        <div class="pop-row"><strong>Cliente:</strong> Sara Vega</div>
+                        <div class="pop-row"><strong>Servicio:</strong> Consulta</div>
+                        <div class="pop-row"><strong>Duración:</strong> 30 min</div>
+                    </div>
+                </label>
+            </div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 16:00 === *@
+            <div class="cal-cell cal-time">16:00</div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 17:00 === *@
+            <div class="cal-cell cal-time">17:00</div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-work"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 18:00 === *@
+            <div class="cal-cell cal-time">18:00</div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 19:00 === *@
+            <div class="cal-cell cal-time">19:00</div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+            @* === 20:00 === *@
+            <div class="cal-cell cal-time">20:00</div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+            <div class="cal-cell cal-off"></div>
+
+        </div>
+    </div>
+
+    @* ================= Leyenda combinada ================= *@
+    <div class="legend-card">
+        <div class="legend-group">
+            <h3 class="legend-title">Disponibilidad</h3>
+            <div class="legend-items">
+                <span class="legend-item"><span class="legend-swatch legend-work-swatch"></span> Horario laboral</span>
+                <span class="legend-item"><span class="legend-swatch legend-break-swatch"></span> Refrigerio</span>
+                <span class="legend-item"><span class="legend-swatch legend-off-swatch"></span> Indisponible</span>
+            </div>
+        </div>
+        <div class="legend-group">
+            <h3 class="legend-title">Estado de citas</h3>
+            <div class="legend-items">
+                <span class="legend-item"><span class="legend-dot dot-pendiente"></span> Pendiente</span>
+                <span class="legend-item"><span class="legend-dot dot-confirmada"></span> Confirmada</span>
+                <span class="legend-item"><span class="legend-dot dot-enconsulta"></span> En consulta</span>
+                <span class="legend-item"><span class="legend-dot dot-atendida"></span> Atendida</span>
+                <span class="legend-item"><span class="legend-dot dot-cancelada"></span> Cancelada</span>
+                <span class="legend-item"><span class="legend-dot dot-noasistio"></span> No asistió</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@* ============================================================ *@
+@* === MODALES DE DETALLE DE CITA (uno por estado posible) ==== *@
+@* ============================================================ *@
+
+@* ----- 1) PENDIENTE: cliente aún no ha confirmado ----- *@
+<div class="mh-modal-backdrop" data-state="pendiente">
+    <div class="mh-modal-card" role="dialog" aria-modal="true" aria-labelledby="mh-title-pendiente">
+        <header class="mh-modal-head">
+            <div class="mh-head-info">
+                <h2 id="mh-title-pendiente" class="mh-modal-title">Cita #1003</h2>
+                <span class="mh-badge mh-badge-pendiente">Pendiente</span>
+            </div>
+            <label for="mh-modal-pendiente" class="mh-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="mh-modal-body">
+
+            <div class="mh-banner mh-banner-warn">
+                <strong>Cliente aún no ha confirmado.</strong>
+                Sugerimos enviar un recordatorio antes del día de la cita.
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Mascota</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Luna</span></div>
+                <div class="mh-row"><span class="mh-label">Especie · Raza</span><span class="mh-value">Gato · Siamés</span></div>
+                <div class="mh-row"><span class="mh-label">Edad</span><span class="mh-value">2 años</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Cliente</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">María García</span></div>
+                <div class="mh-row"><span class="mh-label">Teléfono</span><span class="mh-value">+51 987 612 543</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Servicio &amp; Programación</h3>
+                <div class="mh-row"><span class="mh-label">Servicio</span><span class="mh-value">Vacunación</span></div>
+                <div class="mh-row"><span class="mh-label">Duración</span><span class="mh-value">15 min</span></div>
+                <div class="mh-row"><span class="mh-label">Fecha</span><span class="mh-value">Martes 13/05/2026</span></div>
+                <div class="mh-row"><span class="mh-label">Hora</span><span class="mh-value">11:30 — 11:45</span></div>
+            </div>
+
+        </div>
+
+        @* Cancelar y Reprogramar requieren rol de Recepcionista — el veterinario solo ve el detalle. *@
+        <footer class="mh-modal-foot">
+            <label for="cancelar-cita-modal" class="btn-mh btn-mh-danger-ghost recep-only">Cancelar</label>
+            <label for="reprogramar-cita-modal" class="btn-mh btn-mh-secondary recep-only">Reprogramar</label>
+        </footer>
+    </div>
+</div>
+
+@* ----- 2) CONFIRMADA: lista para iniciar ----- *@
+<div class="mh-modal-backdrop" data-state="confirmada">
+    <div class="mh-modal-card" role="dialog" aria-modal="true" aria-labelledby="mh-title-confirmada">
+        <header class="mh-modal-head">
+            <div class="mh-head-info">
+                <h2 id="mh-title-confirmada" class="mh-modal-title">Cita #1001</h2>
+                <span class="mh-badge mh-badge-confirmada">Confirmada</span>
+            </div>
+            <label for="mh-modal-confirmada" class="mh-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="mh-modal-body">
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Mascota</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Max</span></div>
+                <div class="mh-row"><span class="mh-label">Especie · Raza</span><span class="mh-value">Perro · Golden Retriever</span></div>
+                <div class="mh-row"><span class="mh-label">Edad</span><span class="mh-value">3 años</span></div>
+                <div class="mh-row"><span class="mh-label">Peso</span><span class="mh-value">28.5 kg</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Cliente</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Juan Pérez</span></div>
+                <div class="mh-row"><span class="mh-label">DNI</span><span class="mh-value">12345678</span></div>
+                <div class="mh-row"><span class="mh-label">Teléfono</span><span class="mh-value">+51 987 654 321</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Servicio &amp; Programación</h3>
+                <div class="mh-row"><span class="mh-label">Servicio</span><span class="mh-value">Consulta General</span></div>
+                <div class="mh-row"><span class="mh-label">Duración</span><span class="mh-value">30 min</span></div>
+                <div class="mh-row"><span class="mh-label">Precio ref.</span><span class="mh-value">S/ 50.00</span></div>
+                <div class="mh-row"><span class="mh-label">Fecha</span><span class="mh-value">Lunes 12/05/2026</span></div>
+                <div class="mh-row"><span class="mh-label">Hora</span><span class="mh-value">10:30 — 11:00</span></div>
+            </div>
+
+        </div>
+
+        @* Cancelar/Reprogramar requieren rol Recepcionista; Iniciar Atención es del veterinario. *@
+        <footer class="mh-modal-foot">
+            <label for="cancelar-cita-modal" class="btn-mh btn-mh-danger-ghost recep-only">Cancelar</label>
+            <label for="reprogramar-cita-modal" class="btn-mh btn-mh-secondary recep-only">Reprogramar</label>
+            <a href="/citas-hoy/atender" class="btn-mh btn-mh-primary">
+                <span class="btn-mh-icon" aria-hidden="true">▶</span>
+                Iniciar Atención
+            </a>
+        </footer>
+    </div>
+</div>
+
+@* ----- 3) EN CONSULTA: atención en curso ----- *@
+<div class="mh-modal-backdrop" data-state="enconsulta">
+    <div class="mh-modal-card" role="dialog" aria-modal="true" aria-labelledby="mh-title-enconsulta">
+        <header class="mh-modal-head">
+            <div class="mh-head-info">
+                <h2 id="mh-title-enconsulta" class="mh-modal-title">Cita #1002</h2>
+                <span class="mh-badge mh-badge-enconsulta">
+                    <span class="mh-pulse-dot" aria-hidden="true"></span>
+                    En Consulta
+                </span>
+            </div>
+            <label for="mh-modal-enconsulta" class="mh-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="mh-modal-body">
+
+            <div class="mh-banner mh-banner-info">
+                <strong>Atención en curso.</strong>
+                Iniciada a las 10:05 — hace <span class="mh-elapsed">23 min</span>.
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Mascota</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Bobby</span></div>
+                <div class="mh-row"><span class="mh-label">Especie · Raza</span><span class="mh-value">Perro · Labrador</span></div>
+                <div class="mh-row"><span class="mh-label">Peso</span><span class="mh-value">22.0 kg</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Cliente</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Pedro Salas</span></div>
+                <div class="mh-row"><span class="mh-label">Teléfono</span><span class="mh-value">+51 942 110 233</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Servicio &amp; Programación</h3>
+                <div class="mh-row"><span class="mh-label">Servicio</span><span class="mh-value">Esterilización</span></div>
+                <div class="mh-row"><span class="mh-label">Duración estimada</span><span class="mh-value">120 min</span></div>
+                <div class="mh-row"><span class="mh-label">Hora</span><span class="mh-value">10:00 — 12:00</span></div>
+            </div>
+
+        </div>
+
+        <footer class="mh-modal-foot">
+            <a href="/citas-hoy/atender" class="btn-mh btn-mh-primary">
+                <span class="btn-mh-icon" aria-hidden="true">▶</span>
+                Continuar Atención
+            </a>
+        </footer>
+    </div>
+</div>
+
+@* ----- 4) ATENDIDA: completada, solo consulta ----- *@
+<div class="mh-modal-backdrop" data-state="atendida">
+    <div class="mh-modal-card" role="dialog" aria-modal="true" aria-labelledby="mh-title-atendida">
+        <header class="mh-modal-head">
+            <div class="mh-head-info">
+                <h2 id="mh-title-atendida" class="mh-modal-title">Cita #1006</h2>
+                <span class="mh-badge mh-badge-atendida">Atendida</span>
+            </div>
+            <label for="mh-modal-atendida" class="mh-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="mh-modal-body">
+
+            <div class="mh-banner mh-banner-success">
+                <strong>Cita completada.</strong>
+                Atendida el Jue 15/05 — 14:30 a 15:30 (60 min).
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Mascota</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Rocky</span></div>
+                <div class="mh-row"><span class="mh-label">Especie · Raza</span><span class="mh-value">Perro · Pitbull</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Cliente</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Carlos López</span></div>
+                <div class="mh-row"><span class="mh-label">Teléfono</span><span class="mh-value">+51 911 223 344</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Resumen de atención</h3>
+                <div class="mh-row"><span class="mh-label">Servicio</span><span class="mh-value">Cirugía Menor</span></div>
+                <div class="mh-row"><span class="mh-label">Diagnóstico</span><span class="mh-value">Quiste sebáceo extraído sin complicaciones.</span></div>
+                <div class="mh-row"><span class="mh-label">Receta</span><span class="mh-value">Antibiótico oral 7 días + analgésico SOS.</span></div>
+                <div class="mh-row"><span class="mh-label">Próximo control</span><span class="mh-value">22/05/2026</span></div>
+            </div>
+
+        </div>
+
+        <footer class="mh-modal-foot">
+            <a href="/atencion-registro" class="btn-mh btn-mh-primary">Ver Atención Médica</a>
+        </footer>
+    </div>
+</div>
+
+@* ----- 5) CANCELADA: solo lectura con motivo ----- *@
+<div class="mh-modal-backdrop" data-state="cancelada">
+    <div class="mh-modal-card" role="dialog" aria-modal="true" aria-labelledby="mh-title-cancelada">
+        <header class="mh-modal-head">
+            <div class="mh-head-info">
+                <h2 id="mh-title-cancelada" class="mh-modal-title">Cita #1004</h2>
+                <span class="mh-badge mh-badge-cancelada">Cancelada</span>
+            </div>
+            <label for="mh-modal-cancelada" class="mh-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="mh-modal-body">
+
+            <div class="mh-banner mh-banner-danger">
+                <strong>Motivo de cancelación:</strong>
+                Cliente reportó emergencia familiar y solicitó reagendar. Se contactará el lunes.
+                <span class="mh-banner-meta">Cancelada por <strong>Carlos Mendoza</strong> · 11/05/2026 14:22</span>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Mascota</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Thor</span></div>
+                <div class="mh-row"><span class="mh-label">Especie · Raza</span><span class="mh-value">Perro · Husky</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Cliente</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Juan Pérez</span></div>
+                <div class="mh-row"><span class="mh-label">Teléfono</span><span class="mh-value">+51 987 654 321</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Programación cancelada</h3>
+                <div class="mh-row"><span class="mh-label">Servicio</span><span class="mh-value">Vacunación</span></div>
+                <div class="mh-row"><span class="mh-label">Fecha</span><span class="mh-value">Mié 14/05/2026</span></div>
+                <div class="mh-row"><span class="mh-label">Hora</span><span class="mh-value">11:00 — 11:15</span></div>
+            </div>
+
+        </div>
+
+        @* Footer vacío — solo la X del header cierra el modal. *@
+    </div>
+</div>
+
+@* ----- 6) NO ASISTIÓ: cliente no se presentó ----- *@
+<div class="mh-modal-backdrop" data-state="noasistio">
+    <div class="mh-modal-card" role="dialog" aria-modal="true" aria-labelledby="mh-title-noasistio">
+        <header class="mh-modal-head">
+            <div class="mh-head-info">
+                <h2 id="mh-title-noasistio" class="mh-modal-title">Cita #1007</h2>
+                <span class="mh-badge mh-badge-noasistio">No asistió</span>
+            </div>
+            <label for="mh-modal-noasistio" class="mh-modal-close" aria-label="Cerrar">×</label>
+        </header>
+
+        <div class="mh-modal-body">
+
+            <div class="mh-banner mh-banner-muted">
+                <strong>El cliente no se presentó.</strong>
+                Marcado automáticamente 30 min después de la hora programada.
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Mascota</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Coco</span></div>
+                <div class="mh-row"><span class="mh-label">Especie · Raza</span><span class="mh-value">Gato · Persa</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Cliente</h3>
+                <div class="mh-row"><span class="mh-label">Nombre</span><span class="mh-value">Sara Vega</span></div>
+                <div class="mh-row"><span class="mh-label">Teléfono</span><span class="mh-value">+51 956 433 211</span></div>
+            </div>
+
+            <div class="mh-section">
+                <h3 class="mh-section-title">Programación original</h3>
+                <div class="mh-row"><span class="mh-label">Servicio</span><span class="mh-value">Consulta</span></div>
+                <div class="mh-row"><span class="mh-label">Fecha</span><span class="mh-value">Vie 16/05/2026</span></div>
+                <div class="mh-row"><span class="mh-label">Hora</span><span class="mh-value">15:30 — 16:00</span></div>
+            </div>
+
+        </div>
+
+        @* Reprogramar requiere rol de Recepcionista. *@
+        <footer class="mh-modal-foot">
+            <label for="reprogramar-cita-modal" class="btn-mh btn-mh-primary recep-only">Reprogramar</label>
+        </footer>
+    </div>
+</div>
