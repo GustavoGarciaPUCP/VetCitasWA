@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "t78fR82XJlw=",
+  "dgSpecHash": "faPvxH1ekws=",
   "success": true,
-  "projectFilePath": "C:\\Universidad\\Ciclo 6\\Progra3\\Desarrollos\\WA\\VetCitasWA\\VetCitasWA.csproj",
+  "projectFilePath": "C:\\Users\\diego\\Downloads\\VetCitasWA\\VetCitasWA\\VetCitasWA.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Oscar\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.8\\microsoft.aspnetcore.app.internal.assets.10.0.8.nupkg.sha512"
+    "C:\\Users\\diego\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.9\\microsoft.aspnetcore.app.internal.assets.10.0.9.nupkg.sha512"
   ],
   "logs": []
 }
