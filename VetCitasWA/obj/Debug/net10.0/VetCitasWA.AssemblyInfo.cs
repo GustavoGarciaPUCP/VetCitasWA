@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VetCitasWA")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+75765e92d3af2467aadd0b1edbe88e8a7ea03017")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9aa2fe5a7f67f8b98b66fc406e59e3b55d1dbf01")]
 [assembly: System.Reflection.AssemblyProductAttribute("VetCitasWA")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VetCitasWA")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
