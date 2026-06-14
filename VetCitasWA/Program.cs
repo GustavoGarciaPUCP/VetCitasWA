@@ -8,10 +8,6 @@ builder.Services.AddRazorComponents()
 
 var app = builder.Build();
 
-
-//ESTA ES MI RAMA
-
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
