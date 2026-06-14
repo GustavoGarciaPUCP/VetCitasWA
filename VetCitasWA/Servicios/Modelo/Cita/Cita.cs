@@ -1,4 +1,7 @@
-﻿using VetCitasWA.Servicios.Modelo.Common.Enums;
+﻿using System;
+using VetCitasWA.Servicios.Modelo.Common.Enums;
+using VetCitasWA.Servicios.Modelo.Cliente; // Para Mascota
+using VetCitasWA.Servicios.Modelo.Usuario; // Para Veterinario
 
 namespace VetCitasWA.Servicios.Modelo.Cita
 {
@@ -10,10 +13,13 @@ namespace VetCitasWA.Servicios.Modelo.Cita
         public EstadoCita Estado { get; set; }
         public Mascota Mascota { get; set; }
         public Veterinario Veterinario { get; set; }
-        public Servicio Servicio { get; set; }
+
+        public VetCitasWA.Servicios.Modelo.Servicio.Servicio Servicio { get; set; }
+
         public string MotivoCancelacion { get; set; }
         public string MotivoReprogramacion { get; set; }
         public DateTime FechaCancelacion { get; set; }
-        public Usuario UsuarioCancelacion { get; set; }
+
+        public VetCitasWA.Servicios.Modelo.Usuario.Usuario UsuarioCancelacion { get; set; }
     }
 }

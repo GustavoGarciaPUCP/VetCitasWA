@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using VetCitasWA.Servicios.Modelo.Cliente;
 
 namespace VetCitasWA.Servicios.REST.ClienteRS
 {
