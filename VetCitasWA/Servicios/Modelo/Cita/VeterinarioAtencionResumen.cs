@@ -1,4 +1,6 @@
-﻿namespace VetCitasWA.Servicios.Modelo.Cita
+﻿using VetCitasWA.Servicios.Modelo.Usuario;
+
+namespace VetCitasWA.Servicios.Modelo.Cita
 {
     public class VeterinarioAtencionResumen
     {
