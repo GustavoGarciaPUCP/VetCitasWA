@@ -1,4 +1,8 @@
 @page "/citas-hoy"
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 
 <PageTitle>Citas de Hoy - VetCitas</PageTitle>
 
@@ -29,14 +33,14 @@
                             <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
                         </svg>
                     </span>
-                    <select id="filterEstado" class="filter-select">
-                        <option>Todos los estados</option>
-                        <option>Pendiente</option>
-                        <option>Confirmada</option>
-                        <option>En consulta</option>
-                        <option>Atendida</option>
-                        <option>Cancelada</option>
-                        <option>No asistió</option>
+                    <select id="filterEstado" class="filter-select" @onchange="OnEstadoChanged">
+                        <option value="">Todos los estados</option>
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="CONFIRMADA">Confirmada</option>
+                        <option value="EN_CONSULTA">En consulta</option>
+                        <option value="ATENDIDA">Atendida</option>
+                        <option value="CANCELADA">Cancelada</option>
+                        <option value="NO_ASISTIO">No asistió</option>
                     </select>
                 </div>
             </div>
@@ -74,185 +78,65 @@
                 </thead>
                 <tbody>
 
-                    @* CONFIRMADA — listo para iniciar atención *@
-                    <tr>
-                        <td data-label="Hora Cita" class="cell-hora">10:30</td>
-                        <td data-label="Paciente">
-                            <div class="patient-cell">
-                                <span class="pet-avatar" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                        <circle cx="11" cy="4" r="2"></circle>
-                                        <circle cx="18" cy="8" r="2"></circle>
-                                        <circle cx="4" cy="8" r="2"></circle>
-                                        <circle cx="20" cy="16" r="2"></circle>
-                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="pet-name">Max</div>
-                                    <div class="pet-meta">Perro · Consulta General</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td data-label="Cliente">Juan Pérez</td>
-                        <td data-label="Servicio">Consulta General</td>
-                        <td data-label="Estado">
-                            <span class="badge badge-confirmada">Confirmada</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <a href="/citas-hoy/atender" class="btn-action btn-start">Iniciar Atención</a>
-                        </td>
-                    </tr>
-
-                    @* EN_CONSULTA — siendo atendido *@
-                    <tr>
-                        <td data-label="Hora Cita" class="cell-hora">10:00</td>
-                        <td data-label="Paciente">
-                            <div class="patient-cell">
-                                <span class="pet-avatar" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                        <circle cx="11" cy="4" r="2"></circle>
-                                        <circle cx="18" cy="8" r="2"></circle>
-                                        <circle cx="4" cy="8" r="2"></circle>
-                                        <circle cx="20" cy="16" r="2"></circle>
-                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="pet-name">Luna</div>
-                                    <div class="pet-meta">Gato · Cirugía Menor</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td data-label="Cliente">María García</td>
-                        <td data-label="Servicio">Cirugía Menor</td>
-                        <td data-label="Estado">
-                            <span class="badge badge-enconsulta">En consulta</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <a href="/citas-hoy/atender" class="btn-action btn-continue">Continuar</a>
-                        </td>
-                    </tr>
-
-                    @* CONFIRMADA — esperando *@
-                    <tr>
-                        <td data-label="Hora Cita" class="cell-hora">11:30</td>
-                        <td data-label="Paciente">
-                            <div class="patient-cell">
-                                <span class="pet-avatar" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                        <circle cx="11" cy="4" r="2"></circle>
-                                        <circle cx="18" cy="8" r="2"></circle>
-                                        <circle cx="4" cy="8" r="2"></circle>
-                                        <circle cx="20" cy="16" r="2"></circle>
-                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="pet-name">Rocky</div>
-                                    <div class="pet-meta">Perro · Vacunación</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td data-label="Cliente">Carlos López</td>
-                        <td data-label="Servicio">Vacunación Múltiple</td>
-                        <td data-label="Estado">
-                            <span class="badge badge-confirmada">Confirmada</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <a href="/citas-hoy/atender" class="btn-action btn-start">Iniciar Atención</a>
-                        </td>
-                    </tr>
-
-                    @* ATENDIDA — ya finalizada (la atención fue creada) *@
-                    <tr>
-                        <td data-label="Hora Cita" class="cell-hora">09:00</td>
-                        <td data-label="Paciente">
-                            <div class="patient-cell">
-                                <span class="pet-avatar" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                        <circle cx="11" cy="4" r="2"></circle>
-                                        <circle cx="18" cy="8" r="2"></circle>
-                                        <circle cx="4" cy="8" r="2"></circle>
-                                        <circle cx="20" cy="16" r="2"></circle>
-                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="pet-name">Mimi</div>
-                                    <div class="pet-meta">Gato · Control</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td data-label="Cliente">Ana Martínez</td>
-                        <td data-label="Servicio">Control Post-Operatorio</td>
-                        <td data-label="Estado">
-                            <span class="badge badge-atendida">Atendida</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <a href="/citas-hoy/atender" class="btn-action btn-view">Ver Atención</a>
-                        </td>
-                    </tr>
-
-                    @* PENDIENTE — sin confirmar todavía *@
-                    <tr>
-                        <td data-label="Hora Cita" class="cell-hora">12:00</td>
-                        <td data-label="Paciente">
-                            <div class="patient-cell">
-                                <span class="pet-avatar" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                        <circle cx="11" cy="4" r="2"></circle>
-                                        <circle cx="18" cy="8" r="2"></circle>
-                                        <circle cx="4" cy="8" r="2"></circle>
-                                        <circle cx="20" cy="16" r="2"></circle>
-                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="pet-name">Bobby</div>
-                                    <div class="pet-meta">Perro · Esterilización</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td data-label="Cliente">Pedro Salas</td>
-                        <td data-label="Servicio">Esterilización Canina</td>
-                        <td data-label="Estado">
-                            <span class="badge badge-pending">Pendiente</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <span class="action-hint">Esperando confirmación</span>
-                        </td>
-                    </tr>
-
-                    @* CANCELADA — sin acción *@
-                    <tr class="row-disabled">
-                        <td data-label="Hora Cita" class="cell-hora">14:00</td>
-                        <td data-label="Paciente">
-                            <div class="patient-cell">
-                                <span class="pet-avatar" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                        <circle cx="11" cy="4" r="2"></circle>
-                                        <circle cx="18" cy="8" r="2"></circle>
-                                        <circle cx="4" cy="8" r="2"></circle>
-                                        <circle cx="20" cy="16" r="2"></circle>
-                                        <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="pet-name">Thor</div>
-                                    <div class="pet-meta">Perro · Vacunación</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td data-label="Cliente">Juan Pérez</td>
-                        <td data-label="Servicio">Vacunación Múltiple</td>
-                        <td data-label="Estado">
-                            <span class="badge badge-cancelled">Cancelada</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <span class="action-hint">—</span>
-                        </td>
-                    </tr>
+                    @if (listaCitas == null || !listaCitas.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center" style="padding: 2rem;">
+                                <em>Cargando datos desde el servidor o no se encontraron resultados...</em>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var cita in listaCitas)
+                        {
+                            <tr class="@(cita.Estado == EstadoCita.CANCELADA ? "row-disabled" : "")">
+                                <td data-label="Hora Cita" class="cell-hora">@cita.FechaHoraInicio.ToString("HH:mm")</td>
+                                <td data-label="Paciente">
+                                    <div class="patient-cell">
+                                        <span class="pet-avatar" aria-hidden="true">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                                                <circle cx="11" cy="4" r="2"></circle>
+                                                <circle cx="18" cy="8" r="2"></circle>
+                                                <circle cx="4" cy="8" r="2"></circle>
+                                                <circle cx="20" cy="16" r="2"></circle>
+                                                <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
+                                            </svg>
+                                        </span>
+                                        <div>
+                                            <div class="pet-name">@(cita.Mascota?.Nombre)</div>
+                                            <div class="pet-meta">@EspecieTexto(cita.Mascota) · @(cita.Servicio?.Nombre)</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Cliente">@(cita.Mascota?.Cliente?.Nombres) @(cita.Mascota?.Cliente?.Apellidos)</td>
+                                <td data-label="Servicio">@(cita.Servicio?.Nombre)</td>
+                                <td data-label="Estado">
+                                    <span class="badge @BadgeEstado(cita.Estado)">@EstadoTexto(cita.Estado)</span>
+                                </td>
+                                <td data-label="Acciones">
+                                    @switch (cita.Estado)
+                                    {
+                                        case EstadoCita.CONFIRMADA:
+                                            <a href="/citas-hoy/atender" class="btn-action btn-start">Iniciar Atención</a>
+                                            break;
+                                        case EstadoCita.EN_CONSULTA:
+                                            <a href="/citas-hoy/atender" class="btn-action btn-continue">Continuar</a>
+                                            break;
+                                        case EstadoCita.ATENDIDA:
+                                            <a href="/citas-hoy/atender" class="btn-action btn-view">Ver Atención</a>
+                                            break;
+                                        case EstadoCita.PENDIENTE:
+                                            <span class="action-hint">Esperando confirmación</span>
+                                            break;
+                                        default:
+                                            <span class="action-hint">—</span>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
 
                 </tbody>
             </table>
@@ -270,3 +154,50 @@
     </section>
 
 </div>
+
+@code {
+    private List<Cita> listaCitas = new();
+    private string estadoSeleccionado = "";
+
+    // Filtra las citas del día de hoy. idVet = 0 => todos los veterinarios.
+    protected override void OnInitialized()
+    {
+        Recargar();
+    }
+
+    private void Recargar()
+    {
+        listaCitas = CitaService.ListarFiltradas(0, DateTime.Today, DateTime.Today, estadoSeleccionado, "");
+    }
+
+    private void OnEstadoChanged(ChangeEventArgs e)
+    {
+        estadoSeleccionado = e.Value?.ToString() ?? "";
+        Recargar();
+    }
+
+    private string EspecieTexto(Mascota? m)
+        => m == null ? "" : (m.Especie == TipoEspecie.PERRO ? "Perro" : "Gato");
+
+    private string EstadoTexto(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "Pendiente",
+        EstadoCita.CONFIRMADA => "Confirmada",
+        EstadoCita.EN_CONSULTA => "En consulta",
+        EstadoCita.ATENDIDA => "Atendida",
+        EstadoCita.CANCELADA => "Cancelada",
+        EstadoCita.NO_ASISTIO => "No asistió",
+        _ => ""
+    };
+
+    private string BadgeEstado(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "badge-pending",
+        EstadoCita.CONFIRMADA => "badge-confirmada",
+        EstadoCita.EN_CONSULTA => "badge-enconsulta",
+        EstadoCita.ATENDIDA => "badge-atendida",
+        EstadoCita.CANCELADA => "badge-cancelled",
+        EstadoCita.NO_ASISTIO => "badge-cancelled",
+        _ => ""
+    };
+}

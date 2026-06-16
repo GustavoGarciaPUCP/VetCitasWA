@@ -1,4 +1,8 @@
 @page "/clientes-mascotas/cliente"
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
+@inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 
 <PageTitle>Detalle de Cliente - VetCitas</PageTitle>
 
@@ -7,7 +11,7 @@
     <span class="crumb-sep">›</span>
     <a class="crumb crumb-link" href="/clientes-mascotas">Clientes y Mascotas</a>
     <span class="crumb-sep">›</span>
-    <span class="crumb current">Juan Pérez</span>
+    <span class="crumb current">@(cliente != null ? $"{cliente.Nombres} {cliente.Apellidos}" : "Cliente")</span>
 </SectionContent>
 
 <div class="page-section">
@@ -26,12 +30,12 @@
 
         @* ================= Header del cliente ================= *@
         <div class="client-header">
-            <div class="client-avatar-big" aria-hidden="true">JP</div>
+            <div class="client-avatar-big" aria-hidden="true">@GetIniciales(cliente?.Nombres, cliente?.Apellidos)</div>
             <div class="client-info">
-                <h1 class="client-name">Juan Pérez</h1>
+                <h1 class="client-name">@(cliente != null ? $"{cliente.Nombres} {cliente.Apellidos}" : "Cliente")</h1>
                 <div class="client-meta">
-                    <span class="client-badge">Cliente Frecuente</span>
-                    <span class="client-id">DNI: 12345678</span>
+                    <span class="client-badge">Cliente</span>
+                    <span class="client-id">DNI: @cliente?.Dni</span>
                 </div>
             </div>
             <div class="client-header-actions">
@@ -50,25 +54,32 @@
             <div class="info-grid-2">
                 <div class="info-item">
                     <div class="info-label">DNI</div>
-                    <div class="info-value">12345678</div>
+                    <div class="info-value">@cliente?.Dni</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">TELÉFONO</div>
-                    <div class="info-value">+51 987 654 321</div>
+                    <div class="info-value">@cliente?.Telefono</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">EMAIL</div>
-                    <div class="info-value">juan.perez@email.com</div>
+                    <div class="info-value">@cliente?.Email</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">ESTADO</div>
                     <div class="info-value">
-                        <span class="status-pill status-active">Activo</span>
+                        @if (cliente != null && cliente.Activo)
+                        {
+                            <span class="status-pill status-active">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="status-pill status-inactive">Inactivo</span>
+                        }
                     </div>
                 </div>
                 <div class="info-item info-item-full">
                     <div class="info-label">OBSERVACIONES</div>
-                    <div class="info-value">Cliente desde 2022. Prefiere ser contactado por WhatsApp en las tardes.</div>
+                    <div class="info-value">@cliente?.Observaciones</div>
                 </div>
             </div>
         </section>
@@ -78,7 +89,7 @@
             <div class="pets-header">
                 <h2 class="block-title">Mascotas del Cliente</h2>
                 <div class="pets-header-right">
-                    <span class="pets-count">2 mascotas registradas</span>
+                    <span class="pets-count">@listaMascotas.Count mascotas registradas</span>
                     <label for="mascota-form-modal" class="btn-add-pet recep-only">
                         <span class="btn-plus" aria-hidden="true">+</span>
                         Agregar Mascota
@@ -87,70 +98,83 @@
             </div>
 
             <div class="pets-grid">
-
-                <article class="pet-card">
-                    <div class="pet-card-head">
-                        <span class="pet-avatar pet-dog" aria-hidden="true">M</span>
-                        <div class="pet-card-meta">
-                            <div class="pet-card-name">Max</div>
-                            <span class="species-pill species-dog">Perro</span>
-                        </div>
-                    </div>
-                    <div class="pet-card-body">
-                        <div class="pet-row-info"><span class="pet-row-label">Raza</span><span>Golden Retriever</span></div>
-                        <div class="pet-row-info"><span class="pet-row-label">Edad</span><span>3 años</span></div>
-                        <div class="pet-row-info"><span class="pet-row-label">Peso</span><span>28.5 kg</span></div>
-                        <div class="pet-row-info"><span class="pet-row-label">Esterilizado</span><span>Sí</span></div>
-                    </div>
-                    <div class="pet-card-actions">
-                        <a href="/clientes-mascotas/detalle" class="pet-card-link">
-                            <span class="eye-icon" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                </svg>
-                            </span>
-                            Ver detalle
-                        </a>
-                        <label for="mascota-form-modal" class="pet-card-edit recep-only" aria-label="Editar mascota">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                        </label>
-                    </div>
-                </article>
-
-                <article class="pet-card">
-                    <div class="pet-card-head">
-                        <span class="pet-avatar pet-dog" aria-hidden="true">T</span>
-                        <div class="pet-card-meta">
-                            <div class="pet-card-name">Thor</div>
-                            <span class="species-pill species-dog">Perro</span>
-                        </div>
-                    </div>
-                    <div class="pet-card-body">
-                        <div class="pet-row-info"><span class="pet-row-label">Raza</span><span>Pastor Alemán</span></div>
-                        <div class="pet-row-info"><span class="pet-row-label">Edad</span><span>4 años</span></div>
-                        <div class="pet-row-info"><span class="pet-row-label">Peso</span><span>35 kg</span></div>
-                        <div class="pet-row-info"><span class="pet-row-label">Esterilizado</span><span>No</span></div>
-                    </div>
-                    <div class="pet-card-actions">
-                        <a href="/clientes-mascotas/detalle" class="pet-card-link">
-                            <span class="eye-icon" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                </svg>
-                            </span>
-                            Ver detalle
-                        </a>
-                        <label for="mascota-form-modal" class="pet-card-edit recep-only" aria-label="Editar mascota">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                        </label>
-                    </div>
-                </article>
-
+                @if (listaMascotas == null || !listaMascotas.Any())
+                {
+                    <p><em>Este cliente no tiene mascotas registradas.</em></p>
+                }
+                else
+                {
+                    @foreach (var m in listaMascotas)
+                    {
+                        bool esPerro = m.Especie == TipoEspecie.PERRO;
+                        <article class="pet-card">
+                            <div class="pet-card-head">
+                                <span class="pet-avatar @(esPerro ? "pet-dog" : "pet-cat")" aria-hidden="true">@(string.IsNullOrWhiteSpace(m.Nombre) ? "?" : m.Nombre.Substring(0, 1).ToUpper())</span>
+                                <div class="pet-card-meta">
+                                    <div class="pet-card-name">@m.Nombre</div>
+                                    <span class="species-pill @(esPerro ? "species-dog" : "species-cat")">@(esPerro ? "Perro" : "Gato")</span>
+                                </div>
+                            </div>
+                            <div class="pet-card-body">
+                                <div class="pet-row-info"><span class="pet-row-label">Raza</span><span>@m.Raza</span></div>
+                                <div class="pet-row-info"><span class="pet-row-label">Edad</span><span>@CalcularEdad(m.FechaNacimiento)</span></div>
+                                <div class="pet-row-info"><span class="pet-row-label">Peso</span><span>@m.Peso kg</span></div>
+                                <div class="pet-row-info"><span class="pet-row-label">Esterilizado</span><span>@(m.Esterilizado ? "Sí" : "No")</span></div>
+                            </div>
+                            <div class="pet-card-actions">
+                                <a href="/clientes-mascotas/detalle" class="pet-card-link">
+                                    <span class="eye-icon" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                                        </svg>
+                                    </span>
+                                    Ver detalle
+                                </a>
+                                <label for="mascota-form-modal" class="pet-card-edit recep-only" aria-label="Editar mascota">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
+                                </label>
+                            </div>
+                        </article>
+                    }
+                }
             </div>
         </section>
 
     </div>
 
 </div>
+
+@code {
+    private Cliente? cliente;
+    private List<Mascota> listaMascotas = new();
+
+    protected override void OnInitialized()
+    {
+        // La ruta no recibe Id; se carga el primer cliente disponible como
+        // ejemplo representativo (la maqueta original mostraba un cliente fijo).
+        var clientes = ClienteService.ListarTodos();
+        cliente = clientes.FirstOrDefault();
+        if (cliente != null)
+        {
+            listaMascotas = MascotaService.ListarPorCliente(cliente.Id);
+        }
+    }
+
+    private string GetIniciales(string? nombres, string? apellidos)
+    {
+        string n = !string.IsNullOrWhiteSpace(nombres) ? nombres.Substring(0, 1).ToUpper() : "";
+        string a = !string.IsNullOrWhiteSpace(apellidos) ? apellidos.Substring(0, 1).ToUpper() : "";
+        string iniciales = (n + a);
+        return string.IsNullOrEmpty(iniciales) ? "?" : iniciales;
+    }
+
+    private string CalcularEdad(DateTime? fechaNacimiento)
+    {
+        if (fechaNacimiento == null) return "—";
+        int anios = DateTime.Today.Year - fechaNacimiento.Value.Year;
+        if (fechaNacimiento.Value.Date > DateTime.Today.AddYears(-anios)) anios--;
+        if (anios < 0) anios = 0;
+        return anios + (anios == 1 ? " año" : " años");
+    }
+}

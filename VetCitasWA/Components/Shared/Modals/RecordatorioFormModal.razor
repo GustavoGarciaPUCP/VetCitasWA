@@ -2,6 +2,9 @@
     Modal reutilizable para editar el mensaje y la fecha programada de un
     recordatorio. Se abre con <label for="recordatorio-form-modal">.
 *@
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.CitaRS.RecordatorioRestService RecordatorioService
 
 <input type="checkbox" id="recordatorio-form-modal" class="rec-modal-toggle" aria-hidden="true" />
 
@@ -11,7 +14,7 @@
         <header class="rec-modal-head">
             <div>
                 <h2 id="rec-modal-title" class="rec-modal-title">Editar Recordatorio</h2>
-                <p class="rec-modal-subtitle">Cita #1001 · Max (Perro) · Juan Pérez</p>
+                <p class="rec-modal-subtitle">@Subtitulo</p>
             </div>
             <label for="recordatorio-form-modal" class="rec-modal-close" aria-label="Cerrar">×</label>
         </header>
@@ -20,14 +23,14 @@
 
             <div class="rf-field">
                 <label class="rf-label" for="rf-mensaje">Mensaje</label>
-                <textarea id="rf-mensaje" class="rf-textarea" rows="4" maxlength="255">Recordatorio: Mañana tiene cita de esterilización para Rocky a las 11:45. Recuerde el ayuno de 12 horas.</textarea>
+                <textarea id="rf-mensaje" class="rf-textarea" rows="4" maxlength="255" @bind="recordatorio.Mensaje"></textarea>
                 <span class="rf-hint">Este es el texto que recibirá el cliente por WhatsApp. Máx 255 caracteres.</span>
             </div>
 
             <div class="rf-row">
                 <div class="rf-field">
                     <label class="rf-label" for="rf-fecha">Fecha programada</label>
-                    <input id="rf-fecha" type="datetime-local" class="rf-input" value="2026-05-08T09:00" />
+                    <input id="rf-fecha" type="datetime-local" class="rf-input" @bind="recordatorio.FechaProgramada" />
                     <span class="rf-hint">Día y hora de envío.</span>
                 </div>
             </div>
@@ -44,7 +47,50 @@
         </div>
 
         <footer class="rec-modal-foot">
-            <button type="button" class="btn-rec btn-rec-primary">Guardar Cambios</button>
+            <button type="button" class="btn-rec btn-rec-primary" @onclick="Guardar">Guardar Cambios</button>
         </footer>
     </div>
 </div>
+
+@code {
+    // El modal es global (vive en MainLayout) y se abre mediante un toggle CSS,
+    // por lo que mantiene su propio objeto editable. Si en el futuro se pasa el
+    // recordatorio seleccionado, basta con asignar `recordatorio` antes de abrirlo.
+    private Recordatorio recordatorio = new Recordatorio
+    {
+        FechaProgramada = DateTime.Now,
+        Canal = CanalRecordatorio.WHATSAPP,
+        EstadoSeguimiento = EstadoSeguimiento.PENDIENTE
+    };
+
+    private string Subtitulo
+    {
+        get
+        {
+            var mascota = recordatorio.Cita?.Mascota;
+            var cliente = mascota?.Cliente;
+            if (recordatorio.Cita == null)
+            {
+                return "Edición de recordatorio";
+            }
+            string nombreMascota = mascota?.Nombre ?? "";
+            string nombreCliente = cliente != null ? $"{cliente.Nombres} {cliente.Apellidos}" : "";
+            return $"Cita #{recordatorio.Cita.Id} · {nombreMascota} · {nombreCliente}";
+        }
+    }
+
+    private void Guardar()
+    {
+        if (recordatorio.Id > 0)
+        {
+            RecordatorioService.Modificar(recordatorio);
+        }
+    }
+
+    // Permite que un componente padre cargue el recordatorio a editar.
+    public void Cargar(Recordatorio r)
+    {
+        recordatorio = r;
+        StateHasChanged();
+    }
+}

@@ -1,9 +1,11 @@
 @*
     Modal reutilizable para crear/editar cliente.
-    Se abre con <label for="cliente-form-modal">. El demo viene
-    pre-llenado con datos de Juan Pérez; en Blazor real esto se
-    cargaría según el cliente seleccionado.
+    Se abre con <label for="cliente-form-modal">. Los campos están
+    enlazados a un objeto Cliente local y el botón Guardar invoca
+    el servicio REST (Insertar si es nuevo, Modificar si tiene Id).
 *@
+@using VetCitasWA.Servicios.Modelo.Cliente
+@inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
 
 <input type="checkbox" id="cliente-form-modal" class="cli-modal-toggle" aria-hidden="true" />
 
@@ -23,47 +25,80 @@
             <div class="cf-row">
                 <div class="cf-field">
                     <label class="cf-label" for="cf-nombres">Nombres *</label>
-                    <input id="cf-nombres" type="text" class="cf-input" value="Juan" required />
+                    <input id="cf-nombres" type="text" class="cf-input" @bind="modelo.Nombres" required />
                 </div>
                 <div class="cf-field">
                     <label class="cf-label" for="cf-apellidos">Apellidos *</label>
-                    <input id="cf-apellidos" type="text" class="cf-input" value="Pérez" required />
+                    <input id="cf-apellidos" type="text" class="cf-input" @bind="modelo.Apellidos" required />
                 </div>
             </div>
 
             <div class="cf-field">
                 <label class="cf-label" for="cf-dni">DNI *</label>
-                <input id="cf-dni" type="text" class="cf-input" value="12345678" maxlength="8" pattern="[0-9]{8}" required />
+                <input id="cf-dni" type="text" class="cf-input" @bind="modelo.Dni" maxlength="8" pattern="[0-9]{8}" required />
                 <span class="cf-hint">Debe tener exactamente 8 dígitos. Es único en el sistema.</span>
             </div>
 
             <div class="cf-row">
                 <div class="cf-field">
                     <label class="cf-label" for="cf-telefono">Teléfono</label>
-                    <input id="cf-telefono" type="tel" class="cf-input" value="+51 987 654 321" />
+                    <input id="cf-telefono" type="tel" class="cf-input" @bind="modelo.Telefono" />
                 </div>
                 <div class="cf-field">
                     <label class="cf-label" for="cf-email">Correo</label>
-                    <input id="cf-email" type="email" class="cf-input" value="juan.perez@email.com" />
+                    <input id="cf-email" type="email" class="cf-input" @bind="modelo.Email" />
                 </div>
             </div>
 
             <div class="cf-field">
                 <label class="cf-label" for="cf-observaciones">Observaciones</label>
-                <textarea id="cf-observaciones" class="cf-textarea" rows="3" maxlength="255">Cliente desde 2022. Prefiere ser contactado por WhatsApp en las tardes.</textarea>
+                <textarea id="cf-observaciones" class="cf-textarea" rows="3" maxlength="255" @bind="modelo.Observaciones"></textarea>
                 <span class="cf-hint">Máximo 255 caracteres.</span>
             </div>
 
             <label class="cf-check">
-                <input type="checkbox" class="cf-check-input" checked />
+                <input type="checkbox" class="cf-check-input" @bind="modelo.Activo" />
                 <span class="cf-check-visual" aria-hidden="true"></span>
                 <span class="cf-check-text">Cliente activo</span>
             </label>
 
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <p class="cf-hint">@mensaje</p>
+            }
+
         </div>
 
         <footer class="cli-modal-foot">
-            <button type="button" class="btn-cli btn-cli-primary">Guardar Cliente</button>
+            <button type="button" class="btn-cli btn-cli-primary" @onclick="Guardar">Guardar Cliente</button>
         </footer>
     </div>
 </div>
+
+@code {
+    // Objeto enlazado al formulario. Por defecto un cliente nuevo y activo.
+    private Cliente modelo = new Cliente { Activo = true };
+    private string mensaje = "";
+
+    private void Guardar()
+    {
+        if (string.IsNullOrWhiteSpace(modelo.Nombres) || string.IsNullOrWhiteSpace(modelo.Apellidos) || string.IsNullOrWhiteSpace(modelo.Dni))
+        {
+            mensaje = "Nombres, Apellidos y DNI son obligatorios.";
+            return;
+        }
+
+        if (modelo.Id > 0)
+        {
+            ClienteService.Modificar(modelo);
+        }
+        else
+        {
+            ClienteService.Insertar(modelo);
+        }
+
+        mensaje = "Cliente guardado correctamente.";
+        // Se reinicia el modelo para una nueva captura.
+        modelo = new Cliente { Activo = true };
+    }
+}

@@ -1,4 +1,8 @@
 @page "/clientes-mascotas"
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
+@inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 
 <PageTitle>Clientes y Mascotas - VetCitas</PageTitle>
 
@@ -21,7 +25,7 @@
                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
                     </svg>
                 </span>
-                <input type="text" class="search-input" placeholder="Buscar..." />
+                <input type="text" class="search-input" placeholder="Buscar..." @oninput="OnBuscar" />
             </div>
 
             @* Botones de "Nuevo …": el visible depende del tab activo
@@ -64,152 +68,48 @@
                     </tr>
                 </thead>
                 <tbody>
-
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">JP</span>
-                                <span class="pet-name">Juan Pérez</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">12345678</td>
-                        <td data-label="Teléfono">+51 987 654 321</td>
-                        <td data-label="Correo">juan.perez@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">2</span>
-                            <span class="pet-list-inline">Max, Thor</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">MG</span>
-                                <span class="pet-name">María García</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">23456789</td>
-                        <td data-label="Teléfono">+51 987 654 322</td>
-                        <td data-label="Correo">maria.garcia@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">1</span>
-                            <span class="pet-list-inline">Luna</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">CL</span>
-                                <span class="pet-name">Carlos López</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">34567890</td>
-                        <td data-label="Teléfono">+51 987 654 323</td>
-                        <td data-label="Correo">carlos.lopez@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">1</span>
-                            <span class="pet-list-inline">Rocky</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">AM</span>
-                                <span class="pet-name">Ana Martínez</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">45678901</td>
-                        <td data-label="Teléfono">+51 987 654 324</td>
-                        <td data-label="Correo">ana.martinez@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">1</span>
-                            <span class="pet-list-inline">Mimi</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">PS</span>
-                                <span class="pet-name">Pedro Salas</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">56789012</td>
-                        <td data-label="Teléfono">+51 987 654 325</td>
-                        <td data-label="Correo">pedro.salas@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">1</span>
-                            <span class="pet-list-inline">Bobby</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
+                    @if (listaClientes == null || !listaClientes.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center" style="padding: 2rem;">
+                                <em>Cargando datos desde el servidor o no se encontraron resultados...</em>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var c in listaClientes)
+                        {
+                            <tr>
+                                <td data-label="Cliente">
+                                    <div class="pet-cell">
+                                        <span class="client-avatar" aria-hidden="true">@GetIniciales(c.Nombres, c.Apellidos)</span>
+                                        <span class="pet-name">@c.Nombres @c.Apellidos</span>
+                                    </div>
+                                </td>
+                                <td data-label="DNI">@c.Dni</td>
+                                <td data-label="Teléfono">@c.Telefono</td>
+                                <td data-label="Correo">@c.Email</td>
+                                <td data-label="Mascotas">
+                                    <span class="pet-count-badge">@(c.Mascotas?.Count ?? 0)</span>
+                                    <span class="pet-list-inline">@(c.Mascotas != null ? string.Join(", ", c.Mascotas.Select(m => m.Nombre)) : "")</span>
+                                </td>
+                                <td data-label="Acciones">
+                                    <div class="row-actions">
+                                        <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                                                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                                            </svg>
+                                        </a>
+                                        <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>
@@ -229,152 +129,49 @@
                     </tr>
                 </thead>
                 <tbody>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-dog" aria-hidden="true">M</span>
-                                <span class="pet-name">Max</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-dog">Perro</span>
-                        </td>
-                        <td data-label="Raza">Golden Retriever</td>
-                        <td data-label="Edad">3 años</td>
-                        <td data-label="Peso">28.5 kg</td>
-                        <td data-label="Dueño">Juan Pérez</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-cat" aria-hidden="true">L</span>
-                                <span class="pet-name">Luna</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-cat">Gato</span>
-                        </td>
-                        <td data-label="Raza">Siamés</td>
-                        <td data-label="Edad">2 años</td>
-                        <td data-label="Peso">4.2 kg</td>
-                        <td data-label="Dueño">María García</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-dog" aria-hidden="true">R</span>
-                                <span class="pet-name">Rocky</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-dog">Perro</span>
-                        </td>
-                        <td data-label="Raza">Bulldog</td>
-                        <td data-label="Edad">5 años</td>
-                        <td data-label="Peso">22 kg</td>
-                        <td data-label="Dueño">Carlos López</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-cat" aria-hidden="true">M</span>
-                                <span class="pet-name">Mimi</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-cat">Gato</span>
-                        </td>
-                        <td data-label="Raza">Persa</td>
-                        <td data-label="Edad">1 años</td>
-                        <td data-label="Peso">3.8 kg</td>
-                        <td data-label="Dueño">Ana Martínez</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-dog" aria-hidden="true">T</span>
-                                <span class="pet-name">Thor</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-dog">Perro</span>
-                        </td>
-                        <td data-label="Raza">Pastor Alemán</td>
-                        <td data-label="Edad">4 años</td>
-                        <td data-label="Peso">35 kg</td>
-                        <td data-label="Dueño">Juan Pérez</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
+                    @if (listaMascotas == null || !listaMascotas.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center" style="padding: 2rem;">
+                                <em>Cargando datos desde el servidor o no se encontraron resultados...</em>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var m in listaMascotas)
+                        {
+                            bool esPerro = m.Especie == TipoEspecie.PERRO;
+                            <tr>
+                                <td data-label="Mascota">
+                                    <div class="pet-cell">
+                                        <span class="pet-avatar @(esPerro ? "pet-dog" : "pet-cat")" aria-hidden="true">@(string.IsNullOrWhiteSpace(m.Nombre) ? "?" : m.Nombre.Substring(0, 1).ToUpper())</span>
+                                        <span class="pet-name">@m.Nombre</span>
+                                    </div>
+                                </td>
+                                <td data-label="Especie">
+                                    <span class="species @(esPerro ? "species-dog" : "species-cat")">@(esPerro ? "Perro" : "Gato")</span>
+                                </td>
+                                <td data-label="Raza">@m.Raza</td>
+                                <td data-label="Edad">@CalcularEdad(m.FechaNacimiento)</td>
+                                <td data-label="Peso">@m.Peso kg</td>
+                                <td data-label="Dueño">@(m.Cliente != null ? $"{m.Cliente.Nombres} {m.Cliente.Apellidos}" : "")</td>
+                                <td data-label="Acciones">
+                                    <div class="row-actions">
+                                        <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                                                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                                            </svg>
+                                        </a>
+                                        <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>
@@ -382,3 +179,46 @@
     </section>
 
 </div>
+
+@code {
+    private List<Cliente> listaClientes = new();
+    private List<Mascota> listaMascotas = new();
+
+    protected override void OnInitialized()
+    {
+        listaClientes = ClienteService.ListarTodos();
+        listaMascotas = MascotaService.ListarTodos();
+    }
+
+    private void OnBuscar(ChangeEventArgs e)
+    {
+        string texto = e.Value?.ToString() ?? "";
+        if (string.IsNullOrWhiteSpace(texto))
+        {
+            listaClientes = ClienteService.ListarTodos();
+            listaMascotas = MascotaService.ListarTodos();
+        }
+        else
+        {
+            listaClientes = ClienteService.ListarPorNombreApellidoODni(texto);
+            listaMascotas = MascotaService.ListarPorNombreODueno(texto);
+        }
+    }
+
+    private string GetIniciales(string? nombres, string? apellidos)
+    {
+        string n = !string.IsNullOrWhiteSpace(nombres) ? nombres.Substring(0, 1).ToUpper() : "";
+        string a = !string.IsNullOrWhiteSpace(apellidos) ? apellidos.Substring(0, 1).ToUpper() : "";
+        string iniciales = (n + a);
+        return string.IsNullOrEmpty(iniciales) ? "?" : iniciales;
+    }
+
+    private string CalcularEdad(DateTime? fechaNacimiento)
+    {
+        if (fechaNacimiento == null) return "—";
+        int anios = DateTime.Today.Year - fechaNacimiento.Value.Year;
+        if (fechaNacimiento.Value.Date > DateTime.Today.AddYears(-anios)) anios--;
+        if (anios < 0) anios = 0;
+        return anios + (anios == 1 ? " año" : " años");
+    }
+}

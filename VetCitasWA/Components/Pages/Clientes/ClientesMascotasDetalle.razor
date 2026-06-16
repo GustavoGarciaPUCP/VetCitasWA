@@ -1,4 +1,7 @@
 @page "/clientes-mascotas/detalle"
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 
 <PageTitle>Detalle de Mascota - VetCitas</PageTitle>
 
@@ -7,7 +10,7 @@
     <span class="crumb-sep">›</span>
     <a class="crumb crumb-link" href="/clientes-mascotas">Clientes y Mascotas</a>
     <span class="crumb-sep">›</span>
-    <span class="crumb current">Max</span>
+    <span class="crumb current">@(mascota?.Nombre ?? "Mascota")</span>
 </SectionContent>
 
 <div class="page-section">
@@ -26,12 +29,12 @@
 
         @* ================= Header de la mascota ================= *@
         <div class="pet-header">
-            <div class="pet-avatar-big" aria-hidden="true">M</div>
+            <div class="pet-avatar-big" aria-hidden="true">@(string.IsNullOrWhiteSpace(mascota?.Nombre) ? "?" : mascota!.Nombre.Substring(0, 1).ToUpper())</div>
             <div class="pet-info">
-                <h1 class="pet-name">Max</h1>
+                <h1 class="pet-name">@mascota?.Nombre</h1>
                 <div class="pet-meta">
-                    <span class="pet-badge">Perro</span>
-                    <span class="pet-age">3 años</span>
+                    <span class="pet-badge">@(mascota != null && mascota.Especie == TipoEspecie.PERRO ? "Perro" : "Gato")</span>
+                    <span class="pet-age">@CalcularEdad(mascota?.FechaNacimiento)</span>
                 </div>
             </div>
             <div class="pet-header-actions">
@@ -52,15 +55,15 @@
                 <div class="info-list">
                     <div class="info-item">
                         <div class="info-label">RAZA</div>
-                        <div class="info-value">Golden Retriever</div>
+                        <div class="info-value">@mascota?.Raza</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">EDAD</div>
-                        <div class="info-value">3 años</div>
+                        <div class="info-value">@CalcularEdad(mascota?.FechaNacimiento)</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">ÚLTIMA VISITA</div>
-                        <div class="info-value">2024-05-15</div>
+                        <div class="info-label">PESO</div>
+                        <div class="info-value">@mascota?.Peso kg</div>
                     </div>
                 </div>
             </section>
@@ -70,19 +73,19 @@
                 <div class="info-list">
                     <div class="info-item">
                         <div class="info-label">NOMBRE</div>
-                        <div class="info-value">Juan Pérez</div>
+                        <div class="info-value">@(mascota?.Cliente != null ? $"{mascota.Cliente.Nombres} {mascota.Cliente.Apellidos}" : "")</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">DNI</div>
-                        <div class="info-value">12345678</div>
+                        <div class="info-value">@mascota?.Cliente?.Dni</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">TELÉFONO</div>
-                        <div class="info-value">+1 234 567 8900</div>
+                        <div class="info-value">@mascota?.Cliente?.Telefono</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">EMAIL</div>
-                        <div class="info-value">juan.perez@email.com</div>
+                        <div class="info-value">@mascota?.Cliente?.Email</div>
                     </div>
                 </div>
             </section>
@@ -134,3 +137,24 @@
     </div>
 
 </div>
+
+@code {
+    private Mascota? mascota;
+
+    protected override void OnInitialized()
+    {
+        // La ruta no recibe Id; se carga la primera mascota disponible como
+        // ejemplo representativo (la maqueta original mostraba una mascota fija).
+        var mascotas = MascotaService.ListarTodos();
+        mascota = mascotas.FirstOrDefault();
+    }
+
+    private string CalcularEdad(DateTime? fechaNacimiento)
+    {
+        if (fechaNacimiento == null) return "—";
+        int anios = DateTime.Today.Year - fechaNacimiento.Value.Year;
+        if (fechaNacimiento.Value.Date > DateTime.Today.AddYears(-anios)) anios--;
+        if (anios < 0) anios = 0;
+        return anios + (anios == 1 ? " año" : " años");
+    }
+}

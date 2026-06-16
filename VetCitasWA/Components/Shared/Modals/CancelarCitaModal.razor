@@ -7,6 +7,7 @@
     cita.motivo_cancelacion del backend), avisar al cliente, y registrar
     quién canceló — más rico que un simple "¿Estás seguro?".
 *@
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 
 <input type="checkbox" id="cancelar-cita-modal" class="cc-modal-toggle" aria-hidden="true" />
 
@@ -36,7 +37,7 @@
 
             <div class="cc-field">
                 <label class="cc-label" for="cc-motivo">Motivo de cancelación <span class="cc-req">*</span></label>
-                <textarea id="cc-motivo" class="cc-textarea" rows="3" maxlength="255" placeholder="Ej. Cliente reportó emergencia familiar y solicitó reagendar. Se contactará el lunes." required></textarea>
+                <textarea id="cc-motivo" class="cc-textarea" rows="3" maxlength="255" placeholder="Ej. Cliente reportó emergencia familiar y solicitó reagendar. Se contactará el lunes." required @bind="motivo"></textarea>
                 <span class="cc-hint">El motivo queda registrado en el historial de la cita (máx 255 caracteres).</span>
             </div>
 
@@ -52,7 +53,22 @@
         </div>
 
         <footer class="cc-modal-foot">
-            <button type="button" class="btn-cc btn-cc-danger">Confirmar Cancelación</button>
+            <button type="button" class="btn-cc btn-cc-danger" @onclick="ConfirmarCancelacion">Confirmar Cancelación</button>
         </footer>
     </div>
 </div>
+
+@code {
+    // TODO: reemplazar por el usuario autenticado.
+    private const int UsuarioActualId = 1;
+
+    // TODO: la cita a cancelar debe pasarse desde la página que abre el modal.
+    [Parameter] public int IdCita { get; set; }
+
+    private string motivo = "";
+
+    private void ConfirmarCancelacion()
+    {
+        CitaService.CancelarCita(IdCita, motivo, UsuarioActualId);
+    }
+}

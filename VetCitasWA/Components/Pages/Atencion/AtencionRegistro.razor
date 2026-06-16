@@ -1,5 +1,11 @@
 @page "/citas-hoy/atender"
 @page "/atenciones-medicas/registro"
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Servicio
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
+@inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
 
 <PageTitle>Registro de Atención - VetCitas</PageTitle>
 
@@ -14,7 +20,7 @@
 <div class="page-section">
 
     <h1 class="page-title">
-        Registro de Atención Médica: Max (Perro) - Juan Pérez
+        Registro de Atención Médica: @(mascota?.Nombre) (@EspecieTexto(mascota)) - @(cliente?.Nombres) @(cliente?.Apellidos)
     </h1>
 
     <div class="grid-2col">
@@ -37,11 +43,11 @@
                         </svg>
                     </div>
                     <div class="pet-data">
-                        <div class="pet-name">Max</div>
-                        <div class="pet-row"><span class="pet-key">Especie:</span> Canino</div>
-                        <div class="pet-row"><span class="pet-key">Raza:</span> Golden Retriever</div>
-                        <div class="pet-row"><span class="pet-key">Peso:</span> 24 kg</div>
-                        <div class="pet-row"><span class="pet-key">Edad:</span> 4 años</div>
+                        <div class="pet-name">@(mascota?.Nombre)</div>
+                        <div class="pet-row"><span class="pet-key">Especie:</span> @EspecieTexto(mascota)</div>
+                        <div class="pet-row"><span class="pet-key">Raza:</span> @(mascota?.Raza)</div>
+                        <div class="pet-row"><span class="pet-key">Peso:</span> @(mascota?.Peso) kg</div>
+                        <div class="pet-row"><span class="pet-key">Edad:</span> @EdadTexto(mascota)</div>
                     </div>
                 </div>
             </section>
@@ -59,14 +65,24 @@
                     </summary>
 
                     <div class="collapse-body">
-                        <a href="#" class="history-item">
-                            <span class="history-arrow" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
-                                </svg>
-                            </span>
-                            Cita #1001 (10/05/26): Vacunación - Finalizada
-                        </a>
+                        @if (historial == null || !historial.Any())
+                        {
+                            <span class="history-item"><em>Sin atenciones previas registradas.</em></span>
+                        }
+                        else
+                        {
+                            @foreach (var h in historial)
+                            {
+                                <a href="#" class="history-item">
+                                    <span class="history-arrow" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+                                        </svg>
+                                    </span>
+                                    Cita #@(h.Cita?.Id) (@h.FechaHora.ToString("dd/MM/yy")): @(h.Cita?.Servicio?.Nombre) - @(h.Diagnostico)
+                                </a>
+                            }
+                        }
                     </div>
                 </details>
             </section>
@@ -81,25 +97,23 @@
                 <div class="field">
                     <label class="field-label" for="servicioEnCurso">Servicio en Curso</label>
                     <div class="select-wrap">
-                        <select id="servicioEnCurso" class="select">
-                            <option>Consulta General</option>
-                            <option>Esterilización Canina</option>
-                            <option>Esterilización Felina</option>
-                            <option>Vacunación Múltiple</option>
-                            <option>Cirugía Menor</option>
-                            <option>Control Post-Operatorio</option>
+                        <select id="servicioEnCurso" class="select" @bind="idServicioSeleccionado">
+                            @foreach (var s in listaServicios)
+                            {
+                                <option value="@s.Id">@s.Nombre</option>
+                            }
                         </select>
                     </div>
                 </div>
 
                 <div class="field">
                     <label class="field-label" for="notaClinica">Nota Clínica</label>
-                    <textarea id="notaClinica" class="textarea" rows="3">Max presenta tos leve, mucosas rosadas. Se sospecha bronquitis.</textarea>
+                    <textarea id="notaClinica" class="textarea" rows="3" @bind="atencion.NotaClinica"></textarea>
                 </div>
 
                 <div class="field">
                     <label class="field-label" for="diagnostico">Diagnóstico</label>
-                    <input id="diagnostico" type="text" class="input" value="Tos leve - Observación" />
+                    <input id="diagnostico" type="text" class="input" @bind="atencion.Diagnostico" />
                 </div>
 
                 <details class="inline-collapse">
@@ -112,13 +126,13 @@
                         Notas de Procedimiento (Cataplasmas, sedantes, ecografías)
                     </summary>
                     <div class="inline-collapse-body">
-                        <textarea class="textarea" rows="3" placeholder="Detalle del procedimiento..."></textarea>
+                        <textarea class="textarea" rows="3" placeholder="Detalle del procedimiento..." @bind="atencion.NotaPostOperatoria"></textarea>
                     </div>
                 </details>
 
                 <div class="field">
                     <label class="field-label" for="recomendaciones">Recomendaciones y Control</label>
-                    <textarea id="recomendaciones" class="textarea" rows="3">Reposo 48h, evitar ambientes polvorientos. Cita de control en 7 días.</textarea>
+                    <textarea id="recomendaciones" class="textarea" rows="3" @bind="atencion.RecomendacionControl"></textarea>
                 </div>
             </section>
 
@@ -129,17 +143,17 @@
                 <div class="closing-row">
                     <div class="closing-block">
                         <div class="closing-label">Monto Referencial</div>
-                        <div class="closing-value">S/. 120.00</div>
+                        <div class="closing-value">S/. @atencion.MontoReferencial.ToString("0.00")</div>
                     </div>
 
                     <div class="closing-block">
                         <label class="closing-label" for="descuento">Descuento (%)</label>
-                        <input id="descuento" type="number" class="input input-sm" value="15" />
+                        <input id="descuento" type="number" class="input input-sm" @bind="atencion.DescuentoAplicado" />
                     </div>
 
                     <div class="closing-block">
                         <div class="closing-label">Monto Final</div>
-                        <div class="closing-final">S/. 102.00</div>
+                        <div class="closing-final">S/. @MontoFinal.ToString("0.00")</div>
                     </div>
 
                     <div class="closing-block closing-action">
@@ -155,8 +169,8 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn-clear">Limpiar</button>
-                    <button type="button" class="btn-save">Finalizar y Guardar</button>
+                    <button type="button" class="btn-clear" @onclick="Limpiar">Limpiar</button>
+                    <button type="button" class="btn-save" @onclick="Guardar">Finalizar y Guardar</button>
                 </div>
             </section>
 
@@ -165,3 +179,86 @@
     </div>
 
 </div>
+
+@code {
+    // TODO: reemplazar por el usuario autenticado.
+    private const int UsuarioActualId = 1;
+
+    // TODO: la cita a atender debería llegar por parámetro de ruta o estado de navegación.
+    // Mientras tanto se trabaja sobre una atención en blanco asociada a una cita demo.
+    private const int CitaDemoId = 1;
+
+    private Atencion atencion = new();
+    private List<Servicio> listaServicios = new();
+    private List<Atencion> historial = new();
+
+    private Mascota? mascota;
+    private Cliente? cliente;
+
+    private int idServicioSeleccionado;
+
+    private double MontoFinal => atencion.MontoReferencial * (1 - (atencion.DescuentoAplicado / 100.0));
+
+    protected override void OnInitialized()
+    {
+        listaServicios = ServicioService.ListarTodos();
+
+        // Si ya existe una atención para esta cita, la cargamos; si no, partimos de una nueva.
+        var existente = AtencionService.BuscarPorCita(CitaDemoId);
+        if (existente != null)
+        {
+            atencion = existente;
+        }
+        else
+        {
+            atencion = new Atencion
+            {
+                FechaHora = DateTime.Now
+            };
+        }
+
+        mascota = atencion.Cita?.Mascota;
+        cliente = mascota?.Cliente;
+
+        if (atencion.Cita?.Servicio != null)
+        {
+            idServicioSeleccionado = atencion.Cita.Servicio.Id;
+        }
+
+        if (mascota != null)
+        {
+            historial = AtencionService.ListarHistorialPorMascota(mascota.Id);
+        }
+    }
+
+    private void Guardar()
+    {
+        if (atencion.Id > 0)
+        {
+            AtencionService.ModificarAtencion(atencion);
+        }
+        else
+        {
+            AtencionService.InsertarAtencion(atencion);
+        }
+    }
+
+    private void Limpiar()
+    {
+        atencion.NotaClinica = "";
+        atencion.Diagnostico = "";
+        atencion.NotaPostOperatoria = "";
+        atencion.RecomendacionControl = "";
+        atencion.DescuentoAplicado = 0;
+    }
+
+    private string EspecieTexto(Mascota? m)
+        => m == null ? "" : (m.Especie == TipoEspecie.PERRO ? "Perro" : "Gato");
+
+    private string EdadTexto(Mascota? m)
+    {
+        if (m?.FechaNacimiento == null) return "-";
+        var anios = (int)((DateTime.Today - m.FechaNacimiento.Value).TotalDays / 365.25);
+        return $"{anios} años";
+    }
+}

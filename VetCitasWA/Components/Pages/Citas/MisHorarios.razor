@@ -1,4 +1,8 @@
 @page "/mis-horarios"
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 
 <PageTitle>Mis Horarios - VetCitas</PageTitle>
 
@@ -79,16 +83,7 @@
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-off"></div>
             <div class="cal-cell cal-work">
-                <label for="mh-modal-confirmada" class="cita cita-confirmada">
-                    <div class="cita-title">Mimi (Gata)</div>
-                    <div class="cita-foot">09:00 · Confirmada</div>
-                    <div class="cita-pop">
-                        <div class="pop-head">Cita #1005</div>
-                        <div class="pop-row"><strong>Cliente:</strong> Ana Martínez</div>
-                        <div class="pop-row"><strong>Servicio:</strong> Control Post-Operatorio</div>
-                        <div class="pop-row"><strong>Duración:</strong> 20 min</div>
-                    </div>
-                </label>
+                @RenderCita(DiaJueves, 9)
             </div>
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-off"></div>
@@ -97,28 +92,10 @@
             @* === 10:00 === *@
             <div class="cal-cell cal-time">10:00</div>
             <div class="cal-cell cal-work">
-                <label for="mh-modal-confirmada" class="cita cita-confirmada">
-                    <div class="cita-title">Max (Perro)</div>
-                    <div class="cita-foot">10:30 · Confirmada</div>
-                    <div class="cita-pop">
-                        <div class="pop-head">Cita #1001</div>
-                        <div class="pop-row"><strong>Cliente:</strong> Juan Pérez</div>
-                        <div class="pop-row"><strong>Servicio:</strong> Consulta General</div>
-                        <div class="pop-row"><strong>Duración:</strong> 30 min</div>
-                    </div>
-                </label>
+                @RenderCita(DiaLunes, 10)
             </div>
             <div class="cal-cell cal-work">
-                <label for="mh-modal-enconsulta" class="cita cita-enconsulta">
-                    <div class="cita-title">Bobby (Perro)</div>
-                    <div class="cita-foot">10:00 · En Consulta</div>
-                    <div class="cita-pop">
-                        <div class="pop-head">Cita #1002</div>
-                        <div class="pop-row"><strong>Cliente:</strong> Pedro Salas</div>
-                        <div class="pop-row"><strong>Servicio:</strong> Esterilización</div>
-                        <div class="pop-row"><strong>Duración:</strong> 120 min</div>
-                    </div>
-                </label>
+                @RenderCita(DiaMartes, 10)
             </div>
             <div class="cal-cell cal-off"></div>
             <div class="cal-cell cal-work"></div>
@@ -130,30 +107,12 @@
             <div class="cal-cell cal-time">11:00</div>
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-work">
-                <label for="mh-modal-pendiente" class="cita cita-pendiente">
-                    <div class="cita-title">Luna (Gato)</div>
-                    <div class="cita-foot">11:30 · Pendiente</div>
-                    <div class="cita-pop">
-                        <div class="pop-head">Cita #1003</div>
-                        <div class="pop-row"><strong>Cliente:</strong> María García</div>
-                        <div class="pop-row"><strong>Servicio:</strong> Vacunación</div>
-                        <div class="pop-row"><strong>Duración:</strong> 15 min</div>
-                    </div>
-                </label>
+                @RenderCita(DiaMartes, 11)
             </div>
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-work">
-                <label for="mh-modal-cancelada" class="cita cita-cancelada">
-                    <div class="cita-title">Thor (Perro)</div>
-                    <div class="cita-foot">11:00 · Cancelada</div>
-                    <div class="cita-pop">
-                        <div class="pop-head">Cita #1004</div>
-                        <div class="pop-row"><strong>Cliente:</strong> Juan Pérez</div>
-                        <div class="pop-row"><strong>Servicio:</strong> Vacunación</div>
-                        <div class="pop-row"><strong>Duración:</strong> 15 min</div>
-                    </div>
-                </label>
+                @RenderCita(DiaViernes, 11)
             </div>
             <div class="cal-cell cal-off"></div>
             <div class="cal-cell cal-off"></div>
@@ -184,16 +143,7 @@
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-work">
-                <label for="mh-modal-atendida" class="cita cita-atendida">
-                    <div class="cita-title">Rocky (Perro)</div>
-                    <div class="cita-foot">14:30 · Atendida</div>
-                    <div class="cita-pop">
-                        <div class="pop-head">Cita #1006</div>
-                        <div class="pop-row"><strong>Cliente:</strong> Carlos López</div>
-                        <div class="pop-row"><strong>Servicio:</strong> Cirugía Menor</div>
-                        <div class="pop-row"><strong>Duración:</strong> 60 min</div>
-                    </div>
-                </label>
+                @RenderCita(DiaJueves, 14)
             </div>
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-off"></div>
@@ -206,16 +156,7 @@
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-work"></div>
             <div class="cal-cell cal-work">
-                <label for="mh-modal-noasistio" class="cita cita-noasistio">
-                    <div class="cita-title">Coco (Gato)</div>
-                    <div class="cita-foot">15:30 · No asistió</div>
-                    <div class="cita-pop">
-                        <div class="pop-head">Cita #1007</div>
-                        <div class="pop-row"><strong>Cliente:</strong> Sara Vega</div>
-                        <div class="pop-row"><strong>Servicio:</strong> Consulta</div>
-                        <div class="pop-row"><strong>Duración:</strong> 30 min</div>
-                    </div>
-                </label>
+                @RenderCita(DiaViernes, 15)
             </div>
             <div class="cal-cell cal-off"></div>
             <div class="cal-cell cal-off"></div>
@@ -589,3 +530,122 @@
         </footer>
     </div>
 </div>
+
+@code {
+    // TODO: reemplazar por el veterinario autenticado.
+    private const int VeterinarioActualId = 1;
+
+    private List<Cita> listaCitas = new();
+
+    // Fechas de la semana mostrada (Lunes a Viernes). Se calculan desde el lunes
+    // de la semana actual para que la grilla muestre las citas reales del vet.
+    private DateTime DiaLunes => InicioSemana;
+    private DateTime DiaMartes => InicioSemana.AddDays(1);
+    private DateTime DiaMiercoles => InicioSemana.AddDays(2);
+    private DateTime DiaJueves => InicioSemana.AddDays(3);
+    private DateTime DiaViernes => InicioSemana.AddDays(4);
+
+    private DateTime InicioSemana
+    {
+        get
+        {
+            int offset = ((int)DateTime.Today.DayOfWeek + 6) % 7; // 0 = Lunes
+            return DateTime.Today.AddDays(-offset);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        // Trae las citas de la semana del veterinario para poblar la grilla.
+        var finSemana = InicioSemana.AddDays(6);
+        listaCitas = CitaService.ListarFiltradas(VeterinarioActualId, InicioSemana, finSemana, "", "");
+    }
+
+    private RenderFragment RenderCita(DateTime dia, int hora) => builder =>
+    {
+        var cita = listaCitas.FirstOrDefault(c =>
+            c.FechaHoraInicio.Date == dia.Date && c.FechaHoraInicio.Hour == hora);
+
+        if (cita != null)
+        {
+            builder.OpenElement(0, "label");
+            builder.AddAttribute(1, "for", ModalEstadoId(cita.Estado));
+            builder.AddAttribute(2, "class", $"cita {CssEstado(cita.Estado)}");
+
+            builder.OpenElement(3, "div");
+            builder.AddAttribute(4, "class", "cita-title");
+            builder.AddContent(5, $"{cita.Mascota?.Nombre} ({EspecieTexto(cita.Mascota)})");
+            builder.CloseElement();
+
+            builder.OpenElement(6, "div");
+            builder.AddAttribute(7, "class", "cita-foot");
+            builder.AddContent(8, $"{cita.FechaHoraInicio:HH:mm} · {EstadoTexto(cita.Estado)}");
+            builder.CloseElement();
+
+            builder.OpenElement(9, "div");
+            builder.AddAttribute(10, "class", "cita-pop");
+
+            builder.OpenElement(11, "div");
+            builder.AddAttribute(12, "class", "pop-head");
+            builder.AddContent(13, $"Cita #{cita.Id}");
+            builder.CloseElement();
+
+            builder.OpenElement(14, "div");
+            builder.AddAttribute(15, "class", "pop-row");
+            builder.AddMarkupContent(16, "<strong>Cliente:</strong> ");
+            builder.AddContent(17, $"{cita.Mascota?.Cliente?.Nombres} {cita.Mascota?.Cliente?.Apellidos}");
+            builder.CloseElement();
+
+            builder.OpenElement(18, "div");
+            builder.AddAttribute(19, "class", "pop-row");
+            builder.AddMarkupContent(20, "<strong>Servicio:</strong> ");
+            builder.AddContent(21, cita.Servicio?.Nombre);
+            builder.CloseElement();
+
+            builder.OpenElement(22, "div");
+            builder.AddAttribute(23, "class", "pop-row");
+            builder.AddMarkupContent(24, "<strong>Duración:</strong> ");
+            builder.AddContent(25, $"{cita.Servicio?.DuracionMinutos} min");
+            builder.CloseElement();
+
+            builder.CloseElement(); // cita-pop
+            builder.CloseElement(); // label
+        }
+    };
+
+    private string EspecieTexto(Mascota? m)
+        => m == null ? "" : (m.Especie == TipoEspecie.PERRO ? "Perro" : "Gato");
+
+    private string CssEstado(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "cita-pendiente",
+        EstadoCita.CONFIRMADA => "cita-confirmada",
+        EstadoCita.EN_CONSULTA => "cita-enconsulta",
+        EstadoCita.ATENDIDA => "cita-atendida",
+        EstadoCita.CANCELADA => "cita-cancelada",
+        EstadoCita.NO_ASISTIO => "cita-noasistio",
+        _ => ""
+    };
+
+    private string EstadoTexto(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "Pendiente",
+        EstadoCita.CONFIRMADA => "Confirmada",
+        EstadoCita.EN_CONSULTA => "En Consulta",
+        EstadoCita.ATENDIDA => "Atendida",
+        EstadoCita.CANCELADA => "Cancelada",
+        EstadoCita.NO_ASISTIO => "No asistió",
+        _ => ""
+    };
+
+    private string ModalEstadoId(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "mh-modal-pendiente",
+        EstadoCita.CONFIRMADA => "mh-modal-confirmada",
+        EstadoCita.EN_CONSULTA => "mh-modal-enconsulta",
+        EstadoCita.ATENDIDA => "mh-modal-atendida",
+        EstadoCita.CANCELADA => "mh-modal-cancelada",
+        EstadoCita.NO_ASISTIO => "mh-modal-noasistio",
+        _ => "mh-modal-pendiente"
+    };
+}

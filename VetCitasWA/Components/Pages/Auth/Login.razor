@@ -1,5 +1,8 @@
 @page "/login"
 @layout EmptyLayout
+@using VetCitasWA.Servicios.Modelo.Usuario
+@inject VetCitasWA.Servicios.REST.UsuarioRS.UsuarioRestService UsuarioService
+@inject NavigationManager Nav
 
 <PageTitle>Iniciar sesión - VetCitas</PageTitle>
 
@@ -27,7 +30,8 @@
                        class="form-control form-control-lg"
                        id="usuario"
                        placeholder="Usuario"
-                       aria-label="Usuario" />
+                       aria-label="Usuario"
+                       @bind="username" @bind:event="oninput" />
             </div>
 
             <div class="mb-4">
@@ -36,7 +40,8 @@
                            class="form-control"
                            id="contrasena"
                            placeholder="Contraseña"
-                           aria-label="Contraseña" />
+                           aria-label="Contraseña"
+                           @bind="contrasena" @bind:event="oninput" />
                     <button type="button" class="btn btn-toggle-password" tabindex="-1"
                             onclick="vetTogglePwd('contrasena', this)"
                             aria-label="Mostrar contraseña" title="Mostrar contraseña">
@@ -55,14 +60,47 @@
                 </div>
             </div>
 
-            <a href="/" type="submit" class="btn btn-primary btn-lg w-100 btn-login">
+            @if (!string.IsNullOrEmpty(mensajeError))
+            {
+                <div class="mb-3 text-center" style="color: #dc3545; font-size: 0.9rem;">
+                    @mensajeError
+                </div>
+            }
+
+            <button type="button" class="btn btn-primary btn-lg w-100 btn-login" @onclick="IniciarSesion">
                 INICIAR SESIÓN
-            </a>
+            </button>
         </form>
 
     </div>
 </div>
 
 @code {
+    private string username = "";
+    private string contrasena = "";
+    private string mensajeError = "";
 
+    private void IniciarSesion()
+    {
+        mensajeError = "";
+
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(contrasena))
+        {
+            mensajeError = "Ingrese usuario y contraseña.";
+            return;
+        }
+
+        // Valida credenciales contra el servicio REST (UsuarioRS/autenticar)
+        Usuario? usuario = UsuarioService.Autenticar(username, contrasena);
+
+        if (usuario != null)
+        {
+            // TODO: persistir la sesión del usuario autenticado (no implementado aún)
+            Nav.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            mensajeError = "Usuario o contraseña incorrectos.";
+        }
+    }
 }

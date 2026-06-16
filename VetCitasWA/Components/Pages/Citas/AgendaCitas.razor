@@ -1,4 +1,10 @@
 @page "/agenda-citas"
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Usuario
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
+@inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VetService
 
 <PageTitle>Agenda de Citas - VetCitas</PageTitle>
 
@@ -39,14 +45,14 @@
             <div class="tb-field tb-field-date">
                 <label class="tb-label" for="dateFrom">Desde</label>
                 <div class="tb-control">
-                    <input id="dateFrom" type="date" class="tb-input" value="2026-05-12" />
+                    <input id="dateFrom" type="date" class="tb-input" value="@fechaDesde.ToString("yyyy-MM-dd")" @onchange="OnDesdeChanged" />
                 </div>
             </div>
             <span class="tb-range-sep" aria-hidden="true">→</span>
             <div class="tb-field tb-field-date">
                 <label class="tb-label" for="dateTo">Hasta</label>
                 <div class="tb-control">
-                    <input id="dateTo" type="date" class="tb-input" value="2026-05-18" />
+                    <input id="dateTo" type="date" class="tb-input" value="@fechaHasta.ToString("yyyy-MM-dd")" @onchange="OnHastaChanged" />
                 </div>
             </div>
         </div>
@@ -66,11 +72,12 @@
         <div class="tb-field tb-field-vet">
             <label class="tb-label" for="vetFilter">Veterinario</label>
             <div class="tb-control">
-                <select id="vetFilter" class="tb-select">
-                    <option>Todos</option>
-                    <option>Dr. Carlos</option>
-                    <option>Dra. Sofía</option>
-                    <option>Dr. Ricardo</option>
+                <select id="vetFilter" class="tb-select" @onchange="OnVetChanged">
+                    <option value="0">Todos</option>
+                    @foreach (var vet in listaVeterinarios)
+                    {
+                        <option value="@vet.Id">@vet.Nombres @vet.Apellidos</option>
+                    }
                 </select>
             </div>
         </div>
@@ -79,14 +86,14 @@
         <div class="tb-field tb-field-state">
             <label class="tb-label" for="stateFilter">Estado</label>
             <div class="tb-control">
-                <select id="stateFilter" class="tb-select">
-                    <option>Todos</option>
-                    <option>Pendiente</option>
-                    <option>Confirmada</option>
-                    <option>En consulta</option>
-                    <option>Atendida</option>
-                    <option>Cancelada</option>
-                    <option>No asistió</option>
+                <select id="stateFilter" class="tb-select" @onchange="OnEstadoChanged">
+                    <option value="">Todos</option>
+                    <option value="PENDIENTE">Pendiente</option>
+                    <option value="CONFIRMADA">Confirmada</option>
+                    <option value="EN_CONSULTA">En consulta</option>
+                    <option value="ATENDIDA">Atendida</option>
+                    <option value="CANCELADA">Cancelada</option>
+                    <option value="NO_ASISTIO">No asistió</option>
                 </select>
             </div>
         </div>
@@ -106,135 +113,57 @@
     @* Resumen del rango activo *@
     <div class="cal-range-summary">
         <span class="range-label">Mostrando:</span>
-        <strong class="range-value">12 May 2026 — 18 May 2026</strong>
-        <span class="range-sub">(7 días · 6 citas)</span>
+        <strong class="range-value">@fechaDesde.ToString("dd MMM yyyy") — @fechaHasta.ToString("dd MMM yyyy")</strong>
+        <span class="range-sub">(@((fechaHasta - fechaDesde).Days + 1) días · @listaCitas.Count citas)</span>
     </div>
 
     @* ----- Grilla del calendario ----- *@
     <div class="cal-card">
         <div class="cal-grid">
 
-            @* Header con nombres de días *@
+            @* Header con nombres de días (Lunes a Viernes de la semana mostrada) *@
             <div class="cal-cell cal-head cal-corner"></div>
-            <div class="cal-cell cal-head">Lunes<span class="cal-head-date">12 May</span></div>
-            <div class="cal-cell cal-head">Martes<span class="cal-head-date">13 May</span></div>
-            <div class="cal-cell cal-head">Miércoles<span class="cal-head-date">14 May</span></div>
-            <div class="cal-cell cal-head">Jueves<span class="cal-head-date">15 May</span></div>
-            <div class="cal-cell cal-head">Viernes<span class="cal-head-date">16 May</span></div>
+            @foreach (var dia in DiasSemana)
+            {
+                <div class="cal-cell cal-head">@NombreDia(dia)<span class="cal-head-date">@dia.ToString("dd MMM")</span></div>
+            }
 
-            @* === 08:00 === *@
-            <div class="cal-cell cal-time">08:00</div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+            @* Filas por hora (08:00 a 16:00); 13:00 es refrigerio *@
+            @foreach (var hora in Horas)
+            {
+                <div class="cal-cell cal-time">@(hora.ToString("00")):00</div>
 
-            @* === 09:00 === *@
-            <div class="cal-cell cal-time">09:00</div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot">
-                <label for="agenda-det-confirmada" class="cita cita-confirmada">
-                    <div class="cita-title">Mimi (Gata)</div>
-                    <div class="cita-sub">Ana Martínez · Control</div>
-                    <div class="cita-foot">09:00 · Confirmada</div>
-                </label>
-            </div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-
-            @* === 10:00 === *@
-            <div class="cal-cell cal-time">10:00</div>
-            <div class="cal-cell cal-slot">
-                <label for="agenda-det-confirmada" class="cita cita-confirmada">
-                    <div class="cita-title">Max (Perro)</div>
-                    <div class="cita-sub">Juan Pérez · Consulta General</div>
-                    <div class="cita-foot">10:30 · Confirmada</div>
-                </label>
-            </div>
-            <div class="cal-cell cal-slot">
-                <label for="agenda-det-enconsulta" class="cita cita-enconsulta">
-                    <div class="cita-title">Bobby (Perro)</div>
-                    <div class="cita-sub">Pedro Salas · Esterilización</div>
-                    <div class="cita-foot">10:00 · En Consulta</div>
-                </label>
-            </div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-
-            @* === 11:00 === *@
-            <div class="cal-cell cal-time">11:00</div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot">
-                <label for="agenda-det-pendiente" class="cita cita-pendiente">
-                    <div class="cita-title">Luna (Gato)</div>
-                    <div class="cita-sub">María García · Vacunación</div>
-                    <div class="cita-foot">11:30 · Pendiente</div>
-                </label>
-            </div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot">
-                <label for="agenda-det-cancelada" class="cita cita-cancelada">
-                    <div class="cita-title">Thor (Perro)</div>
-                    <div class="cita-sub">Juan Pérez · Vacunación</div>
-                    <div class="cita-foot">11:00 · Cancelada</div>
-                </label>
-            </div>
-
-            @* === 12:00 === *@
-            <div class="cal-cell cal-time">12:00</div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-
-            @* === 13:00 — REFRIGERIO === *@
-            <div class="cal-cell cal-time">13:00</div>
-            <div class="cal-cell cal-break cal-break-start">REFRIGERIO (No Disponible)</div>
-            <div class="cal-cell cal-break"></div>
-            <div class="cal-cell cal-break"></div>
-            <div class="cal-cell cal-break"></div>
-            <div class="cal-cell cal-break"></div>
-
-            @* === 14:00 === *@
-            <div class="cal-cell cal-time">14:00</div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot">
-                <label for="agenda-det-atendida" class="cita cita-atendida">
-                    <div class="cita-title">Rocky (Perro)</div>
-                    <div class="cita-sub">Carlos López · Cirugía</div>
-                    <div class="cita-foot">14:30 · Atendida</div>
-                </label>
-            </div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-
-            @* === 15:00 === *@
-            <div class="cal-cell cal-time">15:00</div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot">
-                <label for="agenda-det-noasistio" class="cita cita-noasistio">
-                    <div class="cita-title">Coco (Gato)</div>
-                    <div class="cita-sub">Sara Vega · Consulta</div>
-                    <div class="cita-foot">15:30 · No asistió</div>
-                </label>
-            </div>
-
-            @* === 16:00 === *@
-            <div class="cal-cell cal-time">16:00</div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
-            <div class="cal-cell cal-slot"><label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label></div>
+                @if (hora == 13)
+                {
+                    <div class="cal-cell cal-break cal-break-start">REFRIGERIO (No Disponible)</div>
+                    <div class="cal-cell cal-break"></div>
+                    <div class="cal-cell cal-break"></div>
+                    <div class="cal-cell cal-break"></div>
+                    <div class="cal-cell cal-break"></div>
+                }
+                else
+                {
+                    @foreach (var dia in DiasSemana)
+                    {
+                        var cita = listaCitas.FirstOrDefault(c =>
+                            c.FechaHoraInicio.Date == dia.Date && c.FechaHoraInicio.Hour == hora);
+                        <div class="cal-cell cal-slot">
+                            @if (cita != null)
+                            {
+                                <label for="@ModalDetalleId(cita.Estado)" class="cita @CssEstado(cita.Estado)">
+                                    <div class="cita-title">@(cita.Mascota?.Nombre) (@EspecieTexto(cita.Mascota))</div>
+                                    <div class="cita-sub">@(cita.Mascota?.Cliente?.Nombres) @(cita.Mascota?.Cliente?.Apellidos) · @(cita.Servicio?.Nombre)</div>
+                                    <div class="cita-foot">@cita.FechaHoraInicio.ToString("HH:mm") · @EstadoTexto(cita.Estado)</div>
+                                </label>
+                            }
+                            else
+                            {
+                                <label for="agenda-nueva-modal" class="slot-trigger" aria-label="Nueva cita"></label>
+                            }
+                        </div>
+                    }
+                }
+            }
 
         </div>
     </div>
@@ -314,9 +243,10 @@
                 <label class="ff-label" for="m-vet">Veterinario</label>
                 <div class="ff-select-wrap">
                     <select id="m-vet" class="ff-select">
-                        <option>Dr. Carlos — Medicina general</option>
-                        <option>Dra. Sofía — Cirugía</option>
-                        <option>Dr. Ricardo — Cardiología</option>
+                        @foreach (var vet in listaVeterinarios)
+                        {
+                            <option value="@vet.Id">@vet.Nombres @vet.Apellidos</option>
+                        }
                     </select>
                 </div>
                 <span class="ff-hint">Se valida disponibilidad y horario</span>
@@ -625,3 +555,120 @@
         </footer>
     </div>
 </div>
+
+@code {
+    private List<Cita> listaCitas = new();
+    private List<Veterinario> listaVeterinarios = new();
+
+    private int idVetSeleccionado = 0;
+    private string estadoSeleccionado = "";
+    private DateTime fechaDesde = DateTime.Today;
+    private DateTime fechaHasta = DateTime.Today.AddDays(6);
+
+    // Días Lunes..Viernes de la semana que contiene fechaDesde.
+    private IEnumerable<DateTime> DiasSemana
+    {
+        get
+        {
+            int offset = ((int)fechaDesde.DayOfWeek + 6) % 7; // 0 = Lunes
+            var lunes = fechaDesde.Date.AddDays(-offset);
+            for (int i = 0; i < 5; i++)
+            {
+                yield return lunes.AddDays(i);
+            }
+        }
+    }
+
+    private static readonly int[] Horas = new[] { 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+
+    protected override void OnInitialized()
+    {
+        listaVeterinarios = VetService.ListarTodos();
+        Recargar();
+    }
+
+    private void Recargar()
+    {
+        listaCitas = CitaService.ListarFiltradas(idVetSeleccionado, fechaDesde, fechaHasta, estadoSeleccionado, "");
+    }
+
+    private void OnVetChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            idVetSeleccionado = id;
+            Recargar();
+        }
+    }
+
+    private void OnEstadoChanged(ChangeEventArgs e)
+    {
+        estadoSeleccionado = e.Value?.ToString() ?? "";
+        Recargar();
+    }
+
+    private void OnDesdeChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var f))
+        {
+            fechaDesde = f;
+            Recargar();
+        }
+    }
+
+    private void OnHastaChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var f))
+        {
+            fechaHasta = f;
+            Recargar();
+        }
+    }
+
+    private string NombreDia(DateTime d) => d.DayOfWeek switch
+    {
+        DayOfWeek.Monday => "Lunes",
+        DayOfWeek.Tuesday => "Martes",
+        DayOfWeek.Wednesday => "Miércoles",
+        DayOfWeek.Thursday => "Jueves",
+        DayOfWeek.Friday => "Viernes",
+        DayOfWeek.Saturday => "Sábado",
+        _ => "Domingo"
+    };
+
+    private string EspecieTexto(Mascota? m)
+        => m == null ? "" : (m.Especie == TipoEspecie.PERRO ? "Perro" : "Gato");
+
+    private string CssEstado(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "cita-pendiente",
+        EstadoCita.CONFIRMADA => "cita-confirmada",
+        EstadoCita.EN_CONSULTA => "cita-enconsulta",
+        EstadoCita.ATENDIDA => "cita-atendida",
+        EstadoCita.CANCELADA => "cita-cancelada",
+        EstadoCita.NO_ASISTIO => "cita-noasistio",
+        _ => ""
+    };
+
+    private string EstadoTexto(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "Pendiente",
+        EstadoCita.CONFIRMADA => "Confirmada",
+        EstadoCita.EN_CONSULTA => "En Consulta",
+        EstadoCita.ATENDIDA => "Atendida",
+        EstadoCita.CANCELADA => "Cancelada",
+        EstadoCita.NO_ASISTIO => "No asistió",
+        _ => ""
+    };
+
+    private string ModalDetalleId(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "agenda-det-pendiente",
+        EstadoCita.CONFIRMADA => "agenda-det-confirmada",
+        EstadoCita.EN_CONSULTA => "agenda-det-enconsulta",
+        EstadoCita.ATENDIDA => "agenda-det-atendida",
+        EstadoCita.CANCELADA => "agenda-det-cancelada",
+        EstadoCita.NO_ASISTIO => "agenda-det-noasistio",
+        _ => "agenda-nueva-modal"
+    };
+}

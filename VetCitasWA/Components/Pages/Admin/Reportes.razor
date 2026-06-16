@@ -1,4 +1,9 @@
 @page "/reportes"
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
+@inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
 
 <PageTitle>Reportes - VetCitas</PageTitle>
 
@@ -78,54 +83,28 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td data-label="Fecha">02/05/2026</td>
-                                <td data-label="Mascota">Max</td>
-                                <td data-label="Cliente">Juan Pérez</td>
-                                <td data-label="Veterinario">Dr. Carlos</td>
-                                <td data-label="Servicio">Consulta General</td>
-                                <td data-label="Estado"><span class="state state-attended">Atendida</span></td>
-                            </tr>
-                            <tr>
-                                <td data-label="Fecha">03/05/2026</td>
-                                <td data-label="Mascota">Luna</td>
-                                <td data-label="Cliente">María García</td>
-                                <td data-label="Veterinario">Dra. Sofía</td>
-                                <td data-label="Servicio">Cirugía Menor</td>
-                                <td data-label="Estado"><span class="state state-attended">Atendida</span></td>
-                            </tr>
-                            <tr>
-                                <td data-label="Fecha">05/05/2026</td>
-                                <td data-label="Mascota">Rocky</td>
-                                <td data-label="Cliente">Carlos López</td>
-                                <td data-label="Veterinario">Dr. Carlos</td>
-                                <td data-label="Servicio">Vacunación Múltiple</td>
-                                <td data-label="Estado"><span class="state state-cancelled">Cancelada</span></td>
-                            </tr>
-                            <tr>
-                                <td data-label="Fecha">10/05/2026</td>
-                                <td data-label="Mascota">Thor</td>
-                                <td data-label="Cliente">Juan Pérez</td>
-                                <td data-label="Veterinario">Dr. Ricardo</td>
-                                <td data-label="Servicio">Esterilización Canina</td>
-                                <td data-label="Estado"><span class="state state-attended">Atendida</span></td>
-                            </tr>
-                            <tr>
-                                <td data-label="Fecha">15/05/2026</td>
-                                <td data-label="Mascota">Mimi</td>
-                                <td data-label="Cliente">Ana Martínez</td>
-                                <td data-label="Veterinario">Dr. Carlos</td>
-                                <td data-label="Servicio">Control Post-Operatorio</td>
-                                <td data-label="Estado"><span class="state state-attended">Atendida</span></td>
-                            </tr>
-                            <tr>
-                                <td data-label="Fecha">22/05/2026</td>
-                                <td data-label="Mascota">Bobby</td>
-                                <td data-label="Cliente">Pedro Salas</td>
-                                <td data-label="Veterinario">Dra. Sofía</td>
-                                <td data-label="Servicio">Consulta General</td>
-                                <td data-label="Estado"><span class="state state-noshow">No asistió</span></td>
-                            </tr>
+                            @if (listaCitas == null || !listaCitas.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center" style="padding: 2rem;">
+                                        <em>Cargando datos desde el servidor o no se encontraron resultados...</em>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var cita in listaCitas)
+                                {
+                                    <tr>
+                                        <td data-label="Fecha">@cita.FechaHoraInicio.ToString("dd/MM/yyyy")</td>
+                                        <td data-label="Mascota">@cita.Mascota?.Nombre</td>
+                                        <td data-label="Cliente">@cita.Mascota?.Cliente?.Nombres @cita.Mascota?.Cliente?.Apellidos</td>
+                                        <td data-label="Veterinario">@cita.Veterinario?.Nombres @cita.Veterinario?.Apellidos</td>
+                                        <td data-label="Servicio">@cita.Servicio?.Nombre</td>
+                                        <td data-label="Estado"><span class="state">@cita.Estado</span></td>
+                                    </tr>
+                                }
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -185,30 +164,27 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td data-label="Cliente">Ana Martínez</td>
-                                <td data-label="DNI">45678901</td>
-                                <td data-label="Teléfono">+51 987 654 324</td>
-                                <td data-label="# Citas"><span class="count-badge">12</span></td>
-                            </tr>
-                            <tr>
-                                <td data-label="Cliente">Juan Pérez</td>
-                                <td data-label="DNI">12345678</td>
-                                <td data-label="Teléfono">+51 987 654 321</td>
-                                <td data-label="# Citas"><span class="count-badge">8</span></td>
-                            </tr>
-                            <tr>
-                                <td data-label="Cliente">Carlos López</td>
-                                <td data-label="DNI">34567890</td>
-                                <td data-label="Teléfono">+51 987 654 323</td>
-                                <td data-label="# Citas"><span class="count-badge">7</span></td>
-                            </tr>
-                            <tr>
-                                <td data-label="Cliente">María García</td>
-                                <td data-label="DNI">23456789</td>
-                                <td data-label="Teléfono">+51 987 654 322</td>
-                                <td data-label="# Citas"><span class="count-badge">6</span></td>
-                            </tr>
+                            @if (listaClientes == null || !listaClientes.Any())
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center" style="padding: 2rem;">
+                                        <em>Cargando datos desde el servidor o no se encontraron resultados...</em>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var cliente in listaClientes)
+                                {
+                                    <tr>
+                                        <td data-label="Cliente">@cliente.Nombres @cliente.Apellidos</td>
+                                        <td data-label="DNI">@cliente.Dni</td>
+                                        <td data-label="Teléfono">@cliente.Telefono</td>
+                                        @* TODO: sin endpoint disponible — no existe método para contar citas por cliente *@
+                                        <td data-label="# Citas"><span class="count-badge">—</span></td>
+                                    </tr>
+                                }
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -232,3 +208,18 @@
     </div>
 
 </div>
+
+@code {
+    private List<Cita> listaCitas = new List<Cita>();
+    private List<Cliente> listaClientes = new List<Cliente>();
+
+    protected override void OnInitialized()
+    {
+        // Reporte de Citas: todas las citas registradas
+        listaCitas = CitaService.ListarTodas();
+
+        // Reporte de Clientes Frecuentes: todos los clientes
+        // (el conteo de citas por cliente no tiene endpoint disponible)
+        listaClientes = ClienteService.ListarTodos();
+    }
+}

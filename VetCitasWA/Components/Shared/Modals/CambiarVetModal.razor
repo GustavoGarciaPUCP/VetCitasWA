@@ -2,6 +2,9 @@
     Modal para reasignar la cita a otro veterinario manteniendo
     fecha/hora/servicio. Se abre con <label for="cambiar-vet-modal">.
 *@
+@using VetCitasWA.Servicios.Modelo.Usuario
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
+@inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VetService
 
 <input type="checkbox" id="cambiar-vet-modal" class="cv-modal-toggle" aria-hidden="true" />
 
@@ -44,53 +47,31 @@
 
             <div class="cv-vet-list">
 
-                <label class="cv-vet-row">
-                    <input type="radio" name="cv-vet" class="cv-radio-input" checked />
-                    <span class="cv-radio-visual" aria-hidden="true"></span>
-                    <div class="cv-vet-info">
-                        <div class="cv-vet-head">
-                            <span class="cv-vet-name">Dra. Ramírez</span>
-                            <span class="cv-vet-badge cv-badge-ok">Disponible</span>
-                        </div>
-                        <span class="cv-vet-meta">Medicina General · CMPV-3421</span>
-                    </div>
-                </label>
-
-                <label class="cv-vet-row">
-                    <input type="radio" name="cv-vet" class="cv-radio-input" />
-                    <span class="cv-radio-visual" aria-hidden="true"></span>
-                    <div class="cv-vet-info">
-                        <div class="cv-vet-head">
-                            <span class="cv-vet-name">Dr. Castillo</span>
-                            <span class="cv-vet-badge cv-badge-ok">Disponible</span>
-                        </div>
-                        <span class="cv-vet-meta">Cirugía · CMPV-2890</span>
-                    </div>
-                </label>
-
-                <label class="cv-vet-row cv-vet-row-busy">
-                    <input type="radio" name="cv-vet" class="cv-radio-input" disabled />
-                    <span class="cv-radio-visual" aria-hidden="true"></span>
-                    <div class="cv-vet-info">
-                        <div class="cv-vet-head">
-                            <span class="cv-vet-name">Dr. Pérez</span>
-                            <span class="cv-vet-badge cv-badge-busy">Ocupado 10:30</span>
-                        </div>
-                        <span class="cv-vet-meta">Dermatología · CMPV-4102</span>
-                    </div>
-                </label>
-
-                <label class="cv-vet-row cv-vet-row-busy">
-                    <input type="radio" name="cv-vet" class="cv-radio-input" disabled />
-                    <span class="cv-radio-visual" aria-hidden="true"></span>
-                    <div class="cv-vet-info">
-                        <div class="cv-vet-head">
-                            <span class="cv-vet-name">Dra. Torres</span>
-                            <span class="cv-vet-badge cv-badge-off">No labora ese día</span>
-                        </div>
-                        <span class="cv-vet-meta">Oncología · CMPV-5210</span>
-                    </div>
-                </label>
+                @if (listaVeterinarios == null || !listaVeterinarios.Any())
+                {
+                    <label class="cv-vet-row">
+                        <span class="cv-vet-info"><em>Cargando veterinarios...</em></span>
+                    </label>
+                }
+                else
+                {
+                    @foreach (var vet in listaVeterinarios)
+                    {
+                        <label class="cv-vet-row">
+                            <input type="radio" name="cv-vet" class="cv-radio-input"
+                                   checked="@(idNuevoVeterinario == vet.Id)"
+                                   @onchange="() => idNuevoVeterinario = vet.Id" />
+                            <span class="cv-radio-visual" aria-hidden="true"></span>
+                            <div class="cv-vet-info">
+                                <div class="cv-vet-head">
+                                    <span class="cv-vet-name">@vet.Nombres @vet.Apellidos</span>
+                                    <span class="cv-vet-badge cv-badge-ok">Disponible</span>
+                                </div>
+                                <span class="cv-vet-meta">CMP @vet.Cmp</span>
+                            </div>
+                        </label>
+                    }
+                }
 
             </div>
 
@@ -103,7 +84,31 @@
         </div>
 
         <footer class="cv-modal-foot">
-            <button type="button" class="btn-cv btn-cv-primary">Confirmar Cambio</button>
+            <button type="button" class="btn-cv btn-cv-primary" @onclick="ConfirmarCambio">Confirmar Cambio</button>
         </footer>
     </div>
 </div>
+
+@code {
+    // TODO: reemplazar por el usuario autenticado.
+    private const int UsuarioActualId = 1;
+
+    // TODO: la cita a reasignar debe pasarse desde la página que abre el modal.
+    [Parameter] public int IdCita { get; set; }
+
+    private List<Veterinario> listaVeterinarios = new();
+    private int idNuevoVeterinario = 0;
+
+    protected override void OnInitialized()
+    {
+        listaVeterinarios = VetService.ListarTodos();
+    }
+
+    private void ConfirmarCambio()
+    {
+        if (idNuevoVeterinario > 0)
+        {
+            CitaService.CambiarVeterinario(IdCita, idNuevoVeterinario, UsuarioActualId);
+        }
+    }
+}

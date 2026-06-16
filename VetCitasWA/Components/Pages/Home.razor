@@ -1,4 +1,11 @@
 @page "/"
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
+@inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
+@inject VetCitasWA.Servicios.REST.CitaRS.RecordatorioRestService RecordatorioService
+@inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
+@inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 
 <PageTitle>Inicio - VetCitas</PageTitle>
 
@@ -37,6 +44,7 @@
         @* Datos: Cita.estado, Cita.fechaHoraInicio, Cita.veterinario,
                  Atencion.fechaHora, Atencion.montoReferencial,
                  Atencion.descuentoAplicado, Atencion.recomendacionControl *@
+        @* TODO: sin endpoint disponible — los KPIs del veterinario requieren el id del veterinario logueado (sesión no implementada) *@
         <div class="kpi-grid">
 
             <article class="kpi-card kpi-blue-soft">
@@ -106,6 +114,7 @@
                     <a href="/mis-horarios" class="panel-link">Ver semana completa →</a>
                 </header>
                 <div class="panel-body">
+                    @* TODO: sin endpoint disponible — la agenda del día requiere el id del veterinario logueado (sesión no implementada) *@
 
                     <div class="ag-item">
                         <div class="ag-time">09:00</div>
@@ -172,6 +181,7 @@
                     <span class="panel-sub">Este mes</span>
                 </header>
                 <div class="panel-body">
+                    @* TODO: sin endpoint disponible — TopServiciosPorVeterinario requiere el id del veterinario logueado (sesión no implementada) *@
                     <div class="bar-list">
                         <div class="bar-row">
                             <span class="bar-label">Consulta General</span>
@@ -233,8 +243,9 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Citas hoy</div>
-                    <div class="kpi-value">23</div>
-                    <div class="kpi-sub">4 vets · 5 servicios</div>
+                    <div class="kpi-value">@citasHoy</div>
+                    @* TODO: sin endpoint disponible — desglose por vets/servicios *@
+                    <div class="kpi-sub">Programadas para hoy</div>
                 </div>
             </article>
 
@@ -247,7 +258,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Sin confirmar</div>
-                    <div class="kpi-value">7</div>
+                    <div class="kpi-value">@citasPendientesHoy</div>
                     <div class="kpi-sub">Estado: PENDIENTE</div>
                 </div>
             </article>
@@ -261,7 +272,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Recordatorios</div>
-                    <div class="kpi-value">12</div>
+                    <div class="kpi-value">@recordatoriosPendientes</div>
                     <div class="kpi-sub">Pendientes de envío</div>
                 </div>
             </article>
@@ -275,7 +286,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Cancelaciones</div>
-                    <div class="kpi-value">3</div>
+                    <div class="kpi-value">@cancelacionesHoy</div>
                     <div class="kpi-sub">Hoy · ver motivos</div>
                 </div>
             </article>
@@ -292,6 +303,7 @@
                     <a href="/agenda-citas" class="panel-link">Ver agenda →</a>
                 </header>
                 <div class="panel-body">
+                    @* TODO: sin endpoint disponible — listado detallado de citas pendientes (solo existe el conteo) *@
 
                     <div class="cola-item">
                         <div class="cola-when">
@@ -351,6 +363,7 @@
                     <span class="panel-sub">Citas asignadas hoy</span>
                 </header>
                 <div class="panel-body">
+                    @* TODO: sin endpoint disponible — agrupación de carga de citas por veterinario *@
                     <div class="bar-list">
                         <div class="bar-row">
                             <span class="bar-label">Dr. Carlos · Medicina general</span>
@@ -407,8 +420,9 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Citas del mes</div>
-                    <div class="kpi-value">487</div>
-                    <div class="kpi-sub">+12% vs. abril</div>
+                    <div class="kpi-value">@citasDelMes</div>
+                    @* TODO: sin endpoint disponible — comparativa vs. mes anterior *@
+                    <div class="kpi-sub">Total registradas este mes</div>
                 </div>
             </article>
 
@@ -421,7 +435,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Ingresos del mes</div>
-                    <div class="kpi-value">S/ 38,420</div>
+                    <div class="kpi-value">S/ @ingresosDelMes.ToString("N2")</div>
                     <div class="kpi-sub">Neto de descuentos aplicados</div>
                 </div>
             </article>
@@ -435,6 +449,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Veterinarios</div>
+                    @* TODO: sin endpoint disponible — no existe método para contar veterinarios activos *@
                     <div class="kpi-value">8</div>
                     <div class="kpi-sub">Activos en plantilla</div>
                 </div>
@@ -448,8 +463,8 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Clientes activos</div>
-                    <div class="kpi-value">342</div>
-                    <div class="kpi-sub">812 mascotas registradas</div>
+                    <div class="kpi-value">@clientesActivos</div>
+                    <div class="kpi-sub">@mascotasActivas mascotas registradas</div>
                 </div>
             </article>
 
@@ -465,6 +480,7 @@
                     <span class="panel-sub">Más demandados este mes</span>
                 </header>
                 <div class="panel-body">
+                    @* TODO: sin endpoint disponible — top de servicios global (TopServiciosPorVeterinario requiere id de veterinario) *@
                     <div class="bar-list">
                         <div class="bar-row">
                             <span class="bar-label">Consulta General · S/ 50</span>
@@ -503,67 +519,33 @@
                 </header>
                 <div class="panel-body">
                     <div class="top-list">
-
-                        <div class="top-item">
-                            <span class="top-rank">1</span>
-                            <div class="top-info">
-                                <span class="top-name">Dra. Ramírez</span>
-                                <span class="top-meta">Medicina general · CMPV-3421</span>
+                        @if (topVeterinarios == null || !topVeterinarios.Any())
+                        {
+                            <div class="top-item">
+                                <div class="top-info">
+                                    <span class="top-name"><em>Sin datos disponibles</em></span>
+                                </div>
                             </div>
-                            <div class="top-stat">
-                                <span class="top-value">112</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
-
-                        <div class="top-item">
-                            <span class="top-rank">2</span>
-                            <div class="top-info">
-                                <span class="top-name">Dr. Carlos Mendoza</span>
-                                <span class="top-meta">Medicina general · CMPV-1820</span>
-                            </div>
-                            <div class="top-stat">
-                                <span class="top-value">98</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
-
-                        <div class="top-item">
-                            <span class="top-rank">3</span>
-                            <div class="top-info">
-                                <span class="top-name">Dr. Castillo</span>
-                                <span class="top-meta">Cirugía · CMPV-2890</span>
-                            </div>
-                            <div class="top-stat">
-                                <span class="top-value">61</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
-
-                        <div class="top-item">
-                            <span class="top-rank">4</span>
-                            <div class="top-info">
-                                <span class="top-name">Dr. Pérez</span>
-                                <span class="top-meta">Dermatología · CMPV-4102</span>
-                            </div>
-                            <div class="top-stat">
-                                <span class="top-value">48</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
-
-                        <div class="top-item">
-                            <span class="top-rank">5</span>
-                            <div class="top-info">
-                                <span class="top-name">Dra. Torres</span>
-                                <span class="top-meta">Oncología · CMPV-5210</span>
-                            </div>
-                            <div class="top-stat">
-                                <span class="top-value">37</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
-
+                        }
+                        else
+                        {
+                            @{ int rankVet = 0; }
+                            @foreach (var resumen in topVeterinarios)
+                            {
+                                rankVet++;
+                                <div class="top-item">
+                                    <span class="top-rank">@rankVet</span>
+                                    <div class="top-info">
+                                        <span class="top-name">@resumen.Veterinario?.Nombres @resumen.Veterinario?.Apellidos</span>
+                                        <span class="top-meta">CMP @resumen.Veterinario?.Cmp</span>
+                                    </div>
+                                    <div class="top-stat">
+                                        <span class="top-value">@resumen.TotalAtenciones</span>
+                                        <span class="top-label">atenciones</span>
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
                 </div>
             </section>
@@ -589,3 +571,58 @@
     </div>
 
 </div>
+
+@code {
+    // ----- KPIs Recepcionista -----
+    private int citasHoy;
+    private int citasPendientesHoy;
+    private int recordatoriosPendientes;
+    private int cancelacionesHoy;
+
+    // ----- KPIs Administrador -----
+    private int citasDelMes;
+    private double ingresosDelMes;
+    private int clientesActivos;
+    private int mascotasActivas;
+
+    // ----- Top veterinarios (Administrador) -----
+    private List<VeterinarioAtencionResumen> topVeterinarios = new List<VeterinarioAtencionResumen>();
+
+    // Estados de cita (enum EstadoCita)
+    private static readonly string[] TodosLosEstados =
+        { "PENDIENTE", "CONFIRMADA", "CANCELADA", "ATENDIDA", "NO_ASISTIO", "EN_CONSULTA" };
+
+    protected override void OnInitialized()
+    {
+        DateTime hoyInicio = DateTime.Today;                       // 00:00 de hoy
+        DateTime hoyFin = DateTime.Today.AddDays(1).AddSeconds(-1); // 23:59:59 de hoy
+
+        DateTime mesInicio = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        DateTime mesFin = mesInicio.AddMonths(1).AddSeconds(-1);
+
+        int anio = DateTime.Today.Year;
+        int mes = DateTime.Today.Month;
+
+        // ----- Recepcionista -----
+        // Citas hoy: suma de todas las citas de hoy en cualquier estado
+        foreach (var estado in TodosLosEstados)
+        {
+            citasHoy += CitaService.ContarPorEstadoEnRango(estado, hoyInicio, hoyFin);
+        }
+        citasPendientesHoy = CitaService.ContarPorEstadoEnRango("PENDIENTE", hoyInicio, hoyFin);
+        cancelacionesHoy = CitaService.ContarPorEstadoEnRango("CANCELADA", hoyInicio, hoyFin);
+        recordatoriosPendientes = RecordatorioService.ContarPendientes();
+
+        // ----- Administrador -----
+        // Citas del mes: suma de todas las citas del mes en cualquier estado
+        foreach (var estado in TodosLosEstados)
+        {
+            citasDelMes += CitaService.ContarPorEstadoEnRango(estado, mesInicio, mesFin);
+        }
+        ingresosDelMes = AtencionService.SumarMontosNetosPorMes(anio, mes);
+        clientesActivos = ClienteService.ContarActivos();
+        mascotasActivas = MascotaService.ContarActivas();
+
+        topVeterinarios = AtencionService.TopVeterinariosPorAtenciones(anio, mes, 5);
+    }
+}
