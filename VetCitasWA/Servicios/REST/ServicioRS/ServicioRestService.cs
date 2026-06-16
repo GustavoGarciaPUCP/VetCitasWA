@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using VetCitasWA.Servicios.Modelo.Cita;
+using VetCitasWA.Servicios.Modelo.Servicio;
 
 namespace VetCitasWA.Servicios.REST.ServicioRS
 {
