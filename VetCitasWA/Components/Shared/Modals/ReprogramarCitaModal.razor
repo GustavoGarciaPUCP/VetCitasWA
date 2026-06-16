@@ -95,14 +95,13 @@
     [Parameter] public int IdCita { get; set; }
 
     private DateTime nuevaFecha = DateTime.Today;
-    private string nuevaHora = "09:00";
+    private TimeOnly nuevaHora = new TimeOnly(9, 0);
     private string motivo = "";
 
     private void ConfirmarReprogramacion()
     {
         // Combina fecha + hora seleccionadas para construir el slot.
-        TimeSpan.TryParse(nuevaHora, out var hora);
-        var inicio = nuevaFecha.Date.Add(hora);
+        var inicio = nuevaFecha.Date.Add(nuevaHora.ToTimeSpan());
         // Duración estimada por defecto (30 min) — se ajusta cuando se conozca el servicio de la cita.
         var fin = inicio.AddMinutes(30);
 
