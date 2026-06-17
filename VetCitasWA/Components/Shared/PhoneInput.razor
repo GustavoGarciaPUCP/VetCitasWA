@@ -1,0 +1,50 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@*
+    Campo de teléfono con intl-tel-input (banderas + código de país).
+    El <div> contenedor es la raíz ESTABLE que ve Blazor; la librería envuelve
+    el <input> DENTRO de ese div. Con ShouldRender => false, Blazor nunca vuelve
+    a reconciliar este subárbol, así que la mutación del DOM no rompe el modal padre.
+*@
+<div class="vc-phone-wrap">
+    <input type="tel" class="vc-form-input" @ref="el" />
+</div>
+
+@code {
+    [Parameter] public string? Initial { get; set; }
+
+    private ElementReference el;
+    private bool inited;
+
+    // Render único: una vez inicializado, Blazor no vuelve a tocar este subárbol
+    protected override bool ShouldRender() => !inited;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !inited)
+        {
+            inited = true;
+            // Si la librería falla (no cargó, etc.) no debe romper el circuito.
+            try { await JS.InvokeVoidAsync("vetIntlTel.init", el, Initial ?? ""); }
+            catch { }
+        }
+    }
+
+    // Devuelve SOLO dígitos con código de país (p. ej. 51987654321).
+    // El backend valida "solo dígitos (6-15)", por eso quitamos el "+" y separadores.
+    public async Task<string> GetNumberAsync()
+    {
+        try
+        {
+            var raw = await JS.InvokeAsync<string>("vetIntlTel.getNumber", el);
+            return new string((raw ?? "").Where(char.IsDigit).ToArray());
+        }
+        catch { return ""; }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await JS.InvokeVoidAsync("vetIntlTel.destroy", el); } catch { }
+    }
+}

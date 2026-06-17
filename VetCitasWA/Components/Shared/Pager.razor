@@ -1,0 +1,55 @@
+@* Pager reutilizable (paginación en el cliente).
+   Uso: <Pager CurrentPage="pagina" TotalPages="totalPaginas" CurrentPageChanged="IrAPagina" /> *@
+
+@if (TotalPages > 1)
+{
+    <nav class="pager" aria-label="Paginación">
+        <button type="button" class="pager-btn pager-arrow" aria-label="Anterior"
+                disabled="@(CurrentPage <= 1)" @onclick="() => Go(CurrentPage - 1)">‹</button>
+
+        @foreach (var p in PageNumbers())
+        {
+            if (p == -1)
+            {
+                <span class="pager-ellipsis">…</span>
+            }
+            else
+            {
+                <button type="button" class="pager-btn @(p == CurrentPage ? "pager-active" : "")" @onclick="() => Go(p)">@p</button>
+            }
+        }
+
+        <button type="button" class="pager-btn pager-arrow" aria-label="Siguiente"
+                disabled="@(CurrentPage >= TotalPages)" @onclick="() => Go(CurrentPage + 1)">›</button>
+    </nav>
+}
+
+@code {
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int TotalPages { get; set; }
+    [Parameter] public EventCallback<int> CurrentPageChanged { get; set; }
+
+    private async Task Go(int p)
+    {
+        if (p < 1 || p > TotalPages || p == CurrentPage) return;
+        await CurrentPageChanged.InvokeAsync(p);
+    }
+
+    // Secuencia de páginas con elipsis: 1 … (c-1) c (c+1) … N  (-1 = elipsis)
+    private IEnumerable<int> PageNumbers()
+    {
+        const int delta = 1;
+        var pages = new List<int>();
+        int last = 0;
+        for (int i = 1; i <= TotalPages; i++)
+        {
+            if (i == 1 || i == TotalPages || (i >= CurrentPage - delta && i <= CurrentPage + delta))
+            {
+                if (last != 0 && i - last > 1) pages.Add(-1);
+                pages.Add(i);
+                last = i;
+            }
+        }
+        return pages;
+    }
+}

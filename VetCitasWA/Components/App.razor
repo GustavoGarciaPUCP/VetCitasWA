@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["VetCitasWA.styles.css"]" />
+    @* intl-tel-input: campo de teléfono con banderas *@
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet />
@@ -246,6 +248,37 @@
 <body>
     <Routes />
     <ReconnectModal />
+    @* intl-tel-input + helper de interop *@
+    <script defer src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
+    <script>
+        window.vetIntlTel = {
+            _map: new Map(),
+            init: function (el, initial) {
+                if (!el || typeof window.intlTelInput !== 'function') return;
+                if (this._map.has(el)) { try { this._map.get(el).destroy(); } catch (e) { } this._map.delete(el); }
+                var iti = window.intlTelInput(el, {
+                    initialCountry: 'pe',
+                    preferredCountries: ['pe'],
+                    separateDialCode: true,
+                    utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js'
+                });
+                if (initial) { try { iti.setNumber(initial.charAt(0) === '+' ? initial : '+' + initial); } catch (e) { } }
+                this._map.set(el, iti);
+            },
+            getNumber: function (el) {
+                var iti = this._map.get(el);
+                if (iti && typeof iti.getNumber === 'function') {
+                    var n = iti.getNumber();
+                    return n || (el ? el.value : '');
+                }
+                return el ? el.value : '';
+            },
+            destroy: function (el) {
+                var iti = this._map.get(el);
+                if (iti) { try { iti.destroy(); } catch (e) { } this._map.delete(el); }
+            }
+        };
+    </script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 

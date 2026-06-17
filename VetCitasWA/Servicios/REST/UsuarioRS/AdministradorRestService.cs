@@ -60,5 +60,19 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
 
             return http.GetFromJsonAsync<List<Usuario>>(url).GetAwaiter().GetResult() ?? new List<Usuario>();
         }
+
+        public void AsignarRol(int idUsuario, string codigoRol)
+        {
+            string rol = Uri.EscapeDataString(codigoRol ?? "");
+            http.PostAsync($"AdministradorRS/asignarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
+                .GetAwaiter().GetResult();
+        }
+
+        public void RevocarRol(int idUsuario, string codigoRol)
+        {
+            string rol = Uri.EscapeDataString(codigoRol ?? "");
+            http.PostAsync($"AdministradorRS/revocarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
+                .GetAwaiter().GetResult();
+        }
     }
 }

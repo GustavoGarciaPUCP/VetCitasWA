@@ -12,13 +12,28 @@ builder.Services.AddScoped(sp => new HttpClient
     BaseAddress = new Uri(builder.Configuration.GetValue<string>("ApiSettings:BaseUrl")!)
 });
 
-// Registrar tus nuevos servicios REST
+// Registrar servicios REST - Usuario
 builder.Services.AddScoped<VetCitasWA.Servicios.REST.UsuarioRS.AdministradorRestService>();
 builder.Services.AddScoped<VetCitasWA.Servicios.REST.UsuarioRS.UsuarioRestService>();
 builder.Services.AddScoped<VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService>();
 builder.Services.AddScoped<VetCitasWA.Servicios.REST.UsuarioRS.RecepcionistaRestService>();
 builder.Services.AddScoped<VetCitasWA.Servicios.REST.UsuarioRS.HorarioVeterinarioRestService>();
 builder.Services.AddScoped<VetCitasWA.Servicios.REST.UsuarioRS.PermisoRestService>();
+
+// Registrar servicios REST - Cita
+builder.Services.AddScoped<VetCitasWA.Servicios.REST.CitaRS.CitaRestService>();
+builder.Services.AddScoped<VetCitasWA.Servicios.REST.CitaRS.AtencionRestService>();
+builder.Services.AddScoped<VetCitasWA.Servicios.REST.CitaRS.RecordatorioRestService>();
+
+// Registrar servicios REST - Cliente
+builder.Services.AddScoped<VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService>();
+builder.Services.AddScoped<VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService>();
+
+// Registrar servicios REST - Servicio
+builder.Services.AddScoped<VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService>();
+
+// Servicio de UI - Toasts
+builder.Services.AddScoped<VetCitasWA.Servicios.UI.ToastService>();
 
 var app = builder.Build();
 

@@ -1,136 +1,218 @@
 @page "/clientes-mascotas/detalle"
+@rendermode InteractiveServer
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
+@inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
+@inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
 
-<PageTitle>Detalle de Mascota - VetCitas</PageTitle>
+<PageTitle>Detalle de mascota - VetCitas</PageTitle>
 
 <SectionContent SectionName="breadcrumb">
     <span class="crumb">VetCitas</span>
     <span class="crumb-sep">›</span>
-    <a class="crumb crumb-link" href="/clientes-mascotas">Clientes y Mascotas</a>
+    <a class="crumb crumb-link" href="/clientes-mascotas">Clientes y mascotas</a>
     <span class="crumb-sep">›</span>
-    <span class="crumb current">Max</span>
+    <span class="crumb current">@(mascota is null ? "Detalle" : mascota.Nombre)</span>
 </SectionContent>
 
 <div class="page-section">
-
     <div class="card-wrapper">
 
-        @* ================= Back link ================= *@
         <a href="/clientes-mascotas" class="back-link">
             <span class="back-icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
                 </svg>
             </span>
-            VOLVER A LA LISTA
+            Volver a la lista
         </a>
 
-        @* ================= Header de la mascota ================= *@
-        <div class="pet-header">
-            <div class="pet-avatar-big" aria-hidden="true">M</div>
-            <div class="pet-info">
-                <h1 class="pet-name">Max</h1>
-                <div class="pet-meta">
-                    <span class="pet-badge">Perro</span>
-                    <span class="pet-age">3 años</span>
-                </div>
-            </div>
-            <div class="pet-header-actions">
-                <label for="mascota-form-modal" class="btn-edit-mas recep-only">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                    Editar Mascota
-                </label>
-            </div>
-        </div>
-
-        <hr class="divider" />
-
-        @* ================= Dos columnas: Mascota / Dueño ================= *@
-        <div class="info-grid">
-
-            <section class="info-block">
-                <h2 class="block-title">Información de la Mascota</h2>
-                <div class="info-list">
-                    <div class="info-item">
-                        <div class="info-label">RAZA</div>
-                        <div class="info-value">Golden Retriever</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">EDAD</div>
-                        <div class="info-value">3 años</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">ÚLTIMA VISITA</div>
-                        <div class="info-value">2024-05-15</div>
+        @if (cargando)
+        {
+            <p class="estado-mensaje">Cargando...</p>
+        }
+        else if (mascota is null)
+        {
+            <p class="estado-mensaje estado-error">No se encontró la mascota solicitada.</p>
+        }
+        else
+        {
+            <div class="pet-header">
+                <div class="pet-avatar-big" aria-hidden="true">@PrimeraLetra(mascota.Nombre)</div>
+                <div class="pet-info">
+                    <h1 class="pet-name">@mascota.Nombre</h1>
+                    <div class="pet-meta">
+                        <span class="pet-badge">@(mascota.Especie == TipoEspecie.PERRO ? "Perro" : "Gato")</span>
+                        <span class="pet-age">@EdadTexto(mascota.FechaNacimiento)</span>
                     </div>
                 </div>
+            </div>
+
+            <hr class="divider" />
+
+            <div class="info-grid">
+
+                <section class="info-block">
+                    <h2 class="block-title">Información de la mascota</h2>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <div class="info-label">RAZA</div>
+                            <div class="info-value">@(string.IsNullOrWhiteSpace(mascota.Raza) ? "—" : mascota.Raza)</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">EDAD</div>
+                            <div class="info-value">@EdadTexto(mascota.FechaNacimiento)</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">PESO</div>
+                            <div class="info-value">@(mascota.Peso > 0 ? $"{mascota.Peso:0.#} kg" : "—")</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">ESTERILIZADO</div>
+                            <div class="info-value">@(mascota.Esterilizado ? "Sí" : "No")</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="info-block">
+                    <h2 class="block-title">Información del dueño</h2>
+                    @if (dueno is null)
+                    {
+                        <p class="estado-mensaje">Sin dueño asociado.</p>
+                    }
+                    else
+                    {
+                        <div class="info-list">
+                            <div class="info-item">
+                                <div class="info-label">NOMBRE</div>
+                                <div class="info-value">@dueno.Nombres @dueno.Apellidos</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">DNI</div>
+                                <div class="info-value">@dueno.Dni</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">TELÉFONO</div>
+                                <div class="info-value">@(string.IsNullOrWhiteSpace(dueno.Telefono) ? "—" : dueno.Telefono)</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">EMAIL</div>
+                                <div class="info-value">@(string.IsNullOrWhiteSpace(dueno.Email) ? "—" : dueno.Email)</div>
+                            </div>
+                        </div>
+                    }
+                </section>
+
+            </div>
+
+            <section class="history-section">
+                <h2 class="block-title">Historial de visitas</h2>
+
+                @if (!historial.Any())
+                {
+                    <p class="estado-mensaje">Esta mascota aún no tiene atenciones registradas.</p>
+                }
+                else
+                {
+                    <div class="history-table-wrapper">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Diagnóstico</th>
+                                    <th>Nota clínica</th>
+                                    <th>Recomendación</th>
+                                    <th>Costo</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var a in historial.OrderByDescending(x => x.FechaHora))
+                                {
+                                    <tr>
+                                        <td data-label="Fecha">@a.FechaHora.ToString("yyyy-MM-dd")</td>
+                                        <td data-label="Diagnóstico">@(string.IsNullOrWhiteSpace(a.Diagnostico) ? "—" : a.Diagnostico)</td>
+                                        <td data-label="Nota clínica">@(string.IsNullOrWhiteSpace(a.NotaClinica) ? "—" : a.NotaClinica)</td>
+                                        <td data-label="Recomendación">@(string.IsNullOrWhiteSpace(a.RecomendacionControl) ? "—" : a.RecomendacionControl)</td>
+                                        <td data-label="Costo"><span class="cost">S/ @((a.MontoReferencial - a.DescuentoAplicado).ToString("0.00"))</span></td>
+                                        <td data-label="" class="history-action">
+                                            @if (a.Cita is not null && a.Cita.Id > 0)
+                                            {
+                                                <a class="ver-detalle" href="@($"/citas-hoy/atender?id={a.Cita.Id}&modo=ver")" title="Ver detalle de la atención">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                                                    </svg>
+                                                    Ver
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
             </section>
-
-            <section class="info-block">
-                <h2 class="block-title">Información del Dueño</h2>
-                <div class="info-list">
-                    <div class="info-item">
-                        <div class="info-label">NOMBRE</div>
-                        <div class="info-value">Juan Pérez</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">DNI</div>
-                        <div class="info-value">12345678</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">TELÉFONO</div>
-                        <div class="info-value">+1 234 567 8900</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">EMAIL</div>
-                        <div class="info-value">juan.perez@email.com</div>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-
-        @* ================= Historial de Visitas ================= *@
-        <section class="history-section">
-            <h2 class="block-title">Historial de Visitas</h2>
-
-            <div class="history-table-wrapper">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Motivo</th>
-                            <th>Diagnóstico</th>
-                            <th>Costo</th>
-                            <th>Tratamiento</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td data-label="Fecha">2024-03-15</td>
-                            <td data-label="Motivo">Consulta General</td>
-                            <td data-label="Diagnóstico">Saludable</td>
-                            <td data-label="Costo"><span class="cost">$35.00</span></td>
-                            <td data-label="Tratamiento">Ninguno</td>
-                        </tr>
-                        <tr>
-                            <td data-label="Fecha">2024-04-10</td>
-                            <td data-label="Motivo">Vacunación</td>
-                            <td data-label="Diagnóstico">N/A</td>
-                            <td data-label="Costo"><span class="cost">$20.00</span></td>
-                            <td data-label="Tratamiento">Vacuna antirábica</td>
-                        </tr>
-                        <tr>
-                            <td data-label="Fecha">2024-05-15</td>
-                            <td data-label="Motivo">Control</td>
-                            <td data-label="Diagnóstico">Sobrepeso leve</td>
-                            <td data-label="Costo"><span class="cost">$15.00</span></td>
-                            <td data-label="Tratamiento">Dieta recomendada</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        }
 
     </div>
-
 </div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public int Id { get; set; }
+
+    private Mascota? mascota;
+    private Cliente? dueno;
+    private List<Atencion> historial = new();
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            mascota = await Task.Run(() => MascotaService.BuscarPorId(Id));
+
+            if (mascota is not null)
+            {
+                if (mascota.Cliente is not null && mascota.Cliente.Id > 0)
+                {
+                    dueno = await Task.Run(() => ClienteService.BuscarPorId(mascota.Cliente.Id));
+                }
+
+                // El historial es opcional: si falla, mostramos el estado vacío
+                try
+                {
+                    historial = await Task.Run(() => AtencionService.ListarHistorialPorMascota(Id));
+                }
+                catch
+                {
+                    historial = new();
+                }
+            }
+        }
+        catch
+        {
+            mascota = null;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private string PrimeraLetra(string? texto)
+        => !string.IsNullOrWhiteSpace(texto) ? char.ToUpper(texto![0]).ToString() : "?";
+
+    private string EdadTexto(DateTime? fecha)
+    {
+        if (!fecha.HasValue) return "—";
+        var hoy = DateTime.Today;
+        int anios = hoy.Year - fecha.Value.Year;
+        if (fecha.Value.Date > hoy.AddYears(-anios)) anios--;
+        return anios <= 0 ? "< 1 año" : $"{anios} año{(anios == 1 ? "" : "s")}";
+    }
+}

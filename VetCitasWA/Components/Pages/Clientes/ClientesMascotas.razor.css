@@ -111,6 +111,12 @@
     border-bottom-color: #1976ef;
 }
 
+/* Tab activo (versión interactiva por estado de Blazor) */
+.tab.tab-active {
+    color: #1976ef;
+    border-bottom-color: #1976ef;
+}
+
 /* Paneles ocultos por defecto, se muestran según radio */
 .tab-panel {
     display: none;
@@ -221,6 +227,34 @@
 .btn-pencil:hover {
     background: #eff6ff;
     color: #2563eb;
+}
+
+/* Íconos de acción con color: editar (azul) y eliminar (rojo) */
+.btn-pencil.btn-edit { color: #2563eb; }
+.btn-pencil.btn-edit:hover { background: #eff6ff; color: #1d4ed8; }
+
+.btn-pencil.btn-del { color: #dc2626; }
+.btn-pencil.btn-del:hover { background: #fef2f2; color: #b91c1c; }
+
+/* ===== Ajustes para la versión interactiva (Blazor) ===== */
+/* Los botones de ícono ahora son <button>: reseteamos el chrome por defecto */
+button.btn-pencil,
+button.btn-eye {
+    border: none;
+    padding: 0;
+    font: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* El botón "Nuevo" se controla con @if (tab), ya no con el truco de radios */
+.btn-new {
+    display: inline-flex;
+}
+
+/* El buscador no debe estirarse de más en la barra de herramientas */
+.page-head-tools .vc-search {
+    flex: 0 1 280px;
 }
 
 /* ================== Tabla ================== */

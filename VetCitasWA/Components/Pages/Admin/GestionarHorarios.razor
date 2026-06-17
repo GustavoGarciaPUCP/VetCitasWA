@@ -3,12 +3,12 @@
 @inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VetService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.HorarioVeterinarioRestService HorarioService
 
-<PageTitle>Gestionar Horarios - VetCitas</PageTitle>
+<PageTitle>Gestionar horarios - VetCitas</PageTitle>
 
 <SectionContent SectionName="breadcrumb">
     <span class="crumb">VetCitas</span>
     <span class="crumb-sep">›</span>
-    <span class="crumb current">Gestionar Horarios</span>
+    <span class="crumb current">Gestionar horarios</span>
 </SectionContent>
 
 <div class="page-section">
@@ -17,7 +17,7 @@
             <label class="field-label" for="veterinario">Veterinario</label>
             <div class="select-wrap">
                 <select id="veterinario" class="select" @onchange="OnVetChanged">
-                    <option value="0">Seleccione un veterinario...</option>
+                    <option value="0">Selecciona un veterinario</option>
                     @foreach (var vet in listaVeterinarios)
                     {
                         <option value="@vet.Id">@vet.Nombres @vet.Apellidos</option>
@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <h2 class="section-title">Resumen Semanal de Horarios</h2>
+        <h2 class="section-title">Resumen semanal de horarios</h2>
 
         <div class="table-wrapper">
             <table class="schedule-table">
@@ -43,7 +43,7 @@
                     @if (listaHorarios == null || !listaHorarios.Any())
                     {
                         <tr>
-                            <td colspan="5" class="text-center">Seleccione un veterinario para ver sus horarios.</td>
+                            <td colspan="5" class="text-center">Selecciona un veterinario para ver sus horarios.</td>
                         </tr>
                     }
                     else
@@ -54,7 +54,7 @@
                                 <td data-label="Día">@GetNombreDia(h.DiaSemana)</td>
                                 <td data-label="Horario">@h.HoraInicio - @h.HoraFin</td>
                                 <td data-label="Refrigerio">@h.HoraDescansoInicio - @h.HoraDescansoFin</td>
-                                <td data-label="Activo">@(h.Activo ? "Si" : "No")</td>
+                                <td data-label="Activo">@(h.Activo ? "Sí" : "No")</td>
                                 <td data-label="Acciones">
                                     <button type="button" class="btn-inactivar">Inactivar</button>
                                 </td>

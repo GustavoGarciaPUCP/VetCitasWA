@@ -195,6 +195,49 @@
     transition: background 0.12s ease;
 }
 
+/* slot-trigger ahora es <button>: quitamos el chrome por defecto del botón */
+button.slot-trigger {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font: inherit;
+}
+
+/* Botón "+ Agregar" en flujo, debajo de las citas del slot (ya no las tapa). */
+.slot-add-mini {
+    display: block;
+    width: 100%;
+    margin-top: 2px;
+    padding: 2px 0;
+    background: transparent;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    color: #94a3b8;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+
+.slot-add-mini:hover {
+    border-color: #1976ef;
+    color: #1976ef;
+    background: rgba(25, 118, 239, 0.07);
+}
+
+:root.dark .slot-add-mini {
+    border-color: #334155;
+    color: #64748b;
+}
+
+:root.dark .slot-add-mini:hover {
+    border-color: #3b82f6;
+    color: #93c5fd;
+    background: rgba(59, 130, 246, 0.12);
+}
+
 .slot-trigger:hover {
     background: rgba(25, 118, 239, 0.08);
 }
@@ -233,8 +276,8 @@
 
 /* ================== Cita (label que abre detalle) ================== */
 .cita {
-    position: absolute;
-    inset: 4px;
+    position: relative;
+    margin-bottom: 4px;
     border-radius: 7px;
     padding: 0.45rem 0.55rem;
     display: flex;
@@ -245,6 +288,10 @@
     border-left: 3px solid currentColor;
     transition: transform 0.1s ease, box-shadow 0.15s ease;
     user-select: none;
+}
+
+.cita:last-child {
+    margin-bottom: 0;
 }
 
 .cita:hover {

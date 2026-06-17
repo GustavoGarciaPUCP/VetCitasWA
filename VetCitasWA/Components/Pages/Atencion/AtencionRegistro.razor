@@ -1,167 +1,371 @@
 @page "/citas-hoy/atender"
 @page "/atenciones-medicas/registro"
+@rendermode InteractiveServer
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Servicio
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
+@inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
+@inject VetCitasWA.Servicios.UI.ToastService Toasts
+@inject NavigationManager Nav
 
-<PageTitle>Registro de Atención - VetCitas</PageTitle>
+<PageTitle>Registro de atención - VetCitas</PageTitle>
 
 <SectionContent SectionName="breadcrumb">
     <span class="crumb">VetCitas</span>
     <span class="crumb-sep">›</span>
-    <a class="crumb crumb-link" href="/citas-hoy">Citas de Hoy</a>
+    <a class="crumb crumb-link" href="/citas-hoy">Citas de hoy</a>
     <span class="crumb-sep">›</span>
-    <span class="crumb current">Registro de Atención</span>
+    <span class="crumb current">Registro de atención</span>
 </SectionContent>
 
 <div class="page-section">
 
     <h1 class="page-title">
-        Registro de Atención Médica: Max (Perro) - Juan Pérez
+        @(SoloLectura ? "Detalle de atención médica" : "Registro de atención médica")@(mascota is null ? "" : $": {mascota.Nombre} ({EspecieTexto(mascota)}) - {cliente?.Nombres} {cliente?.Apellidos}")
     </h1>
 
-    <div class="grid-2col">
+    @if (cargando)
+    {
+        <p class="estado-mensaje">Cargando…</p>
+    }
+    else if (cita is null)
+    {
+        <p class="estado-mensaje estado-error">No se encontró la cita.</p>
+    }
+    else
+    {
+        <div class="grid-2col">
 
-        @* ================= COLUMNA IZQUIERDA ================= *@
-        <div class="col col-left">
+            @* ================= COLUMNA IZQUIERDA ================= *@
+            <div class="col col-left">
 
-            @* --- Ficha Clínica & Historial --- *@
-            <section class="card">
-                <h2 class="card-title">Ficha Clínica &amp; Historial</h2>
+                @* --- Ficha Clínica & Historial --- *@
+                <section class="card">
+                    <h2 class="card-title">Ficha clínica e historial</h2>
 
-                <div class="pet-info">
-                    <div class="pet-avatar" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="11" cy="4" r="2"></circle>
-                            <circle cx="18" cy="8" r="2"></circle>
-                            <circle cx="4" cy="8" r="2"></circle>
-                            <circle cx="20" cy="16" r="2"></circle>
-                            <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
-                        </svg>
-                    </div>
-                    <div class="pet-data">
-                        <div class="pet-name">Max</div>
-                        <div class="pet-row"><span class="pet-key">Especie:</span> Canino</div>
-                        <div class="pet-row"><span class="pet-key">Raza:</span> Golden Retriever</div>
-                        <div class="pet-row"><span class="pet-key">Peso:</span> 24 kg</div>
-                        <div class="pet-row"><span class="pet-key">Edad:</span> 4 años</div>
-                    </div>
-                </div>
-            </section>
-
-            @* --- Historial Clínico Reciente (colapsable) --- *@
-            <section class="card">
-                <details class="collapse" open>
-                    <summary class="collapse-summary">
-                        <span class="card-title collapse-title">Historial Clínico Reciente</span>
-                        <span class="collapse-chevron" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M1.646 6.646a.5.5 0 0 1 .708 0L8 12.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                    <div class="pet-info">
+                        <div class="pet-avatar" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="11" cy="4" r="2"></circle>
+                                <circle cx="18" cy="8" r="2"></circle>
+                                <circle cx="4" cy="8" r="2"></circle>
+                                <circle cx="20" cy="16" r="2"></circle>
+                                <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
                             </svg>
-                        </span>
-                    </summary>
+                        </div>
+                        <div class="pet-data">
+                            <div class="pet-name">@(mascota?.Nombre)</div>
+                            <div class="pet-row"><span class="pet-key">Especie:</span> @EspecieTexto(mascota)</div>
+                            <div class="pet-row"><span class="pet-key">Raza:</span> @(mascota?.Raza)</div>
+                            <div class="pet-row"><span class="pet-key">Peso:</span> @(mascota?.Peso) kg</div>
+                            <div class="pet-row"><span class="pet-key">Edad:</span> @EdadTexto(mascota)</div>
+                        </div>
+                    </div>
+                </section>
 
-                    <div class="collapse-body">
-                        <a href="#" class="history-item">
-                            <span class="history-arrow" aria-hidden="true">
+                @* --- Historial Clínico Reciente (colapsable) --- *@
+                <section class="card">
+                    <details class="collapse" open>
+                        <summary class="collapse-summary">
+                            <span class="card-title collapse-title">Historial clínico reciente</span>
+                            <span class="collapse-chevron" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1.646 6.646a.5.5 0 0 1 .708 0L8 12.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                                </svg>
+                            </span>
+                        </summary>
+
+                        <div class="collapse-body">
+                            @if (historial == null || !historial.Any())
+                            {
+                                <span class="history-item"><em>Aún no hay atenciones registradas.</em></span>
+                            }
+                            else
+                            {
+                                @foreach (var h in historial)
+                                {
+                                    <span class="history-item">
+                                        <span class="history-arrow" aria-hidden="true">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+                                            </svg>
+                                        </span>
+                                        @h.FechaHora.ToString("dd/MM/yy"): @(string.IsNullOrWhiteSpace(h.Diagnostico) ? "Sin diagnóstico registrado" : h.Diagnostico)
+                                    </span>
+                                }
+                            }
+                        </div>
+                    </details>
+                </section>
+
+            </div>
+
+            @* ================= COLUMNA DERECHA ================= *@
+            <div class="col col-right">
+
+                @* --- Formulario principal --- *@
+                <section class="card">
+                    <div class="field">
+                        <label class="field-label" for="servicioEnCurso">Servicio en curso</label>
+                        <div class="select-wrap">
+                            <select id="servicioEnCurso" class="select" @bind="idServicioSeleccionado" @bind:after="OnServicioChanged" disabled="@SoloLectura">
+                                @foreach (var s in listaServicios)
+                                {
+                                    <option value="@s.Id">@s.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="notaClinica">Nota clínica</label>
+                        <textarea id="notaClinica" class="textarea" rows="3" maxlength="1000" @bind="atencion.NotaClinica" disabled="@SoloLectura"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="diagnostico">Diagnóstico</label>
+                        <input id="diagnostico" type="text" class="input" maxlength="255" @bind="atencion.Diagnostico" disabled="@SoloLectura" />
+                    </div>
+
+                    <details class="inline-collapse">
+                        <summary class="inline-collapse-summary">
+                            <span class="inline-arrow" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
                                 </svg>
                             </span>
-                            Cita #1001 (10/05/26): Vacunación - Finalizada
-                        </a>
+                            Notas de procedimiento (cataplasmas, sedantes, ecografías)
+                        </summary>
+                        <div class="inline-collapse-body">
+                            <textarea class="textarea" rows="3" maxlength="1000" placeholder="Detalle del procedimiento…" @bind="atencion.NotaPostOperatoria" disabled="@SoloLectura"></textarea>
+                        </div>
+                    </details>
+
+                    <div class="field">
+                        <label class="field-label" for="recomendaciones">Recomendaciones y control</label>
+                        <textarea id="recomendaciones" class="textarea" rows="3" maxlength="1000" @bind="atencion.RecomendacionControl" disabled="@SoloLectura"></textarea>
                     </div>
-                </details>
-            </section>
+                </section>
+
+                @* --- Cierre y Cobro --- *@
+                <section class="card">
+                    <h2 class="card-title">Cierre y cobro</h2>
+
+                    <div class="closing-row">
+                        <div class="closing-block">
+                            <label class="closing-label" for="montoRef">Monto referencial (S/)</label>
+                            <input id="montoRef" type="number" step="0.01" min="0" class="input input-sm" @bind="atencion.MontoReferencial" disabled="@SoloLectura" />
+                        </div>
+
+                        <div class="closing-block">
+                            <label class="closing-label" for="descuento">Descuento (S/)</label>
+                            <input id="descuento" type="number" step="0.01" min="0" class="input input-sm" @bind="atencion.DescuentoAplicado" disabled="@SoloLectura" />
+                        </div>
+
+                        <div class="closing-block">
+                            <div class="closing-label">Monto final</div>
+                            <div class="closing-final">S/. @MontoFinal.ToString("0.00")</div>
+                        </div>
+                    </div>
+
+                    @if (errorMensaje is not null)
+                    {
+                        <p class="estado-mensaje estado-error">@errorMensaje</p>
+                    }
+
+                    @if (!SoloLectura)
+                    {
+                        <div class="form-actions">
+                            <button type="button" class="btn-clear" @onclick="Limpiar" disabled="@guardando">Limpiar</button>
+                            <button type="button" class="btn-save" @onclick="Guardar" disabled="@guardando">
+                                @(guardando ? "Guardando…" : "Finalizar y guardar")
+                            </button>
+                        </div>
+                    }
+                </section>
+
+            </div>
 
         </div>
-
-        @* ================= COLUMNA DERECHA ================= *@
-        <div class="col col-right">
-
-            @* --- Formulario principal --- *@
-            <section class="card">
-                <div class="field">
-                    <label class="field-label" for="servicioEnCurso">Servicio en Curso</label>
-                    <div class="select-wrap">
-                        <select id="servicioEnCurso" class="select">
-                            <option>Consulta General</option>
-                            <option>Esterilización Canina</option>
-                            <option>Esterilización Felina</option>
-                            <option>Vacunación Múltiple</option>
-                            <option>Cirugía Menor</option>
-                            <option>Control Post-Operatorio</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label class="field-label" for="notaClinica">Nota Clínica</label>
-                    <textarea id="notaClinica" class="textarea" rows="3">Max presenta tos leve, mucosas rosadas. Se sospecha bronquitis.</textarea>
-                </div>
-
-                <div class="field">
-                    <label class="field-label" for="diagnostico">Diagnóstico</label>
-                    <input id="diagnostico" type="text" class="input" value="Tos leve - Observación" />
-                </div>
-
-                <details class="inline-collapse">
-                    <summary class="inline-collapse-summary">
-                        <span class="inline-arrow" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
-                            </svg>
-                        </span>
-                        Notas de Procedimiento (Cataplasmas, sedantes, ecografías)
-                    </summary>
-                    <div class="inline-collapse-body">
-                        <textarea class="textarea" rows="3" placeholder="Detalle del procedimiento..."></textarea>
-                    </div>
-                </details>
-
-                <div class="field">
-                    <label class="field-label" for="recomendaciones">Recomendaciones y Control</label>
-                    <textarea id="recomendaciones" class="textarea" rows="3">Reposo 48h, evitar ambientes polvorientos. Cita de control en 7 días.</textarea>
-                </div>
-            </section>
-
-            @* --- Cierre y Cobro --- *@
-            <section class="card">
-                <h2 class="card-title">Cierre y Cobro</h2>
-
-                <div class="closing-row">
-                    <div class="closing-block">
-                        <div class="closing-label">Monto Referencial</div>
-                        <div class="closing-value">S/. 120.00</div>
-                    </div>
-
-                    <div class="closing-block">
-                        <label class="closing-label" for="descuento">Descuento (%)</label>
-                        <input id="descuento" type="number" class="input input-sm" value="15" />
-                    </div>
-
-                    <div class="closing-block">
-                        <div class="closing-label">Monto Final</div>
-                        <div class="closing-final">S/. 102.00</div>
-                    </div>
-
-                    <div class="closing-block closing-action">
-                        <button type="button" class="btn-reminder">
-                            <span class="bell-icon" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
-                                </svg>
-                            </span>
-                            Crear Recordatorio
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-clear">Limpiar</button>
-                    <button type="button" class="btn-save">Finalizar y Guardar</button>
-                </div>
-            </section>
-
-        </div>
-
-    </div>
+    }
 
 </div>
+
+@code {
+    // TODO: reemplazar por el usuario autenticado (modified_by).
+    private const int UsuarioActualId = 1;
+
+    [SupplyParameterFromQuery(Name = "id")]
+    public int CitaId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "modo")]
+    public string? Modo { get; set; }
+
+    // Modo solo lectura: se ve la atención pero no se puede editar ni guardar
+    private bool SoloLectura => string.Equals(Modo, "ver", StringComparison.OrdinalIgnoreCase);
+
+    private Cita? cita;
+    private Atencion atencion = new() { FechaHora = DateTime.Now };
+    private List<Servicio> listaServicios = new();
+    private List<Atencion> historial = new();
+
+    private Mascota? mascota;
+    private Cliente? cliente;
+
+    private int idServicioSeleccionado;
+    private bool cargando = true;
+    private bool guardando;
+    private string? errorMensaje;
+
+    // Descuento como monto fijo en S/
+    private double MontoFinal => Math.Max(0, atencion.MontoReferencial - atencion.DescuentoAplicado);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            listaServicios = await Task.Run(() => ServicioService.ListarTodos());
+            cita = await Task.Run(() => CitaService.ObtenerPorId(CitaId));
+
+            if (cita is not null)
+            {
+                mascota = cita.Mascota;
+                cliente = mascota?.Cliente;
+
+                // ¿Ya existe una atención para esta cita? La cargamos; si no, partimos de una nueva.
+                var existente = await Task.Run(() => AtencionService.BuscarPorCita(CitaId));
+                if (existente is not null && existente.Id > 0)
+                {
+                    atencion = existente;
+                }
+                else
+                {
+                    atencion = new Atencion { FechaHora = DateTime.Now };
+                }
+
+                // Servicio en curso = el de la cita; monto referencial = su precio
+                idServicioSeleccionado = cita.Servicio?.Id ?? listaServicios.FirstOrDefault()?.Id ?? 0;
+                if (atencion.Id <= 0) OnServicioChanged();
+
+                if (mascota is not null)
+                {
+                    historial = await Task.Run(() => AtencionService.ListarHistorialPorMascota(mascota.Id));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = "No se pudo cargar la información. Inténtalo nuevamente.";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    // Al elegir un servicio, el monto referencial toma su precio
+    private void OnServicioChanged()
+    {
+        var s = listaServicios.FirstOrDefault(x => x.Id == idServicioSeleccionado);
+        if (s is not null) atencion.MontoReferencial = s.Precio;
+    }
+
+    // Valida y normaliza los datos de la atención. Devuelve el mensaje de error o null si todo es correcto.
+    private string? ValidarAtencion()
+    {
+        if (idServicioSeleccionado <= 0)
+            return "Selecciona el servicio en curso.";
+
+        var nota = (atencion.NotaClinica ?? "").Trim();
+        var diag = (atencion.Diagnostico ?? "").Trim();
+        var notaProc = (atencion.NotaPostOperatoria ?? "").Trim();
+        var recom = (atencion.RecomendacionControl ?? "").Trim();
+
+        // Debe quedar registro clínico: al menos nota clínica o diagnóstico
+        if (string.IsNullOrWhiteSpace(nota) && string.IsNullOrWhiteSpace(diag))
+            return "Registra al menos la nota clínica o el diagnóstico.";
+
+        if (diag.Length > 255) return "El diagnóstico no puede superar los 255 caracteres.";
+        if (nota.Length > 1000) return "La nota clínica es demasiado larga (máx. 1000 caracteres).";
+        if (notaProc.Length > 1000) return "Las notas de procedimiento son demasiado largas (máx. 1000 caracteres).";
+        if (recom.Length > 1000) return "Las recomendaciones son demasiado largas (máx. 1000 caracteres).";
+
+        if (atencion.MontoReferencial < 0) return "El monto referencial no puede ser negativo.";
+        if (atencion.DescuentoAplicado < 0) return "El descuento no puede ser negativo.";
+        if (atencion.DescuentoAplicado > atencion.MontoReferencial)
+            return "El descuento no puede ser mayor al monto referencial.";
+
+        // Normaliza los valores ya validados
+        atencion.NotaClinica = nota;
+        atencion.Diagnostico = diag;
+        atencion.NotaPostOperatoria = notaProc;
+        atencion.RecomendacionControl = recom;
+        return null;
+    }
+
+    private async Task Guardar()
+    {
+        if (guardando || cita is null) return;
+
+        var error = ValidarAtencion();
+        if (error is not null)
+        {
+            errorMensaje = error;
+            return;
+        }
+
+        guardando = true;
+        errorMensaje = null;
+        try
+        {
+            atencion.FechaHora = atencion.FechaHora == default ? DateTime.Now : atencion.FechaHora;
+            atencion.Cita = new Cita { Id = cita.Id };
+
+            int r;
+            if (atencion.Id > 0)
+                r = await Task.Run(() => AtencionService.ModificarAtencion(atencion));
+            else
+                r = await Task.Run(() => AtencionService.InsertarAtencion(atencion));
+
+            if (r > 0)
+            {
+                // Finalizamos: la cita pasa a "Atendida"
+                await Task.Run(() => CitaService.MarcarAtendida(cita.Id, UsuarioActualId));
+                Toasts.Exito("Atención registrada. La cita se marcó como atendida.");
+                Nav.NavigateTo("/citas-hoy");
+            }
+            else
+            {
+                errorMensaje = "No se pudo guardar la atención. Inténtalo nuevamente.";
+                guardando = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = "No se pudo guardar la atención. Inténtalo nuevamente.";
+            guardando = false;
+        }
+    }
+
+    private void Limpiar()
+    {
+        atencion.NotaClinica = "";
+        atencion.Diagnostico = "";
+        atencion.NotaPostOperatoria = "";
+        atencion.RecomendacionControl = "";
+        atencion.DescuentoAplicado = 0;
+    }
+
+    private string EspecieTexto(Mascota? m)
+        => m is null ? "" : (m.Especie == TipoEspecie.PERRO ? "Perro" : "Gato");
+
+    private string EdadTexto(Mascota? m)
+    {
+        if (m?.FechaNacimiento is null) return "-";
+        var anios = (int)((DateTime.Today - m.FechaNacimiento.Value).TotalDays / 365.25);
+        return $"{anios} años";
+    }
+}

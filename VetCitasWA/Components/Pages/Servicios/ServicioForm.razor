@@ -1,5 +1,11 @@
 @page "/servicios/crear"
 @page "/servicios/editar"
+@rendermode InteractiveServer
+@using VetCitasWA.Servicios.Modelo.Servicio
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
+@inject VetCitasWA.Servicios.UI.ToastService Toasts
+@inject NavigationManager Nav
 
 <PageTitle>Servicio - VetCitas</PageTitle>
 
@@ -8,7 +14,7 @@
     <span class="crumb-sep">›</span>
     <a class="crumb crumb-link" href="/servicios">Servicios</a>
     <span class="crumb-sep">›</span>
-    <span class="crumb current">Formulario</span>
+    <span class="crumb current">@(EsEdicion ? "Editar" : "Crear")</span>
 </SectionContent>
 
 <div class="page-section">
@@ -21,81 +27,198 @@
                     <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
                 </svg>
             </span>
-            VOLVER AL CATÁLOGO
+            Volver al catálogo
         </a>
-        <h1 class="page-title">
-            @* Este mismo template sirve para crear y editar — el título cambia en función del estado *@
-            <span class="title-create">Crear Nuevo Servicio</span>
-            <span class="title-edit">Editar Servicio</span>
-        </h1>
+        <h1 class="page-title">@(EsEdicion ? "Editar servicio" : "Nuevo servicio")</h1>
         <p class="page-subtitle">
             Solo administradores pueden gestionar el catálogo (permiso: USUARIO_GESTIONAR).
         </p>
     </div>
 
-    @* Card principal con el form *@
-    <section class="form-card">
+    @if (cargando)
+    {
+        <section class="form-card"><p class="estado-mensaje">Cargando...</p></section>
+    }
+    else
+    {
+        <EditForm Model="modelo" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
 
-        @* === Datos básicos === *@
-        <fieldset class="form-section">
-            <legend class="form-legend">Datos del servicio</legend>
+            <section class="form-card">
 
-            <div class="form-row">
-                <div class="form-field form-field-wide">
-                    <label class="form-label" for="sv-nombre">Nombre <span class="req">*</span></label>
-                    <input id="sv-nombre" type="text" class="form-input" placeholder="Ej. Consulta General" value="Consulta General" required maxlength="100" />
-                    <span class="form-hint">Nombre visible en el catálogo. Máx 100 caracteres.</span>
-                </div>
-                <div class="form-field">
-                    <label class="form-label" for="sv-tipo">Tipo <span class="req">*</span></label>
-                    <div class="form-select-wrap">
-                        <select id="sv-tipo" class="form-select" required>
-                            <option value="CLINICA" selected>Clínica</option>
-                            <option value="NO_CLINICA">No clínica</option>
-                        </select>
+                @* === Datos básicos === *@
+                <fieldset class="form-section">
+                    <legend class="form-legend">Datos del servicio</legend>
+
+                    <div class="form-row">
+                        <div class="form-field form-field-wide">
+                            <label class="form-label" for="sv-nombre">Nombre <span class="req">*</span></label>
+                            <input id="sv-nombre" type="text" class="form-input" placeholder="Ej. Consulta general"
+                                   @bind="modelo.Nombre" required maxlength="100" />
+                            <span class="form-hint">Nombre visible en el catálogo. Máximo 100 caracteres.</span>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="sv-tipo">Tipo <span class="req">*</span></label>
+                            <div class="form-select-wrap">
+                                <select id="sv-tipo" class="form-select" @bind="modelo.Tipo" required>
+                                    <option value="@TipoServicio.CLINICA">Clínica</option>
+                                    <option value="@TipoServicio.NO_CLINICA">No clínica</option>
+                                </select>
+                            </div>
+                            <span class="form-hint">Clínica: requiere atención veterinaria.</span>
+                        </div>
                     </div>
-                    <span class="form-hint">Clínica: requiere atención veterinaria.</span>
-                </div>
-            </div>
 
-            <div class="form-row">
-                <div class="form-field">
-                    <label class="form-label" for="sv-duracion">Duración (minutos) <span class="req">*</span></label>
-                    <input id="sv-duracion" type="number" class="form-input" placeholder="30" value="30" required min="1" max="600" />
-                    <span class="form-hint">Tiempo estimado por sesión.</span>
-                </div>
-                <div class="form-field">
-                    <label class="form-label" for="sv-precio">Precio referencial (S/) <span class="req">*</span></label>
-                    <div class="form-input-prefix">
-                        <span class="prefix-symbol">S/</span>
-                        <input id="sv-precio" type="number" class="form-input form-input-with-prefix" placeholder="0.00" value="50.00" required min="0" step="0.01" />
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-label" for="sv-duracion">Duración (minutos) <span class="req">*</span></label>
+                            <input id="sv-duracion" type="number" class="form-input" placeholder="30"
+                                   @bind="modelo.DuracionMinutos" required min="1" max="600" />
+                            <span class="form-hint">Tiempo estimado por sesión.</span>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="sv-precio">Precio referencial (S/) <span class="req">*</span></label>
+                            <div class="form-input-prefix">
+                                <span class="prefix-symbol">S/</span>
+                                <input id="sv-precio" type="number" class="form-input form-input-with-prefix" placeholder="0.00"
+                                       @bind="modelo.Precio" required min="0" step="0.01" />
+                            </div>
+                            <span class="form-hint">Puede ajustarse al cobrar la atención.</span>
+                        </div>
                     </div>
-                    <span class="form-hint">Puede ajustarse al cobrar la atención.</span>
-                </div>
-            </div>
 
-            <div class="form-field">
-                <label class="form-label" for="sv-descripcion">Descripción</label>
-                <textarea id="sv-descripcion" class="form-textarea" rows="3" placeholder="Describe en qué consiste el servicio (opcional)..." maxlength="500">Atención médica básica para evaluar el estado de salud general de la mascota. Incluye revisión clínica, registro de signos vitales y recomendaciones.</textarea>
-                <span class="form-hint">Máximo 500 caracteres. Aparece como detalle del servicio.</span>
-            </div>
+                    <div class="form-field">
+                        <label class="form-label" for="sv-descripcion">Descripción</label>
+                        <textarea id="sv-descripcion" class="form-textarea" rows="3"
+                                  placeholder="Describe en qué consiste el servicio (opcional)..."
+                                  maxlength="255" @bind="modelo.Descripcion"></textarea>
+                        <span class="form-hint">Máximo 255 caracteres. Aparece como detalle del servicio.</span>
+                    </div>
 
-            <label class="form-check">
-                <input type="checkbox" class="form-check-input" checked />
-                <span class="form-check-visual" aria-hidden="true"></span>
-                <span class="form-check-text">Servicio activo</span>
-            </label>
-            <span class="form-hint form-hint-indent">Si lo desactivas, no aparecerá disponible al agendar nuevas citas (las existentes no se ven afectadas).</span>
-        </fieldset>
+                    <label class="form-check">
+                        <input type="checkbox" class="form-check-input" @bind="modelo.Activo" />
+                        <span class="form-check-visual" aria-hidden="true"></span>
+                        <span class="form-check-text">Servicio activo</span>
+                    </label>
+                    <span class="form-hint form-hint-indent">Si lo desactivas, no aparecerá disponible al agendar nuevas citas (las existentes no se ven afectadas).</span>
+                </fieldset>
 
-        @* === Acciones === *@
-        <footer class="form-actions">
-            <a href="/servicios" class="btn-form btn-form-ghost">Cancelar</a>
-            <button type="button" class="btn-form btn-form-primary">
-                <span class="action-create">Crear Servicio</span>
-                <span class="action-edit">Guardar cambios</span>
-            </button>
-        </footer>
-    </section>
+                @if (errorMensaje is not null)
+                {
+                    <p class="estado-mensaje estado-error">@errorMensaje</p>
+                }
+
+                @* === Acciones === *@
+                <footer class="form-actions">
+                    <a href="/servicios" class="vc-btn vc-btn-secondary">Cancelar</a>
+                    <button type="submit" class="vc-btn vc-btn-primary" disabled="@procesando">
+                        @if (procesando)
+                        {
+                            <span class="vc-spinner" aria-hidden="true"></span>
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <span>@(EsEdicion ? "Guardar cambios" : "Crear servicio")</span>
+                        }
+                    </button>
+                </footer>
+            </section>
+        </EditForm>
+    }
 
 </div>
+
+@code {
+    // El id llega por query string: /servicios/editar?id=5
+    [SupplyParameterFromQuery(Name = "id")]
+    public int Id { get; set; }
+
+    private Servicio modelo = new() { Tipo = TipoServicio.CLINICA, DuracionMinutos = 30, Activo = true };
+    private bool EsEdicion => Id > 0;
+    private bool cargando = true;
+    private bool procesando = false;
+    private string? errorMensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EsEdicion)
+        {
+            try
+            {
+                var existente = await Task.Run(() => ServicioService.BuscarPorId(Id));
+                if (existente is not null)
+                {
+                    modelo = existente;
+                }
+                else
+                {
+                    errorMensaje = "No se encontró el servicio solicitado.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMensaje = "No se pudo cargar el servicio. Inténtalo nuevamente.";
+            }
+        }
+        cargando = false;
+    }
+
+    // Valida y normaliza el servicio. Devuelve el mensaje de error o null si todo es correcto.
+    private string? ValidarServicio()
+    {
+        var nombre = (modelo.Nombre ?? "").Trim();
+        var desc = (modelo.Descripcion ?? "").Trim();
+
+        if (string.IsNullOrWhiteSpace(nombre)) return "Ingresa el nombre del servicio.";
+        if (nombre.Length < 2 || nombre.Length > 100) return "El nombre debe tener entre 2 y 100 caracteres.";
+
+        if (modelo.DuracionMinutos <= 0) return "La duración debe ser mayor que 0 minutos.";
+        if (modelo.DuracionMinutos > 600) return "La duración no puede superar los 600 minutos.";
+
+        if (modelo.Precio < 0) return "El precio referencial no puede ser negativo.";
+
+        if (desc.Length > 255) return "La descripción no puede superar los 255 caracteres.";
+
+        // Normaliza los valores ya validados
+        modelo.Nombre = nombre;
+        modelo.Descripcion = desc;
+        return null;
+    }
+
+    private async Task Guardar()
+    {
+        // Guarda anti-reentrada: impide guardar dos veces seguidas
+        if (procesando) return;
+
+        var error = ValidarServicio();
+        if (error is not null)
+        {
+            errorMensaje = error;
+            return;
+        }
+
+        procesando = true;
+        errorMensaje = null;
+        try
+        {
+            if (EsEdicion)
+            {
+                await Task.Run(() => ServicioService.Modificar(modelo));
+                Toasts.Exito($"Servicio \"{modelo.Nombre}\" actualizado correctamente.");
+            }
+            else
+            {
+                await Task.Run(() => ServicioService.Insertar(modelo));
+                Toasts.Exito($"Servicio \"{modelo.Nombre}\" guardado correctamente.");
+            }
+            Nav.NavigateTo("/servicios");
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = "No se pudo guardar el servicio. Inténtalo nuevamente.";
+            Toasts.Error("No se pudo guardar el servicio. Inténtalo nuevamente.");
+            procesando = false;
+        }
+    }
+}

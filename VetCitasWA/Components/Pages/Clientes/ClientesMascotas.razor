@@ -1,384 +1,988 @@
 @page "/clientes-mascotas"
+@rendermode InteractiveServer
+@using System.Text.RegularExpressions
+@using VetCitasWA.Servicios.Modelo.Cliente
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
+@inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
+@inject VetCitasWA.Servicios.UI.ToastService Toasts
+@implements IDisposable
 
-<PageTitle>Clientes y Mascotas - VetCitas</PageTitle>
+<PageTitle>Clientes y mascotas - VetCitas</PageTitle>
 
 <SectionContent SectionName="breadcrumb">
     <span class="crumb">VetCitas</span>
     <span class="crumb-sep">›</span>
-    <span class="crumb current">Clientes y Mascotas</span>
+    <span class="crumb current">Clientes y mascotas</span>
 </SectionContent>
 
 <div class="page-section">
 
-    @* ================= Cabecera: título + buscador + botón nuevo ================= *@
+    @* ================= Cabecera: título ================= *@
     <div class="page-head">
-        <h1 class="page-title">Clientes y Mascotas</h1>
+        <h1 class="page-title">Clientes y mascotas</h1>
+    </div>
 
-        <div class="page-head-tools">
-            <div class="search-box">
-                <span class="search-icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                    </svg>
-                </span>
-                <input type="text" class="search-input" placeholder="Buscar..." />
-            </div>
-
-            @* Botones de "Nuevo …": el visible depende del tab activo
-               Y de tener rol recepcionista. La regla de visibilidad
-               vive en el CSS de esta página (combina :has() + role class). *@
-            <label for="cliente-form-modal" class="btn-new btn-new-cliente">
-                <span class="btn-plus" aria-hidden="true">+</span>
-                <span>Nuevo Cliente</span>
-            </label>
-            <label for="mascota-form-modal" class="btn-new btn-new-mascota">
-                <span class="btn-plus" aria-hidden="true">+</span>
-                <span>Nueva Mascota</span>
-            </label>
+    @* ================= Barra de filtros (debajo del título) ================= *@
+    <div class="filter-bar">
+        <div class="vc-search">
+            <span class="vc-search-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                </svg>
+            </span>
+            <input type="text" class="vc-search-input" placeholder="@(tab == "clientes" ? "Buscar cliente por nombre o DNI..." : "Buscar mascota o dueño...")"
+                   value="@textoBusqueda" @oninput="OnBusquedaInput" />
         </div>
+        <select class="vc-select" @bind="filtroEstado" @bind:after="OnFiltroEstadoChanged">
+            <option value="activos">Activos</option>
+            <option value="inactivos">Inactivos</option>
+            <option value="todos">Todos</option>
+        </select>
+        @if (tab == "clientes")
+        {
+            <button type="button" class="btn-new" style="margin-left:auto;" @onclick="NuevoCliente">
+                <span class="btn-plus" aria-hidden="true">+</span>
+                <span>Nuevo cliente</span>
+            </button>
+        }
+        else
+        {
+            <button type="button" class="btn-new" style="margin-left:auto;" @onclick="NuevaMascota">
+                <span class="btn-plus" aria-hidden="true">+</span>
+                <span>Nueva mascota</span>
+            </button>
+        }
     </div>
 
     @* ================= Panel con tabs (Clientes / Mascotas) ================= *@
     <section class="panel">
 
-        @* Radios invisibles que controlan el tab activo *@
-        <input type="radio" name="cm-tab" id="cm-tab-clientes" class="cm-tab-radio" />
-        <input type="radio" name="cm-tab" id="cm-tab-mascotas" class="cm-tab-radio" checked />
-
         <div class="tabs" role="tablist">
-            <label for="cm-tab-clientes" class="tab tab-link tab-clientes" role="tab">CLIENTES</label>
-            <label for="cm-tab-mascotas" class="tab tab-link tab-mascotas" role="tab">MASCOTAS</label>
+            <button type="button" class="tab tab-link @(tab == "clientes" ? "tab-active" : "")" @onclick="@(() => CambiarTab("clientes"))" role="tab">Clientes</button>
+            <button type="button" class="tab tab-link @(tab == "mascotas" ? "tab-active" : "")" @onclick="@(() => CambiarTab("mascotas"))" role="tab">Mascotas</button>
         </div>
 
-        @* =============== TAB CLIENTES =============== *@
-        <div class="table-wrapper tab-panel tab-panel-clientes">
-            <table class="vet-table">
-                <thead>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>DNI</th>
-                        <th>Teléfono</th>
-                        <th>Correo</th>
-                        <th>Mascotas</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
+        @if (cargando)
+        {
+            <p class="estado-mensaje">Cargando...</p>
+        }
+        else if (errorMensaje is not null)
+        {
+            <p class="estado-mensaje estado-error">@errorMensaje</p>
+        }
+        else if (tab == "clientes")
+        {
+            @* =============== TAB CLIENTES =============== *@
+            <div class="table-wrapper">
+                <table class="vet-table">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>DNI</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Mascotas</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!ClientesFiltrados.Any())
+                        {
+                            <tr><td colspan="7" class="estado-mensaje">No se encontraron clientes.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var c in ClientesPagina)
+                            {
+                                var mascotasCliente = MascotasDeCliente(c.Id);
+                                <tr>
+                                    <td data-label="Cliente">
+                                        <div class="pet-cell">
+                                            <span class="client-avatar" aria-hidden="true">@Iniciales(c.Nombres, c.Apellidos)</span>
+                                            <span class="pet-name">@c.Nombres @c.Apellidos</span>
+                                        </div>
+                                    </td>
+                                    <td data-label="DNI">@c.Dni</td>
+                                    <td data-label="Teléfono">@c.Telefono</td>
+                                    <td data-label="Correo">@c.Email</td>
+                                    <td data-label="Mascotas">
+                                        <span class="pet-count-badge">@mascotasCliente.Count</span>
+                                        <span class="pet-list-inline">@string.Join(", ", mascotasCliente.Select(m => m.Nombre))</span>
+                                    </td>
+                                    <td data-label="Estado">
+                                        <span class="status-badge @(c.Activo ? "status-active" : "status-inactive")">@(c.Activo ? "Activo" : "Inactivo")</span>
+                                    </td>
+                                    <td data-label="Acciones">
+                                        <div class="row-actions">
+                                            <a href="@($"/clientes-mascotas/cliente?id={c.Id}")" class="btn-eye" aria-label="Ver detalle">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" /><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" /></svg>
+                                            </a>
+                                            @if (c.Activo)
+                                            {
+                                                <button type="button" class="btn-pencil btn-edit" aria-label="Editar cliente" @onclick="() => EditarCliente(c)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
+                                                </button>
+                                                <button type="button" class="btn-pencil btn-del" aria-label="Eliminar cliente" @onclick="() => clienteAEliminar = c">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
 
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">JP</span>
-                                <span class="pet-name">Juan Pérez</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">12345678</td>
-                        <td data-label="Teléfono">+51 987 654 321</td>
-                        <td data-label="Correo">juan.perez@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">2</span>
-                            <span class="pet-list-inline">Max, Thor</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
+                <Pager CurrentPage="paginaActual" TotalPages="TotalPaginas" CurrentPageChanged="IrAPagina" />
+            </div>
+        }
+        else
+        {
+            @* =============== TAB MASCOTAS =============== *@
+            <div class="table-wrapper">
+                <table class="vet-table">
+                    <thead>
+                        <tr>
+                            <th>Mascota</th>
+                            <th>Especie</th>
+                            <th>Raza</th>
+                            <th>Edad</th>
+                            <th>Peso</th>
+                            <th>Dueño</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!MascotasFiltradas.Any())
+                        {
+                            <tr><td colspan="8" class="estado-mensaje">No se encontraron mascotas.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var m in MascotasPagina)
+                            {
+                                <tr>
+                                    <td data-label="Mascota">
+                                        <div class="pet-cell">
+                                            <span class="pet-avatar @(m.Especie == TipoEspecie.PERRO ? "pet-dog" : "pet-cat")" aria-hidden="true">@PrimeraLetra(m.Nombre)</span>
+                                            <span class="pet-name">@m.Nombre</span>
+                                        </div>
+                                    </td>
+                                    <td data-label="Especie">
+                                        <span class="species @(m.Especie == TipoEspecie.PERRO ? "species-dog" : "species-cat")">@(m.Especie == TipoEspecie.PERRO ? "Perro" : "Gato")</span>
+                                    </td>
+                                    <td data-label="Raza">@m.Raza</td>
+                                    <td data-label="Edad">@EdadTexto(m.FechaNacimiento)</td>
+                                    <td data-label="Peso">@(m.Peso > 0 ? $"{m.Peso:0.#} kg" : "—")</td>
+                                    <td data-label="Dueño">@NombreDueno(m)</td>
+                                    <td data-label="Estado">
+                                        <span class="status-badge @(m.Activo ? "status-active" : "status-inactive")">@(m.Activo ? "Activo" : "Inactivo")</span>
+                                    </td>
+                                    <td data-label="Acciones">
+                                        <div class="row-actions">
+                                            <a href="@($"/clientes-mascotas/detalle?id={m.Id}")" class="btn-eye" aria-label="Ver detalle">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" /><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" /></svg>
+                                            </a>
+                                            @if (m.Activo)
+                                            {
+                                                <button type="button" class="btn-pencil btn-edit" aria-label="Editar mascota" @onclick="() => EditarMascota(m)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
+                                                </button>
+                                                <button type="button" class="btn-pencil btn-del" aria-label="Eliminar mascota" @onclick="() => mascotaAEliminar = m">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
 
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">MG</span>
-                                <span class="pet-name">María García</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">23456789</td>
-                        <td data-label="Teléfono">+51 987 654 322</td>
-                        <td data-label="Correo">maria.garcia@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">1</span>
-                            <span class="pet-list-inline">Luna</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">CL</span>
-                                <span class="pet-name">Carlos López</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">34567890</td>
-                        <td data-label="Teléfono">+51 987 654 323</td>
-                        <td data-label="Correo">carlos.lopez@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">1</span>
-                            <span class="pet-list-inline">Rocky</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">AM</span>
-                                <span class="pet-name">Ana Martínez</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">45678901</td>
-                        <td data-label="Teléfono">+51 987 654 324</td>
-                        <td data-label="Correo">ana.martinez@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">1</span>
-                            <span class="pet-list-inline">Mimi</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Cliente">
-                            <div class="pet-cell">
-                                <span class="client-avatar" aria-hidden="true">PS</span>
-                                <span class="pet-name">Pedro Salas</span>
-                            </div>
-                        </td>
-                        <td data-label="DNI">56789012</td>
-                        <td data-label="Teléfono">+51 987 654 325</td>
-                        <td data-label="Correo">pedro.salas@email.com</td>
-                        <td data-label="Mascotas">
-                            <span class="pet-count-badge">1</span>
-                            <span class="pet-list-inline">Bobby</span>
-                        </td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/cliente" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="cliente-form-modal" class="btn-pencil recep-only" aria-label="Editar cliente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                </tbody>
-            </table>
-        </div>
-
-        @* =============== TAB MASCOTAS =============== *@
-        <div class="table-wrapper tab-panel tab-panel-mascotas">
-            <table class="vet-table">
-                <thead>
-                    <tr>
-                        <th>Mascota</th>
-                        <th>Especie</th>
-                        <th>Raza</th>
-                        <th>Edad</th>
-                        <th>Peso</th>
-                        <th>Dueño</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-dog" aria-hidden="true">M</span>
-                                <span class="pet-name">Max</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-dog">Perro</span>
-                        </td>
-                        <td data-label="Raza">Golden Retriever</td>
-                        <td data-label="Edad">3 años</td>
-                        <td data-label="Peso">28.5 kg</td>
-                        <td data-label="Dueño">Juan Pérez</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-cat" aria-hidden="true">L</span>
-                                <span class="pet-name">Luna</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-cat">Gato</span>
-                        </td>
-                        <td data-label="Raza">Siamés</td>
-                        <td data-label="Edad">2 años</td>
-                        <td data-label="Peso">4.2 kg</td>
-                        <td data-label="Dueño">María García</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-dog" aria-hidden="true">R</span>
-                                <span class="pet-name">Rocky</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-dog">Perro</span>
-                        </td>
-                        <td data-label="Raza">Bulldog</td>
-                        <td data-label="Edad">5 años</td>
-                        <td data-label="Peso">22 kg</td>
-                        <td data-label="Dueño">Carlos López</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-cat" aria-hidden="true">M</span>
-                                <span class="pet-name">Mimi</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-cat">Gato</span>
-                        </td>
-                        <td data-label="Raza">Persa</td>
-                        <td data-label="Edad">1 años</td>
-                        <td data-label="Peso">3.8 kg</td>
-                        <td data-label="Dueño">Ana Martínez</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Mascota">
-                            <div class="pet-cell">
-                                <span class="pet-avatar pet-dog" aria-hidden="true">T</span>
-                                <span class="pet-name">Thor</span>
-                            </div>
-                        </td>
-                        <td data-label="Especie">
-                            <span class="species species-dog">Perro</span>
-                        </td>
-                        <td data-label="Raza">Pastor Alemán</td>
-                        <td data-label="Edad">4 años</td>
-                        <td data-label="Peso">35 kg</td>
-                        <td data-label="Dueño">Juan Pérez</td>
-                        <td data-label="Acciones">
-                            <div class="row-actions">
-                                <a href="/clientes-mascotas/detalle" class="btn-eye" aria-label="Ver detalle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                    </svg>
-                                </a>
-                                <label for="mascota-form-modal" class="btn-pencil recep-only" aria-label="Editar mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                </tbody>
-            </table>
-        </div>
-
+                <Pager CurrentPage="paginaActual" TotalPages="TotalPaginas" CurrentPageChanged="IrAPagina" />
+            </div>
+        }
     </section>
-
 </div>
+
+@* ===================== MODAL CLIENTE (crear/editar) ===================== *@
+@if (mostrarClienteModal)
+{
+    <div class="vc-modal-backdrop" role="presentation">
+        <div class="vc-modal-card vc-modal-card-lg" role="dialog" aria-modal="true">
+            <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="CerrarClienteModal">×</button>
+            <h2 class="vc-modal-title">@(clienteEsEdicion ? "Editar cliente" : "Nuevo cliente")</h2>
+            <p class="vc-modal-subtitle">Permiso requerido: CLIENTE_GESTIONAR</p>
+
+            <div class="vc-form-row">
+                <div class="vc-form-field">
+                    <label class="vc-form-label">Nombres *</label>
+                    <input class="vc-form-input" @bind="clienteEdit.Nombres" />
+                </div>
+                <div class="vc-form-field">
+                    <label class="vc-form-label">Apellidos *</label>
+                    <input class="vc-form-input" @bind="clienteEdit.Apellidos" />
+                </div>
+            </div>
+
+            <div class="vc-form-field">
+                <label class="vc-form-label">DNI *</label>
+                <input class="vc-form-input" maxlength="8" inputmode="numeric" @bind="clienteEdit.Dni" />
+                <span class="vc-form-hint">Debe tener 8 dígitos y no puede repetirse en el sistema.</span>
+            </div>
+
+            <div class="vc-form-row">
+                <div class="vc-form-field">
+                    <label class="vc-form-label">Teléfono *</label>
+                    <PhoneInput @ref="phoneInput" Initial="@clienteEdit.Telefono" />
+                    <span class="vc-form-hint">Obligatorio. Selecciona el país; se guarda en formato internacional.</span>
+                </div>
+                <div class="vc-form-field">
+                    <label class="vc-form-label">Correo</label>
+                    <input type="email" class="vc-form-input" @bind="clienteEdit.Email" />
+                </div>
+            </div>
+
+            <div class="vc-form-field">
+                <label class="vc-form-label">Observaciones</label>
+                <textarea class="vc-form-textarea" rows="3" maxlength="255" @bind="clienteEdit.Observaciones"></textarea>
+            </div>
+
+            @* === Mascotas a registrar junto con el cliente === *@
+            <div class="vc-form-field" style="margin-top:.6rem;">
+                <label class="vc-form-label">Mascotas (opcional)</label>
+
+                @if (mascotasNuevas.Any())
+                {
+                    <ul class="vc-pet-add-list">
+                        @foreach (var nm in mascotasNuevas)
+                        {
+                            <li>
+                                <span>@nm.Nombre — @(nm.Especie == TipoEspecie.PERRO ? "Perro" : "Gato")@(string.IsNullOrWhiteSpace(nm.Raza) ? "" : $" · {nm.Raza}")</span>
+                                <button type="button" class="vc-pet-remove" aria-label="Quitar" @onclick="() => mascotasNuevas.Remove(nm)">×</button>
+                            </li>
+                        }
+                    </ul>
+                }
+
+                <button type="button" class="vc-btn vc-btn-secondary" @onclick="AbrirMascotaDesdeCliente">
+                    <span class="btn-plus" aria-hidden="true">+</span> Agregar mascota
+                </button>
+                <span class="vc-form-hint">Se crearán automáticamente al guardar el cliente.</span>
+            </div>
+
+            @if (errorModal is not null)
+            {
+                <p class="vc-form-error">@errorModal</p>
+            }
+
+            <div class="vc-modal-actions" style="justify-content:flex-end;margin-top:1rem;">
+                <button type="button" class="vc-btn vc-btn-secondary" @onclick="CerrarClienteModal" disabled="@guardando">Cancelar</button>
+                <button type="button" class="vc-btn vc-btn-primary" @onclick="GuardarCliente" disabled="@guardando">
+                    @if (guardando) { <span class="vc-spinner" aria-hidden="true"></span><span>Guardando...</span> }
+                    else { <span>Guardar cliente</span> }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* ===================== MODAL MASCOTA (crear/editar) ===================== *@
+@if (mostrarMascotaModal)
+{
+    <div class="vc-modal-backdrop" role="presentation">
+        <div class="vc-modal-card vc-modal-card-lg" role="dialog" aria-modal="true">
+            <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="CerrarMascotaModal">×</button>
+            <h2 class="vc-modal-title">@(mascotaEsEdicion ? "Editar mascota" : "Nueva mascota")</h2>
+            <p class="vc-modal-subtitle">Permiso requerido: MASCOTA_GESTIONAR</p>
+
+            <div class="vc-form-field">
+                <label class="vc-form-label">Cliente *</label>
+                @if (mascotaDesdeCliente)
+                {
+                    <input class="vc-form-input" readonly
+                           value="@(string.IsNullOrWhiteSpace(clienteEdit.Nombres) ? "Cliente nuevo (se asociará al guardar)" : $"{clienteEdit.Nombres} {clienteEdit.Apellidos}")" />
+                    <span class="vc-form-hint">La mascota se asociará a este cliente.</span>
+                }
+                else
+                {
+                    <div class="vc-ac">
+                        <input type="text" class="vc-form-input" placeholder="Buscar por nombre o DNI…"
+                               @bind="mascotaClienteBusqueda" @bind:event="oninput" @bind:after="OnMascotaClienteBuscar"
+                               @onfocus="() => mascotaClienteDropdown = true"
+                               @onfocusout="() => mascotaClienteDropdown = false" />
+                        @if (mascotaClienteDropdown)
+                        {
+                            <div class="vc-ac-list" @onmousedown:preventDefault="true">
+                                @if (mascotaClienteBusqueda.Trim().Length < 2)
+                                {
+                                    <div class="vc-ac-empty">Escribe al menos 2 caracteres para buscar.</div>
+                                }
+                                else if (!MascotaClientesFiltrados.Any())
+                                {
+                                    <div class="vc-ac-empty">Sin resultados.</div>
+                                }
+                                else
+                                {
+                                    <Virtualize Items="MascotaClientesFiltrados" Context="c" ItemSize="46">
+                                        <div class="vc-ac-item" @onclick="() => SeleccionarMascotaCliente(c)">
+                                            <span class="vc-ac-name">@c.Nombres @c.Apellidos</span>
+                                            <span class="vc-ac-meta">DNI @c.Dni</span>
+                                        </div>
+                                    </Virtualize>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <span class="vc-form-hint">Busca y selecciona el cliente dueño de la mascota.</span>
+                }
+            </div>
+
+            <div class="vc-form-row">
+                <div class="vc-form-field">
+                    <label class="vc-form-label">Nombre *</label>
+                    <input class="vc-form-input" @bind="mascotaEdit.Nombre" />
+                </div>
+                <div class="vc-form-field">
+                    <label class="vc-form-label">Especie *</label>
+                    <select class="vc-select" @bind="mascotaEdit.Especie">
+                        <option value="@TipoEspecie.PERRO">Perro</option>
+                        <option value="@TipoEspecie.GATO">Gato</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="vc-form-row">
+                <div class="vc-form-field">
+                    <label class="vc-form-label">Raza</label>
+                    <input class="vc-form-input" @bind="mascotaEdit.Raza" />
+                </div>
+                <div class="vc-form-field">
+                    <label class="vc-form-label">Fecha de nacimiento</label>
+                    <input type="date" class="vc-form-input" max="@DateTime.Today.ToString("yyyy-MM-dd")" @bind="mascotaEdit.FechaNacimiento" />
+                </div>
+            </div>
+
+            <div class="vc-form-field">
+                <label class="vc-form-label">Peso (kg) *</label>
+                <input type="number" step="0.1" min="0" class="vc-form-input" @bind="mascotaEdit.Peso" />
+                <span class="vc-form-hint">Obligatorio. Debe ser mayor que 0.</span>
+            </div>
+
+            <label class="vc-form-check">
+                <input type="checkbox" @bind="mascotaEdit.Esterilizado" />
+                <span>Esterilizado</span>
+            </label>
+
+            @if (errorModal is not null)
+            {
+                <p class="vc-form-error">@errorModal</p>
+            }
+
+            <div class="vc-modal-actions" style="justify-content:flex-end;margin-top:1rem;">
+                <button type="button" class="vc-btn vc-btn-secondary" @onclick="CerrarMascotaModal" disabled="@guardando">Cancelar</button>
+                <button type="button" class="vc-btn vc-btn-primary" @onclick="GuardarMascota" disabled="@guardando">
+                    @if (guardando) { <span class="vc-spinner" aria-hidden="true"></span><span>Guardando...</span> }
+                    else { <span>@(mascotaDesdeCliente ? "Agregar a la lista" : "Guardar mascota")</span> }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* ===================== CONFIRMACIÓN DE ELIMINACIÓN ===================== *@
+@if (clienteAEliminar is not null || mascotaAEliminar is not null)
+{
+    <div class="vc-modal-backdrop" role="presentation">
+        <div class="vc-modal-card" role="dialog" aria-modal="true">
+            <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="CancelarEliminacion">×</button>
+            <h3 class="vc-modal-title">¿Confirmar eliminación?</h3>
+            <p class="vc-modal-message">
+                @if (clienteAEliminar is not null)
+                {
+                    <text>¿Eliminar al cliente <strong>@clienteAEliminar.Nombres @clienteAEliminar.Apellidos</strong>? Esta acción no se puede deshacer.</text>
+                }
+                else
+                {
+                    <text>¿Eliminar la mascota <strong>@mascotaAEliminar!.Nombre</strong>? Esta acción no se puede deshacer.</text>
+                }
+            </p>
+            <div class="vc-modal-actions">
+                <button type="button" class="vc-btn vc-btn-secondary" @onclick="CancelarEliminacion" disabled="@eliminando">Cancelar</button>
+                <button type="button" class="vc-btn vc-btn-danger" @onclick="ConfirmarEliminacion" disabled="@eliminando">
+                    @if (eliminando) { <span class="vc-spinner" aria-hidden="true"></span><span>Eliminando...</span> }
+                    else { <span>Sí, eliminar</span> }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Cliente> clientes = new();
+    private List<Mascota> mascotas = new();
+    private bool cargando = true;
+    private string? errorMensaje;
+
+    private string tab = "mascotas";
+
+    // Filtros
+    private string textoBusqueda = "";
+    private string textoAplicado = "";
+    private string filtroEstado = "activos"; // activos | inactivos | todos
+
+    // Paginación (cliente) — compartida entre ambas pestañas
+    private const int PageSize = 7;
+    private int paginaActual = 1;
+
+    // Modales CRUD
+    private bool mostrarClienteModal;
+    private bool clienteEsEdicion;
+    private Cliente clienteEdit = new();
+
+    // Mascotas a crear junto con el cliente (desde el modal de cliente)
+    private List<Mascota> mascotasNuevas = new();
+    // true cuando el modal de mascota se abrió desde el modal de cliente
+    private bool mascotaDesdeCliente;
+
+    // Campo de teléfono nativo (selector de país con bandera + número)
+    private PhoneInput? phoneInput;
+
+    private bool mostrarMascotaModal;
+    private bool mascotaEsEdicion;
+    private Mascota mascotaEdit = new();
+    private int mascotaClienteId;
+
+    // Buscador de cliente del modal de mascota (autocompletado)
+    private string mascotaClienteBusqueda = "";
+    private bool mascotaClienteDropdown;
+
+    private bool guardando;
+    private string? errorModal;
+
+    // Eliminación
+    private Cliente? clienteAEliminar;
+    private Mascota? mascotaAEliminar;
+    private bool eliminando;
+
+    protected override async Task OnInitializedAsync() => await CargarDatos();
+
+    // Lee el número internacional desde el componente de teléfono
+    private async Task LeerTelefono()
+    {
+        if (phoneInput is null) return;
+        var num = await phoneInput.GetNumberAsync();
+        if (!string.IsNullOrWhiteSpace(num)) clienteEdit.Telefono = num;
+    }
+
+    private void CerrarClienteModal() => mostrarClienteModal = false;
+
+    private async Task CargarDatos()
+    {
+        cargando = true;
+        errorMensaje = null;
+        try
+        {
+            clientes = await Task.Run(() => ClienteService.ListarTodos());
+            mascotas = await Task.Run(() => MascotaService.ListarTodos());
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = "No se pudieron cargar los datos. Inténtalo nuevamente.";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void CambiarTab(string t)
+    {
+        tab = t;
+        paginaActual = 1;
+        LimpiarFiltros();
+    }
+
+    // ===== Filtros =====
+    private void AplicarFiltros() => textoAplicado = textoBusqueda;
+    private void LimpiarFiltros()
+    {
+        debounceCts?.Cancel();
+        textoBusqueda = "";
+        textoAplicado = "";
+    }
+
+    // ===== Debounce del buscador (800 ms) =====
+    private CancellationTokenSource? debounceCts;
+
+    private async Task OnBusquedaInput(ChangeEventArgs e)
+    {
+        textoBusqueda = e.Value?.ToString() ?? "";
+
+        debounceCts?.Cancel();
+        debounceCts = new CancellationTokenSource();
+        var token = debounceCts.Token;
+
+        try
+        {
+            await Task.Delay(800, token);
+            textoAplicado = textoBusqueda;
+            paginaActual = 1;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException) { /* tecla siguiente antes de 800ms */ }
+    }
+
+    public void Dispose() => debounceCts?.Cancel();
+
+    private IEnumerable<Cliente> ClientesFiltrados
+    {
+        get
+        {
+            IEnumerable<Cliente> q = filtroEstado switch
+            {
+                "activos" => clientes.Where(c => c.Activo),
+                "inactivos" => clientes.Where(c => !c.Activo),
+                _ => clientes
+            };
+            if (!string.IsNullOrWhiteSpace(textoAplicado))
+            {
+                string t = textoAplicado.Trim().ToLowerInvariant();
+                q = q.Where(c =>
+                    ($"{c.Nombres} {c.Apellidos}").ToLowerInvariant().Contains(t) ||
+                    (c.Dni ?? "").ToLowerInvariant().Contains(t));
+            }
+            return q;
+        }
+    }
+
+    private IEnumerable<Mascota> MascotasFiltradas
+    {
+        get
+        {
+            IEnumerable<Mascota> q = filtroEstado switch
+            {
+                "activos" => mascotas.Where(m => m.Activo),
+                "inactivos" => mascotas.Where(m => !m.Activo),
+                _ => mascotas
+            };
+            if (!string.IsNullOrWhiteSpace(textoAplicado))
+            {
+                string t = textoAplicado.Trim().ToLowerInvariant();
+                q = q.Where(m =>
+                    (m.Nombre ?? "").ToLowerInvariant().Contains(t) ||
+                    NombreDueno(m).ToLowerInvariant().Contains(t));
+            }
+            return q;
+        }
+    }
+
+    private void OnFiltroEstadoChanged() => paginaActual = 1;
+
+    // ===== Paginación (cliente) — usa la pestaña activa =====
+    private List<Cliente> ClientesFiltradosLista => ClientesFiltrados.ToList();
+    private List<Mascota> MascotasFiltradasLista => MascotasFiltradas.ToList();
+
+    private int TotalRegistros => tab == "clientes" ? ClientesFiltradosLista.Count : MascotasFiltradasLista.Count;
+    private int TotalPaginas => Math.Max(1, (int)Math.Ceiling(TotalRegistros / (double)PageSize));
+
+    private void ClampPagina()
+    {
+        if (paginaActual > TotalPaginas) paginaActual = TotalPaginas;
+        if (paginaActual < 1) paginaActual = 1;
+    }
+
+    private IEnumerable<Cliente> ClientesPagina
+    {
+        get { ClampPagina(); return ClientesFiltradosLista.Skip((paginaActual - 1) * PageSize).Take(PageSize); }
+    }
+
+    private IEnumerable<Mascota> MascotasPagina
+    {
+        get { ClampPagina(); return MascotasFiltradasLista.Skip((paginaActual - 1) * PageSize).Take(PageSize); }
+    }
+
+    private void IrAPagina(int p) => paginaActual = p;
+
+    // ===== Helpers de presentación =====
+    private List<Mascota> MascotasDeCliente(int idCliente)
+        => mascotas.Where(m => m.Cliente != null && m.Cliente.Id == idCliente && m.Activo).ToList();
+
+    private string NombreDueno(Mascota m)
+    {
+        if (m.Cliente == null) return "—";
+        var dueno = clientes.FirstOrDefault(c => c.Id == m.Cliente.Id);
+        return dueno != null ? $"{dueno.Nombres} {dueno.Apellidos}" : "—";
+    }
+
+    private string Iniciales(string? nombres, string? apellidos)
+    {
+        char n = !string.IsNullOrWhiteSpace(nombres) ? char.ToUpper(nombres![0]) : '?';
+        char a = !string.IsNullOrWhiteSpace(apellidos) ? char.ToUpper(apellidos![0]) : ' ';
+        return $"{n}{a}".Trim();
+    }
+
+    private string PrimeraLetra(string? texto)
+        => !string.IsNullOrWhiteSpace(texto) ? char.ToUpper(texto![0]).ToString() : "?";
+
+    private string EdadTexto(DateTime? fecha)
+    {
+        if (!fecha.HasValue) return "—";
+        var hoy = DateTime.Today;
+        int anios = hoy.Year - fecha.Value.Year;
+        if (fecha.Value.Date > hoy.AddYears(-anios)) anios--;
+        return anios <= 0 ? "< 1 año" : $"{anios} año{(anios == 1 ? "" : "s")}";
+    }
+
+    // ===== CRUD Cliente =====
+    private void NuevoCliente()
+    {
+        clienteEsEdicion = false;
+        clienteEdit = new Cliente { Activo = true };
+        ReiniciarMascotasNuevas();
+        errorModal = null;
+        mostrarClienteModal = true;
+    }
+
+    private void EditarCliente(Cliente c)
+    {
+        clienteEsEdicion = true;
+        // Copia para no mutar la fila si se cancela
+        clienteEdit = new Cliente
+        {
+            Id = c.Id, Dni = c.Dni, Nombres = c.Nombres, Apellidos = c.Apellidos,
+            Telefono = c.Telefono, Email = c.Email, Observaciones = c.Observaciones, Activo = c.Activo
+        };
+        ReiniciarMascotasNuevas();
+        errorModal = null;
+        mostrarClienteModal = true;
+    }
+
+    private void ReiniciarMascotasNuevas() => mascotasNuevas = new();
+
+    // Abre el modal de mascota desde el modal de cliente (oculta el de cliente temporalmente)
+    private async Task AbrirMascotaDesdeCliente()
+    {
+        await LeerTelefono(); // preserva el teléfono escrito antes de ocultar el modal
+        mascotaDesdeCliente = true;
+        mascotaEsEdicion = false;
+        mascotaEdit = new Mascota { Especie = TipoEspecie.PERRO, Activo = true };
+        errorModal = null;
+        mostrarClienteModal = false;
+        mostrarMascotaModal = true;
+    }
+
+    // Cierra el modal de mascota; si venía del cliente, regresa a ese modal
+    private void CerrarMascotaModal()
+    {
+        mostrarMascotaModal = false;
+        if (mascotaDesdeCliente)
+        {
+            mascotaDesdeCliente = false;
+            errorModal = null;
+            mostrarClienteModal = true;
+        }
+    }
+
+    // Valida y normaliza los datos del cliente. Devuelve el mensaje de error o null si todo es correcto.
+    private string? ValidarCliente()
+    {
+        var nombres = (clienteEdit.Nombres ?? "").Trim();
+        var apellidos = (clienteEdit.Apellidos ?? "").Trim();
+        var dni = (clienteEdit.Dni ?? "").Trim();
+        var email = (clienteEdit.Email ?? "").Trim();
+        var tel = (clienteEdit.Telefono ?? "").Trim();
+
+        // Letras (incluye tildes y ñ), espacios, apóstrofo y guion; 2 a 60 caracteres
+        var soloLetras = new Regex(@"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' \-]{2,60}$");
+
+        if (string.IsNullOrWhiteSpace(nombres)) return "Ingresa los nombres del cliente.";
+        if (!soloLetras.IsMatch(nombres)) return "Los nombres solo deben contener letras (2 a 60 caracteres).";
+
+        if (string.IsNullOrWhiteSpace(apellidos)) return "Ingresa los apellidos del cliente.";
+        if (!soloLetras.IsMatch(apellidos)) return "Los apellidos solo deben contener letras (2 a 60 caracteres).";
+
+        if (string.IsNullOrWhiteSpace(dni)) return "Ingresa el DNI.";
+        if (!Regex.IsMatch(dni, @"^\d{8}$")) return "El DNI debe tener exactamente 8 dígitos.";
+        if (clientes.Any(c => c.Id != clienteEdit.Id && (c.Dni ?? "").Trim() == dni))
+            return "Ya existe un cliente con ese DNI.";
+
+        if (!string.IsNullOrWhiteSpace(email) && !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            return "El correo no tiene un formato válido.";
+
+        if (string.IsNullOrWhiteSpace(tel))
+            return "Ingresa el teléfono del cliente.";
+        if (!Regex.IsMatch(tel, @"^\d{6,15}$"))
+            return "El teléfono debe tener entre 6 y 15 dígitos.";
+
+        // Normaliza los valores ya validados
+        clienteEdit.Nombres = nombres;
+        clienteEdit.Apellidos = apellidos;
+        clienteEdit.Dni = dni;
+        clienteEdit.Email = email;
+        clienteEdit.Telefono = tel;
+        return null;
+    }
+
+    private async Task GuardarCliente()
+    {
+        if (guardando) return;
+        await LeerTelefono(); // toma el número internacional del campo con banderas
+
+        var error = ValidarCliente();
+        if (error is not null)
+        {
+            errorModal = error;
+            return;
+        }
+
+        guardando = true;
+        errorModal = null;
+        try
+        {
+            int idCliente;
+            if (clienteEsEdicion)
+            {
+                await Task.Run(() => ClienteService.Modificar(clienteEdit));
+                idCliente = clienteEdit.Id;
+            }
+            else
+            {
+                // Insertar devuelve el id del nuevo cliente
+                idCliente = await Task.Run(() => ClienteService.Insertar(clienteEdit));
+            }
+
+            // Crear las mascotas agregadas en el modal, asociadas a este cliente
+            int creadas = 0;
+            if (idCliente > 0)
+            {
+                foreach (var nm in mascotasNuevas)
+                {
+                    nm.Cliente = new Cliente { Id = idCliente };
+                    await Task.Run(() => MascotaService.Insertar(nm));
+                    creadas++;
+                }
+            }
+
+            mostrarClienteModal = false;
+            await CargarDatos();
+
+            string sufijo = creadas > 0 ? $" con {creadas} mascota{(creadas == 1 ? "" : "s")}" : "";
+            Toasts.Exito(clienteEsEdicion
+                ? $"Cliente actualizado correctamente{sufijo}."
+                : $"Cliente guardado correctamente{sufijo}.");
+        }
+        catch (Exception ex)
+        {
+            errorModal = "No se pudo guardar el cliente. Inténtalo nuevamente.";
+            Toasts.Error("No se pudo guardar el cliente. Inténtalo nuevamente.");
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    // ===== CRUD Mascota =====
+    private void NuevaMascota()
+    {
+        mascotaDesdeCliente = false;
+        mascotaEsEdicion = false;
+        mascotaEdit = new Mascota { Especie = TipoEspecie.PERRO, Activo = true };
+        mascotaClienteId = 0;
+        mascotaClienteBusqueda = "";
+        mascotaClienteDropdown = false;
+        errorModal = null;
+        mostrarMascotaModal = true;
+    }
+
+    private void EditarMascota(Mascota m)
+    {
+        mascotaDesdeCliente = false;
+        mascotaEsEdicion = true;
+        mascotaEdit = new Mascota
+        {
+            Id = m.Id, Nombre = m.Nombre, Especie = m.Especie, Raza = m.Raza,
+            FechaNacimiento = m.FechaNacimiento, Esterilizado = m.Esterilizado,
+            Activo = m.Activo, Peso = m.Peso
+        };
+        mascotaClienteId = m.Cliente?.Id ?? 0;
+        var cl = clientes.FirstOrDefault(c => c.Id == mascotaClienteId);
+        mascotaClienteBusqueda = cl is null ? "" : $"{cl.Nombres} {cl.Apellidos}";
+        mascotaClienteDropdown = false;
+        errorModal = null;
+        mostrarMascotaModal = true;
+    }
+
+    // ===== Buscador de cliente (modal de mascota) =====
+    private List<Cliente> MascotaClientesFiltrados
+    {
+        get
+        {
+            var q = mascotaClienteBusqueda.Trim();
+            if (q.Length < 2) return new List<Cliente>();
+            return clientes.Where(c =>
+                    $"{c.Nombres} {c.Apellidos}".Contains(q, StringComparison.OrdinalIgnoreCase)
+                    || (c.Dni ?? "").Contains(q, StringComparison.OrdinalIgnoreCase))
+                .Take(50)
+                .ToList();
+        }
+    }
+
+    private void OnMascotaClienteBuscar()
+    {
+        mascotaClienteDropdown = true;
+        mascotaClienteId = 0; // al cambiar el texto se considera que aún no hay cliente confirmado
+    }
+
+    private void SeleccionarMascotaCliente(Cliente c)
+    {
+        mascotaClienteId = c.Id;
+        mascotaClienteBusqueda = $"{c.Nombres} {c.Apellidos}";
+        mascotaClienteDropdown = false;
+    }
+
+    // Valida y normaliza los datos de la mascota. Devuelve el mensaje de error o null si todo es correcto.
+    private string? ValidarMascota()
+    {
+        var nombre = (mascotaEdit.Nombre ?? "").Trim();
+        var raza = (mascotaEdit.Raza ?? "").Trim();
+
+        if (string.IsNullOrWhiteSpace(nombre)) return "Ingresa el nombre de la mascota.";
+        if (nombre.Length < 2 || nombre.Length > 40) return "El nombre debe tener entre 2 y 40 caracteres.";
+        if (!Regex.IsMatch(nombre, @"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9' \-]{2,40}$"))
+            return "El nombre contiene caracteres no válidos.";
+
+        if (mascotaEdit.Especie is null) return "Selecciona la especie.";
+
+        if (!string.IsNullOrWhiteSpace(raza) && !Regex.IsMatch(raza, @"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' \-]{2,40}$"))
+            return "La raza solo debe contener letras (2 a 40 caracteres).";
+
+        if (mascotaEdit.Peso <= 0) return "Ingresa un peso válido (mayor que 0).";
+        if (mascotaEdit.Peso > 200) return "Verifica el peso: parece demasiado alto.";
+
+        if (mascotaEdit.FechaNacimiento.HasValue)
+        {
+            var fn = mascotaEdit.FechaNacimiento.Value.Date;
+            if (fn > DateTime.Today) return "La fecha de nacimiento no puede ser futura.";
+            if (fn < DateTime.Today.AddYears(-40)) return "Verifica la fecha de nacimiento: es demasiado antigua.";
+        }
+
+        // Normaliza los valores ya validados
+        mascotaEdit.Nombre = nombre;
+        mascotaEdit.Raza = raza;
+        return null;
+    }
+
+    private async Task GuardarMascota()
+    {
+        if (guardando) return;
+
+        var errorMascota = ValidarMascota();
+        if (errorMascota is not null)
+        {
+            errorModal = errorMascota;
+            return;
+        }
+
+        // Caso: se agregó desde el modal de cliente → se acumula y se creará al guardar el cliente
+        if (mascotaDesdeCliente)
+        {
+            mascotasNuevas.Add(mascotaEdit);
+            mascotaDesdeCliente = false;
+            mostrarMascotaModal = false;
+            errorModal = null;
+            mostrarClienteModal = true;
+            return;
+        }
+
+        // Caso standalone: requiere cliente seleccionado y persiste directo en el backend
+        if (mascotaClienteId == 0)
+        {
+            errorModal = "Busca y selecciona el cliente dueño de la mascota.";
+            return;
+        }
+
+        guardando = true;
+        errorModal = null;
+        mascotaEdit.Cliente = new Cliente { Id = mascotaClienteId };
+        try
+        {
+            if (mascotaEsEdicion)
+            {
+                await Task.Run(() => MascotaService.Modificar(mascotaEdit));
+                Toasts.Exito("Mascota actualizada correctamente.");
+            }
+            else
+            {
+                await Task.Run(() => MascotaService.Insertar(mascotaEdit));
+                Toasts.Exito("Mascota guardada correctamente.");
+            }
+            mostrarMascotaModal = false;
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            errorModal = "No se pudo guardar la mascota. Inténtalo nuevamente.";
+            Toasts.Error("No se pudo guardar la mascota. Inténtalo nuevamente.");
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    // ===== Eliminación =====
+    private void CancelarEliminacion()
+    {
+        clienteAEliminar = null;
+        mascotaAEliminar = null;
+    }
+
+    private async Task ConfirmarEliminacion()
+    {
+        if (eliminando) return;
+        eliminando = true;
+        try
+        {
+            if (clienteAEliminar is not null)
+            {
+                int id = clienteAEliminar.Id;
+                int r = await Task.Run(() => ClienteService.Eliminar(id));
+                if (r == -1)
+                {
+                    Toasts.Error("No se puede eliminar: el cliente tiene una cita confirmada en el futuro.");
+                }
+                else if (r <= 0)
+                {
+                    Toasts.Error("No se pudo eliminar el cliente. Inténtalo nuevamente.");
+                }
+                else
+                {
+                    Toasts.Exito("Cliente eliminado. Se cancelaron sus citas pendientes.");
+                }
+            }
+            else if (mascotaAEliminar is not null)
+            {
+                int id = mascotaAEliminar.Id;
+                await Task.Run(() => MascotaService.Eliminar(id));
+                Toasts.Exito("Mascota eliminada.");
+            }
+            CancelarEliminacion();
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            Toasts.Error("No se pudo eliminar. Inténtalo nuevamente.");
+        }
+        finally
+        {
+            eliminando = false;
+        }
+    }
+}

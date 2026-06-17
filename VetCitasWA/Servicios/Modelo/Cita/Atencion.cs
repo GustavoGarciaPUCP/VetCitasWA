@@ -1,8 +1,13 @@
-﻿namespace VetCitasWA.Servicios.Modelo.Cita
+﻿using System;
+using System.Text.Json.Serialization;
+using VetCitasWA.Servicios.UI;
+
+namespace VetCitasWA.Servicios.Modelo.Cita
 {
     public class Atencion
     {
         public int Id { get; set; }
+        [JsonConverter(typeof(FechaHoraJsonConverter))]
         public DateTime FechaHora { get; set; }
         public string NotaClinica { get; set; }
         public string NotaPreOperatoria { get; set; }

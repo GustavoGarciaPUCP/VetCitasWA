@@ -2,25 +2,25 @@
 @using VetCitasWA.Servicios.Modelo.Usuario
 @inject VetCitasWA.Servicios.REST.UsuarioRS.AdministradorRestService AdminService
 
-<PageTitle>Gestión de Usuarios y Roles - VetCitas</PageTitle>
+<PageTitle>Usuarios y roles - VetCitas</PageTitle>
 
 <SectionContent SectionName="breadcrumb">
     <span class="crumb">VetCitas</span>
     <span class="crumb-sep">›</span>
-    <span class="crumb current">Gestión de Usuarios y Roles</span>
+    <span class="crumb current">Usuarios y roles</span>
 </SectionContent>
 
 <div class="page-section">
 
-    <h1 class="page-title">Gestión de Usuarios y Roles</h1>
+    <h1 class="page-title">Usuarios y roles</h1>
 
     <div class="filters">
         <div class="filter-field filter-buscar">
             <label class="filter-label" for="buscar">Buscar</label>
-            <input id="buscar" type="text" class="search-input" placeholder="Buscar usuarios (nombre, username o DNI)" />
+            <input id="buscar" type="text" class="search-input" placeholder="Buscar por nombre, usuario o DNI" />
         </div>
         <div class="filter-field filter-rol">
-            <label class="filter-label" for="filtroRol">Filtrar por Rol</label>
+            <label class="filter-label" for="filtroRol">Filtrar por rol</label>
             <div class="select-wrap">
                 <select id="filtroRol" class="select">
                     <option>Todos los roles</option>
@@ -33,13 +33,13 @@
         <div class="filter-action">
             <label for="usuario-form-modal" class="btn-new">
                 <span class="btn-plus" aria-hidden="true">+</span>
-                <span>Nuevo Usuario</span>
+                <span>Nuevo usuario</span>
             </label>
         </div>
     </div>
 
     <section class="panel">
-        <h2 class="panel-title">Lista de Usuarios</h2>
+        <h2 class="panel-title">Lista de usuarios</h2>
 
         <div class="table-wrapper">
             <table class="users-table">
@@ -60,7 +60,7 @@
                     {
                         <tr>
                             <td colspan="8" class="text-center" style="padding: 2rem;">
-                                <em>Cargando datos desde el servidor o no se encontraron resultados...</em>
+                                <em>Cargando información o no se encontraron resultados.</em>
                             </td>
                         </tr>
                     }

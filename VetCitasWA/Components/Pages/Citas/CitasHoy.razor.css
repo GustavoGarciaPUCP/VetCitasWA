@@ -98,7 +98,8 @@
 
 /* ================== Tabla ================== */
 .table-wrapper {
-    overflow-x: auto;
+    /* visible para que el menú de acciones (3 puntos) no se recorte */
+    overflow: visible;
     margin: 0 -0.25rem;
 }
 
@@ -328,10 +329,135 @@
     color: #1f2937 !important;
 }
 
+/* Cancelar — rojo suave (mismo lenguaje pastel que los demás btn-action) */
+.btn-cancel {
+    background: #fef2f2;
+    color: #b91c1c !important;
+    border-color: #fecaca;
+}
+
+.btn-cancel:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
+/* Los btn-action ahora también se usan como <button>: heredar fuente y estado disabled */
+button.btn-action {
+    font-family: inherit;
+}
+
+.btn-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+:root.dark .btn-cancel {
+    background: rgba(220, 38, 38, 0.14);
+    color: #fca5a5 !important;
+    border-color: rgba(220, 38, 38, 0.32);
+}
+
 .action-hint {
     color: #9ca3af;
     font-size: 0.78rem;
     font-style: italic;
+}
+
+/* ===== Menú de acciones (3 puntos) ===== */
+.acc-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.acc-kebab {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    color: #6b7280;
+    cursor: pointer;
+    font: inherit;
+}
+
+.acc-kebab:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.acc-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 60;
+    min-width: 178px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+}
+
+.acc-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    text-decoration: none !important;
+    font-family: inherit;
+}
+
+.acc-item:hover {
+    background: #f3f4f6;
+}
+
+.acc-item-danger {
+    color: #b91c1c;
+}
+
+.acc-item-danger:hover {
+    background: #fef2f2;
+}
+
+.acc-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: transparent;
+}
+
+:root.dark .acc-kebab {
+    color: #94a3b8;
+}
+
+:root.dark .acc-kebab:hover {
+    background: #27303f;
+    color: #f1f5f9;
+}
+
+:root.dark .acc-menu {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+:root.dark .acc-item {
+    color: #cbd5e1;
+}
+
+:root.dark .acc-item:hover {
+    background: #27303f;
 }
 
 /* ================== Paginación ================== */

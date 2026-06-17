@@ -17,49 +17,60 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         // 1. INSERTAR ATENCIÓN
         public int InsertarAtencion(Atencion atencion)
         {
-            var response = http.PostAsJsonAsync("webresources/AtencionRS/insertar", atencion).GetAwaiter().GetResult();
+            var response = http.PostAsJsonAsync("AtencionRS/insertar", atencion).GetAwaiter().GetResult();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         // 2. MODIFICAR ATENCIÓN
         public int ModificarAtencion(Atencion atencion)
         {
-            var response = http.PutAsJsonAsync("webresources/AtencionRS/modificar", atencion).GetAwaiter().GetResult();
+            var response = http.PutAsJsonAsync("AtencionRS/modificar", atencion).GetAwaiter().GetResult();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         // 3. ELIMINAR ATENCIÓN POR ID
         public int EliminarAtencion(int id)
         {
-            var response = http.DeleteAsync($"webresources/AtencionRS/eliminar/{id}").GetAwaiter().GetResult();
+            var response = http.DeleteAsync($"AtencionRS/eliminar/{id}").GetAwaiter().GetResult();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         // 4. LISTAR TODAS LAS ATENCIONES
         public List<Atencion> ListarTodos()
         {
-            return http.GetFromJsonAsync<List<Atencion>>("webresources/AtencionRS/listarTodos")
+            return http.GetFromJsonAsync<List<Atencion>>("AtencionRS/listarTodos")
                 .GetAwaiter().GetResult() ?? new List<Atencion>();
         }
 
         // 5. BUSCAR ATENCIÓN POR ID
         public Atencion? BuscarPorId(int id)
         {
-            return http.GetFromJsonAsync<Atencion>($"webresources/AtencionRS/buscarPorId/{id}")
-                .GetAwaiter().GetResult();
+            return LeerAtencionOpcional($"AtencionRS/buscarPorId/{id}");
         }
 
         // 6. BUSCAR ATENCIÓN POR ID DE CITA
         public Atencion? BuscarPorCita(int idCita)
         {
-            return http.GetFromJsonAsync<Atencion>($"webresources/AtencionRS/buscarPorCita/{idCita}")
-                .GetAwaiter().GetResult();
+            return LeerAtencionOpcional($"AtencionRS/buscarPorCita/{idCita}");
+        }
+
+        // Helper: el backend puede responder con body vacío (sin atención) -> devolvemos null
+        private Atencion? LeerAtencionOpcional(string url)
+        {
+            var response = http.GetAsync(url).GetAwaiter().GetResult();
+            if (!response.IsSuccessStatusCode) return null;
+
+            var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            if (string.IsNullOrWhiteSpace(body) || body.Trim() == "null") return null;
+
+            return System.Text.Json.JsonSerializer.Deserialize<Atencion>(
+                body, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
         }
 
         // 7. HISTORIAL MÉDICO DE UNA MASCOTA
         public List<Atencion> ListarHistorialPorMascota(int idMascota)
         {
-            return http.GetFromJsonAsync<List<Atencion>>($"webresources/AtencionRS/historialMascota/{idMascota}")
+            return http.GetFromJsonAsync<List<Atencion>>($"AtencionRS/historialMascota/{idMascota}")
                 .GetAwaiter().GetResult() ?? new List<Atencion>();
         }
 
@@ -71,7 +82,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
             string fechaStr = fecha.HasValue ? fecha.Value.ToString("yyyy-MM-dd") : "null";
             string texto = string.IsNullOrWhiteSpace(textoBusqueda) ? "null" : textoBusqueda.Trim();
 
-            string url = $"webresources/AtencionRS/filtrar/{idVet}/{est}/{fechaStr}/{texto}";
+            string url = $"AtencionRS/filtrar/{idVet}/{est}/{fechaStr}/{texto}";
 
             return http.GetFromJsonAsync<List<Atencion>>(url)
                 .GetAwaiter().GetResult() ?? new List<Atencion>();
@@ -80,35 +91,35 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         // 9. LISTAR ÚLTIMAS ATENCIONES POR VETERINARIO
         public List<Atencion> ListarUltimasPorVeterinario(int idVeterinario, int limite)
         {
-            return http.GetFromJsonAsync<List<Atencion>>($"webresources/AtencionRS/listarUltimas/{idVeterinario}/{limite}")
+            return http.GetFromJsonAsync<List<Atencion>>($"AtencionRS/listarUltimas/{idVeterinario}/{limite}")
                 .GetAwaiter().GetResult() ?? new List<Atencion>();
         }
 
         // 10. CONTAR ATENCIONES POR VETERINARIO EN UN MES
         public int ContarPorVeterinarioEnMes(int idVeterinario, int anio, int mes)
         {
-            return http.GetFromJsonAsync<int>($"webresources/AtencionRS/contarPorVeterinario/{idVeterinario}/{anio}/{mes}")
+            return http.GetFromJsonAsync<int>($"AtencionRS/contarPorVeterinario/{idVeterinario}/{anio}/{mes}")
                 .GetAwaiter().GetResult();
         }
 
         // 11. DASHBOARD - SUMAR MONTOS NETOS POR MES
         public double SumarMontosNetosPorMes(int anio, int mes)
         {
-            return http.GetFromJsonAsync<double>($"webresources/AtencionRS/sumarMontosNetos/{anio}/{mes}")
+            return http.GetFromJsonAsync<double>($"AtencionRS/sumarMontosNetos/{anio}/{mes}")
                 .GetAwaiter().GetResult();
         }
 
         // 12. REPORTES - TOP SERVICIOS POR VETERINARIO
         public List<ServicioAtencionResumen> TopServiciosPorVeterinario(int idVeterinario, int anio, int mes, int limite)
         {
-            return http.GetFromJsonAsync<List<ServicioAtencionResumen>>($"webresources/AtencionRS/topServicios/{idVeterinario}/{anio}/{mes}/{limite}")
+            return http.GetFromJsonAsync<List<ServicioAtencionResumen>>($"AtencionRS/topServicios/{idVeterinario}/{anio}/{mes}/{limite}")
                 .GetAwaiter().GetResult() ?? new List<ServicioAtencionResumen>();
         }
 
         // 13. REPORTES - TOP VETERINARIOS CON MÁS ATENCIONES
         public List<VeterinarioAtencionResumen> TopVeterinariosPorAtenciones(int anio, int mes, int limite)
         {
-            return http.GetFromJsonAsync<List<VeterinarioAtencionResumen>>($"webresources/AtencionRS/topVeterinarios/{anio}/{mes}/{limite}")
+            return http.GetFromJsonAsync<List<VeterinarioAtencionResumen>>($"AtencionRS/topVeterinarios/{anio}/{mes}/{limite}")
                 .GetAwaiter().GetResult() ?? new List<VeterinarioAtencionResumen>();
         }
     }

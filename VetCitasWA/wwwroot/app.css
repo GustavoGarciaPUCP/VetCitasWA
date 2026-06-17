@@ -1469,6 +1469,19 @@ h1:focus {
     border-color: #fde68a;
 }
 
+/* Estado activo / inactivo — versión clara (antes solo existían en modo oscuro) */
+.status-active {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.status-inactive {
+    background: #e2e8f0;
+    color: #334155;
+    border-color: #cbd5e1;
+}
+
 /* ============================================================ */
 /* === Badges de estado — dark mode (todas las vistas) ======== */
 /* Cubre Mis Horarios (.mh-badge-*), Agenda Citas (.dt-*),     */
@@ -3051,3 +3064,421 @@ h1:focus {
     background: rgba(59, 130, 246, 0.25);
     border-color: #3b82f6;
 }
+
+/* ===== Utilidades para vistas conectadas a datos reales ===== */
+.filter-bar {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.filter-bar .form-input { max-width: 320px; }
+
+/* Campo de búsqueda con icono */
+.vc-search {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex: 1 1 260px;
+    max-width: 360px;
+}
+.vc-search-icon {
+    position: absolute;
+    left: 0.8rem;
+    display: inline-flex;
+    color: #9ca3af;
+    pointer-events: none;
+}
+.vc-search-input {
+    width: 100%;
+    padding: 0.6rem 0.9rem 0.6rem 2.3rem;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    background: #fff;
+    color: #111827;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.vc-search-input::placeholder { color: #9ca3af; }
+.vc-search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+}
+:root.dark .vc-search-input { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+:root.dark .vc-search-input::placeholder { color: #64748b; }
+:root.dark .vc-search-icon { color: #64748b; }
+
+/* Select a juego con el campo de búsqueda */
+.vc-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 0.6rem 2.3rem 0.6rem 0.9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    color: #111827;
+    cursor: pointer;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 5.5 8 10l4.5-4.5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 16px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.vc-select:hover { border-color: #9ca3af; }
+.vc-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+}
+:root.dark .vc-select { background-color: #1e293b; color: #e2e8f0; border-color: #334155; }
+:root.dark .vc-select:hover { border-color: #475569; }
+
+/* ===== Buscador de cliente (autocompletado) — reutilizable ===== */
+.vc-ac {
+    position: relative;
+}
+
+.vc-ac-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    margin: 0.2rem 0 0;
+    padding: 0.25rem;
+    list-style: none;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.vc-ac-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.vc-ac-item:hover {
+    background: #eff6ff;
+}
+
+.vc-ac-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.vc-ac-meta {
+    font-size: 0.72rem;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.vc-ac-empty {
+    padding: 0.6rem;
+    font-size: 0.8rem;
+    color: #9ca3af;
+    text-align: center;
+    list-style: none;
+}
+
+:root.dark .vc-ac-list { background-color: #1e293b; border-color: #334155; }
+:root.dark .vc-ac-item:hover { background: #334155; }
+:root.dark .vc-ac-name { color: #e2e8f0; }
+
+.estado-mensaje {
+    padding: 1.25rem;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.92rem;
+}
+.estado-error { color: #dc2626; }
+
+/* Modal interactivo (Blazor) — independiente del modal por checkbox */
+.vc-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+.vc-modal-card {
+    position: relative;
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.75rem;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.35);
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+}
+.vc-modal-title { font-size: 1.15rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem; }
+.vc-modal-message { font-size: 0.9rem; color: #6b7280; margin: 0 0 1.4rem; line-height: 1.55; }
+.vc-modal-actions { display: flex; gap: 0.6rem; justify-content: center; }
+.vc-modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.85rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.vc-modal-close:hover { background: #f3f4f6; color: #111827; }
+/* ===== Sistema de botones (filtros, modales, formularios) ===== */
+.vc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, transform .1s ease, color .15s ease;
+    user-select: none;
+    white-space: nowrap;
+    text-decoration: none !important;
+}
+.vc-btn:active { transform: translateY(1px); }
+.vc-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Primario (Aplicar / Guardar) */
+.vc-btn-primary {
+    background: linear-gradient(180deg, #3b82f6, #2563eb);
+    color: #fff !important;
+    border-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, .25);
+}
+.vc-btn-primary:hover { background: linear-gradient(180deg, #2563eb, #1d4ed8); box-shadow: 0 6px 16px rgba(37, 99, 235, .32); }
+
+/* Secundario (Limpiar / Cancelar) */
+.vc-btn-secondary {
+    background: #fff;
+    color: #374151 !important;
+    border-color: #d1d5db;
+}
+.vc-btn-secondary:hover { background: #f9fafb; border-color: #9ca3af; color: #111827 !important; }
+
+/* Peligro (Eliminar) */
+.vc-btn-danger {
+    background: #FEE2E2;
+    color: #B91C1C !important;
+    border-color: #dc2626;
+    min-width: 130px;
+}
+.vc-btn-danger:hover {
+     background: #dc2626;
+     color: #fff !important;
+     border-color: #b91c1c;
+}
+
+/* Botón pequeño (para acciones en tablas) */
+.vc-btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 8px;
+}
+
+/* Fila de acciones compacta en tablas */
+.vc-acciones {
+    display: inline-flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+/* Spinner de carga dentro de botones */
+.vc-spinner {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, .45);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: vc-spin .6s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes vc-spin { to { transform: rotate(360deg); } }
+
+/* ===== Toasts ===== */
+.vc-toast-container {
+    position: fixed;
+    top: 1.1rem;
+    right: 1.1rem;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    max-width: 360px;
+}
+.vc-toast {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .8rem 1rem;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .18);
+    border-left: 4px solid #6b7280;
+    font-size: .88rem;
+    color: #1f2937;
+    animation: vc-toast-in .25s ease-out;
+}
+.vc-toast-exito { border-left-color: #16a34a; }
+.vc-toast-error { border-left-color: #dc2626; }
+.vc-toast-info { border-left-color: #2563eb; }
+.vc-toast-icon { display: inline-flex; flex-shrink: 0; }
+.vc-toast-exito .vc-toast-icon { color: #16a34a; }
+.vc-toast-error .vc-toast-icon { color: #dc2626; }
+.vc-toast-info .vc-toast-icon { color: #2563eb; }
+.vc-toast-text { flex: 1; line-height: 1.4; }
+.vc-toast-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0 .15rem;
+}
+.vc-toast-close:hover { color: #4b5563; }
+@keyframes vc-toast-in { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+
+:root.dark .vc-modal-card { background: #1e293b; }
+:root.dark .vc-modal-title { color: #f1f5f9; }
+:root.dark .estado-mensaje { color: #94a3b8; }
+:root.dark .vc-btn-secondary { background: #1e293b; color: #cbd5e1 !important; border-color: #334155; }
+:root.dark .vc-btn-secondary:hover { background: #27303f; border-color: #475569; color: #f1f5f9 !important; }
+:root.dark .vc-toast { background: #1e293b; color: #e2e8f0; box-shadow: 0 10px 30px rgba(0, 0, 0, .4); }
+:root.dark .vc-toast-close { color: #64748b; }
+
+/* ===== Sistema de formularios en modales (vc-form-*) ===== */
+.vc-modal-card-lg {
+    max-width: 560px;
+    text-align: left;
+}
+.vc-modal-card-lg .vc-modal-title { text-align: left; }
+.vc-modal-subtitle { font-size: .8rem; color: #6b7280; margin: 0 0 1.1rem; }
+
+.vc-form-row {
+    display: flex;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+}
+.vc-form-row > .vc-form-field { flex: 1 1 200px; }
+.vc-form-field { display: flex; flex-direction: column; margin-bottom: 0.9rem; }
+.vc-form-label { font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.35rem; }
+.vc-form-input,
+.vc-form-textarea {
+    width: 100%;
+    padding: 0.58rem 0.8rem;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    font-size: 0.875rem;
+    background: #fff;
+    color: #111827;
+    transition: border-color .15s ease, box-shadow .15s ease;
+    font-family: inherit;
+}
+.vc-form-textarea { resize: vertical; min-height: 64px; }
+.vc-form-input:focus,
+.vc-form-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+}
+.vc-form-input::placeholder, .vc-form-textarea::placeholder { color: #9ca3af; }
+.vc-form-hint { font-size: 0.75rem; color: #9ca3af; margin-top: 0.3rem; }
+
+/* intl-tel-input: que el contenedor ocupe todo el ancho del campo */
+.vc-phone-wrap { width: 100%; }
+.iti { width: 100%; display: block; }
+.iti input.vc-form-input { width: 100%; }
+.vc-form-error { font-size: 0.8rem; color: #dc2626; margin: 0.2rem 0 0.6rem; }
+
+/* Select dentro de formularios reutiliza .vc-select (ancho completo) */
+.vc-form-field .vc-select { width: 100%; }
+
+/* Checkbox */
+.vc-form-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+.vc-form-check input { width: 16px; height: 16px; cursor: pointer; }
+
+:root.dark .vc-form-label { color: #cbd5e1; }
+:root.dark .vc-form-check { color: #cbd5e1; }
+:root.dark .vc-form-input,
+:root.dark .vc-form-textarea { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+:root.dark .vc-modal-subtitle { color: #94a3b8; }
+
+/* Lista de mascotas agregadas dentro del modal de cliente */
+.vc-pet-add-list {
+    list-style: none;
+    margin: 0 0 0.6rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.vc-pet-add-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.85rem;
+    color: #334155;
+}
+.vc-pet-remove {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0.2rem;
+}
+.vc-pet-remove:hover { color: #dc2626; }
+.vc-pet-add-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.vc-pet-add-row .vc-form-input { flex: 1 1 120px; }
+.vc-pet-add-row .vc-select { flex: 0 1 120px; }
+
+:root.dark .vc-pet-add-list li { background: #1e293b; border-color: #334155; color: #cbd5e1; }

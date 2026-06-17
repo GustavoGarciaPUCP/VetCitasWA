@@ -1,4 +1,11 @@
 @page "/servicios"
+@rendermode InteractiveServer
+@using VetCitasWA.Servicios.Modelo.Servicio
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
+@inject VetCitasWA.Servicios.UI.ToastService Toasts
+@inject NavigationManager Nav
+@implements IDisposable
 
 <PageTitle>Servicios - VetCitas</PageTitle>
 
@@ -12,175 +19,298 @@
 
     @* Cabecera: título + botón "Nuevo Servicio" (admin-only) *@
     <div class="page-head">
-        <h1 class="page-title">Catálogo de Servicios</h1>
+        <h1 class="page-title">Catálogo de servicios</h1>
         <a href="/servicios/crear" class="btn-new admin-only">
             <span class="btn-plus" aria-hidden="true">+</span>
-            <span>Nuevo Servicio</span>
+            <span>Nuevo servicio</span>
         </a>
+    </div>
+
+    @* Barra de filtros / búsqueda — se aplican al pulsar "Aplicar filtros" *@
+    <div class="filter-bar">
+        <div class="vc-search">
+            <span class="vc-search-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                </svg>
+            </span>
+            <input type="text" class="vc-search-input" placeholder="Buscar por nombre o tipo..."
+                   value="@textoBusqueda" @oninput="OnBusquedaInput" />
+        </div>
+        <select class="vc-select" @bind="filtroEstado" @bind:after="AplicarFiltros">
+            <option value="todos">Todos los estados</option>
+            <option value="activos">Solo activos</option>
+            <option value="inactivos">Solo inactivos</option>
+        </select>
     </div>
 
     <section class="panel">
         <div class="table-wrapper">
-            <table class="vet-table">
-                <thead>
-                    <tr>
-                        <th>Servicio</th>
-                        <th>Tipo</th>
-                        <th>Duración (min)</th>
-                        <th>Precio (S/)</th>
-                        <th>Estado</th>
-                        <th class="admin-only">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
+            @if (cargando)
+            {
+                <p class="estado-mensaje">Cargando servicios...</p>
+            }
+            else if (errorMensaje is not null)
+            {
+                <p class="estado-mensaje estado-error">@errorMensaje</p>
+            }
+            else
+            {
+                <table class="vet-table">
+                    <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Tipo</th>
+                            <th>Duración (min)</th>
+                            <th>Precio (S/)</th>
+                            <th>Estado</th>
+                            <th class="admin-only">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!ServiciosFiltrados.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="estado-mensaje">No se encontraron servicios.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var s in Pagina)
+                            {
+                                <tr>
+                                    <td data-label="Servicio">@s.Nombre</td>
+                                    <td data-label="Tipo">
+                                        @if (s.Tipo == TipoServicio.CLINICA)
+                                        {
+                                            <span class="type-badge type-clinica">Clínica</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="type-badge type-noclinica">No clínica</span>
+                                        }
+                                    </td>
+                                    <td data-label="Duración (min)">@s.DuracionMinutos</td>
+                                    <td data-label="Precio (S/)">S/ @s.Precio.ToString("F2")</td>
+                                    <td data-label="Estado">
+                                        @if (s.Activo)
+                                        {
+                                            <span class="status-badge status-active">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-inactive">Inactivo</span>
+                                        }
+                                    </td>
+                                    <td data-label="Acciones" class="admin-only">
+                                        <div class="row-actions">
+                                            <a href="@($"/servicios/editar?id={s.Id}")" class="btn-icon btn-icon-edit" title="Editar" aria-label="Editar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
+                                            </a>
+                                            <button type="button" class="btn-icon btn-icon-delete" title="Eliminar" aria-label="Eliminar"
+                                                    @onclick="() => PedirConfirmacion(s)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
 
-                    <tr>
-                        <td data-label="Servicio">Consulta General</td>
-                        <td data-label="Tipo"><span class="type-badge type-clinica">Clínica</span></td>
-                        <td data-label="Duración (min)">30</td>
-                        <td data-label="Precio (S/)">S/ 50.00</td>
-                        <td data-label="Estado"><span class="status-badge status-active">Activo</span></td>
-                        <td data-label="Acciones" class="admin-only">
-                            <div class="row-actions">
-                                <a href="/servicios/crear" class="btn-icon btn-icon-edit" title="Editar" aria-label="Editar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </a>
-                                <label for="confirm-delete-modal" class="btn-icon btn-icon-delete" title="Eliminar" aria-label="Eliminar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Servicio">Esterilización Canina</td>
-                        <td data-label="Tipo"><span class="type-badge type-clinica">Clínica</span></td>
-                        <td data-label="Duración (min)">120</td>
-                        <td data-label="Precio (S/)">S/ 250.00</td>
-                        <td data-label="Estado"><span class="status-badge status-active">Activo</span></td>
-                        <td data-label="Acciones" class="admin-only">
-                            <div class="row-actions">
-                                <a href="/servicios/crear" class="btn-icon btn-icon-edit" title="Editar" aria-label="Editar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </a>
-                                <label for="confirm-delete-modal" class="btn-icon btn-icon-delete" title="Eliminar" aria-label="Eliminar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Servicio">Esterilización Felina</td>
-                        <td data-label="Tipo"><span class="type-badge type-clinica">Clínica</span></td>
-                        <td data-label="Duración (min)">90</td>
-                        <td data-label="Precio (S/)">S/ 200.00</td>
-                        <td data-label="Estado"><span class="status-badge status-active">Activo</span></td>
-                        <td data-label="Acciones" class="admin-only">
-                            <div class="row-actions">
-                                <a href="/servicios/crear" class="btn-icon btn-icon-edit" title="Editar" aria-label="Editar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </a>
-                                <label for="confirm-delete-modal" class="btn-icon btn-icon-delete" title="Eliminar" aria-label="Eliminar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Servicio">Vacunación Múltiple</td>
-                        <td data-label="Tipo"><span class="type-badge type-clinica">Clínica</span></td>
-                        <td data-label="Duración (min)">15</td>
-                        <td data-label="Precio (S/)">S/ 35.00</td>
-                        <td data-label="Estado"><span class="status-badge status-active">Activo</span></td>
-                        <td data-label="Acciones" class="admin-only">
-                            <div class="row-actions">
-                                <a href="/servicios/crear" class="btn-icon btn-icon-edit" title="Editar" aria-label="Editar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </a>
-                                <label for="confirm-delete-modal" class="btn-icon btn-icon-delete" title="Eliminar" aria-label="Eliminar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Servicio">Cirugía Menor</td>
-                        <td data-label="Tipo"><span class="type-badge type-clinica">Clínica</span></td>
-                        <td data-label="Duración (min)">60</td>
-                        <td data-label="Precio (S/)">S/ 300.00</td>
-                        <td data-label="Estado"><span class="status-badge status-active">Activo</span></td>
-                        <td data-label="Acciones" class="admin-only">
-                            <div class="row-actions">
-                                <a href="/servicios/crear" class="btn-icon btn-icon-edit" title="Editar" aria-label="Editar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </a>
-                                <label for="confirm-delete-modal" class="btn-icon btn-icon-delete" title="Eliminar" aria-label="Eliminar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Servicio">Control Post-Operatorio</td>
-                        <td data-label="Tipo"><span class="type-badge type-clinica">Clínica</span></td>
-                        <td data-label="Duración (min)">20</td>
-                        <td data-label="Precio (S/)">S/ 30.00</td>
-                        <td data-label="Estado"><span class="status-badge status-active">Activo</span></td>
-                        <td data-label="Acciones" class="admin-only">
-                            <div class="row-actions">
-                                <a href="/servicios/crear" class="btn-icon btn-icon-edit" title="Editar" aria-label="Editar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </a>
-                                <label for="confirm-delete-modal" class="btn-icon btn-icon-delete" title="Eliminar" aria-label="Eliminar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Servicio">Baño y Peluquería</td>
-                        <td data-label="Tipo"><span class="type-badge type-noclinica">No Clínica</span></td>
-                        <td data-label="Duración (min)">45</td>
-                        <td data-label="Precio (S/)">S/ 40.00</td>
-                        <td data-label="Estado"><span class="status-badge status-active">Activo</span></td>
-                        <td data-label="Acciones" class="admin-only">
-                            <div class="row-actions">
-                                <a href="/servicios/crear" class="btn-icon btn-icon-edit" title="Editar" aria-label="Editar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </a>
-                                <label for="confirm-delete-modal" class="btn-icon btn-icon-delete" title="Eliminar" aria-label="Eliminar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Servicio">Corte de Uñas</td>
-                        <td data-label="Tipo"><span class="type-badge type-noclinica">No Clínica</span></td>
-                        <td data-label="Duración (min)">10</td>
-                        <td data-label="Precio (S/)">S/ 15.00</td>
-                        <td data-label="Estado"><span class="status-badge status-active">Activo</span></td>
-                        <td data-label="Acciones" class="admin-only">
-                            <div class="row-actions">
-                                <a href="/servicios/crear" class="btn-icon btn-icon-edit" title="Editar" aria-label="Editar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
-                                </a>
-                                <label for="confirm-delete-modal" class="btn-icon btn-icon-delete" title="Eliminar" aria-label="Eliminar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
-                                </label>
-                            </div>
-                        </td>
-                    </tr>
-
-                </tbody>
-            </table>
+                <Pager CurrentPage="paginaActual" TotalPages="TotalPaginas" CurrentPageChanged="IrAPagina" />
+            }
         </div>
     </section>
 
 </div>
+
+@* === Modal de confirmación de eliminación (interactivo) === *@
+@if (servicioAEliminar is not null)
+{
+    <div class="vc-modal-backdrop" role="presentation">
+        <div class="vc-modal-card" role="dialog" aria-modal="true">
+            <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="CancelarEliminacion">×</button>
+            <h3 class="vc-modal-title">¿Confirmar eliminación?</h3>
+            <p class="vc-modal-message">
+                ¿Eliminar el servicio <strong>@servicioAEliminar.Nombre</strong>?
+                Esta acción no se puede deshacer.
+            </p>
+            <div class="vc-modal-actions">
+                <button type="button" class="vc-btn vc-btn-secondary" @onclick="CancelarEliminacion" disabled="@procesando">Cancelar</button>
+                <button type="button" class="vc-btn vc-btn-danger" @onclick="ConfirmarEliminacion" disabled="@procesando">
+                    @if (procesando)
+                    {
+                        <span class="vc-spinner" aria-hidden="true"></span>
+                        <span>Eliminando...</span>
+                    }
+                    else
+                    {
+                        <span>Sí, eliminar</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Servicio> servicios = new();
+    private bool cargando = true;
+    private bool procesando = false;
+    private string? errorMensaje;
+
+    // Filtros: borrador (lo que el usuario escribe en los inputs)
+    private string textoBusqueda = "";
+    private string filtroEstado = "todos";
+
+    // Filtros aplicados: los que realmente filtran la tabla (al pulsar "Aplicar")
+    private string textoAplicado = "";
+    private string estadoAplicado = "todos";
+
+    // Paginación (cliente)
+    private const int PageSize = 15;
+    private int paginaActual = 1;
+
+    // Estado del modal de eliminación
+    private Servicio? servicioAEliminar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarServicios();
+    }
+
+    private async Task CargarServicios()
+    {
+        cargando = true;
+        errorMensaje = null;
+        try
+        {
+            servicios = await Task.Run(() => ServicioService.ListarTodos());
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = "No se pudieron cargar los servicios. Inténtalo nuevamente.";
+            servicios = new();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    // Filtrado en cliente sobre la lista ya cargada
+    private IEnumerable<Servicio> ServiciosFiltrados
+    {
+        get
+        {
+            IEnumerable<Servicio> resultado = servicios;
+
+            if (!string.IsNullOrWhiteSpace(textoAplicado))
+            {
+                string t = textoAplicado.Trim().ToLowerInvariant();
+                resultado = resultado.Where(s =>
+                    (s.Nombre ?? "").ToLowerInvariant().Contains(t) ||
+                    (s.Tipo == TipoServicio.CLINICA ? "clínica clinica" : "no clínica no clinica").Contains(t));
+            }
+
+            resultado = estadoAplicado switch
+            {
+                "activos" => resultado.Where(s => s.Activo),
+                "inactivos" => resultado.Where(s => !s.Activo),
+                _ => resultado
+            };
+
+            return resultado;
+        }
+    }
+
+    // ===== Paginación (cliente) =====
+    private List<Servicio> FiltradosLista => ServiciosFiltrados.ToList();
+    private int TotalPaginas => Math.Max(1, (int)Math.Ceiling(FiltradosLista.Count / (double)PageSize));
+
+    private IEnumerable<Servicio> Pagina
+    {
+        get
+        {
+            var orden = FiltradosLista;
+            if (paginaActual > TotalPaginas) paginaActual = TotalPaginas;
+            if (paginaActual < 1) paginaActual = 1;
+            return orden.Skip((paginaActual - 1) * PageSize).Take(PageSize);
+        }
+    }
+
+    private void IrAPagina(int p) => paginaActual = p;
+
+    // Copia el borrador a los filtros aplicados
+    private void AplicarFiltros()
+    {
+        textoAplicado = textoBusqueda;
+        estadoAplicado = filtroEstado;
+        paginaActual = 1;
+    }
+
+    // Limpia tanto el borrador como los filtros aplicados
+    private void LimpiarFiltros()
+    {
+        debounceCts?.Cancel();
+        textoBusqueda = "";
+        filtroEstado = "todos";
+        textoAplicado = "";
+        estadoAplicado = "todos";
+    }
+
+    // ===== Debounce del buscador (800 ms) =====
+    private CancellationTokenSource? debounceCts;
+
+    private async Task OnBusquedaInput(ChangeEventArgs e)
+    {
+        textoBusqueda = e.Value?.ToString() ?? "";
+
+        debounceCts?.Cancel();
+        debounceCts = new CancellationTokenSource();
+        var token = debounceCts.Token;
+
+        try
+        {
+            await Task.Delay(800, token);
+            textoAplicado = textoBusqueda;
+            estadoAplicado = filtroEstado;
+            paginaActual = 1;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException) { /* tecla siguiente antes de 800ms */ }
+    }
+
+    public void Dispose() => debounceCts?.Cancel();
+
+    private void PedirConfirmacion(Servicio s) => servicioAEliminar = s;
+
+    private void CancelarEliminacion() => servicioAEliminar = null;
+
+    private async Task ConfirmarEliminacion()
+    {
+        // Guarda anti-reentrada: evita doble eliminación si se hace clic dos veces
+        if (servicioAEliminar is null || procesando) return;
+
+        procesando = true;
+        string nombre = servicioAEliminar.Nombre ?? "servicio";
+        try
+        {
+            int id = servicioAEliminar.Id;
+            await Task.Run(() => ServicioService.Eliminar(id));
+            servicioAEliminar = null;
+            await CargarServicios();
+            Toasts.Exito($"Servicio \"{nombre}\" eliminado.");
+        }
+        catch (Exception ex)
+        {
+            Toasts.Error("No se pudo eliminar el servicio. Inténtalo nuevamente.");
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+}

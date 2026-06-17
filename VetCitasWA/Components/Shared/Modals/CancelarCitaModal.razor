@@ -22,7 +22,7 @@
                 </svg>
             </div>
             <div class="cc-head-text">
-                <h2 id="cc-modal-title" class="cc-modal-title">Cancelar Cita</h2>
+                <h2 id="cc-modal-title" class="cc-modal-title">Cancelar cita</h2>
                 <p class="cc-modal-subtitle">Cita #1001 · Max (Perro) · Lunes 12/05 — 10:30</p>
             </div>
             <label for="cancelar-cita-modal" class="cc-modal-close" aria-label="Cerrar">×</label>
@@ -31,13 +31,13 @@
         <div class="cc-modal-body">
 
             <div class="cc-warning">
-                Al cancelar la cita, el estado pasa a <strong>CANCELADA</strong> y se libera el slot del veterinario.
+                Al cancelar la cita, su estado pasa a <strong>Cancelada</strong> y se libera el horario del veterinario.
             </div>
 
             <div class="cc-field">
                 <label class="cc-label" for="cc-motivo">Motivo de cancelación <span class="cc-req">*</span></label>
-                <textarea id="cc-motivo" class="cc-textarea" rows="3" maxlength="255" placeholder="Ej. Cliente reportó emergencia familiar y solicitó reagendar. Se contactará el lunes." required></textarea>
-                <span class="cc-hint">El motivo queda registrado en el historial de la cita (máx 255 caracteres).</span>
+                <textarea id="cc-motivo" class="cc-textarea" rows="3" maxlength="255" placeholder="Ej. El cliente reportó una emergencia familiar y solicitó reprogramar. Se le contactará el lunes." required></textarea>
+                <span class="cc-hint">El motivo queda registrado en el historial de la cita (máx. 255 caracteres).</span>
             </div>
 
             <label class="cc-check">
@@ -46,13 +46,13 @@
                 <span class="cc-check-text">Notificar al cliente por WhatsApp</span>
             </label>
             <span class="cc-hint cc-hint-indent">
-                Se genera un recordatorio en estado <strong>Pendiente</strong> con el mensaje de cancelación. Tú decides cuándo enviarlo desde Recordatorios.
+                Se genera un recordatorio en estado <strong>Pendiente</strong> con el mensaje de cancelación. El envío se realiza manualmente desde Recordatorios.
             </span>
 
         </div>
 
         <footer class="cc-modal-foot">
-            <button type="button" class="btn-cc btn-cc-danger">Confirmar Cancelación</button>
+            <button type="button" class="btn-cc btn-cc-danger">Confirmar cancelación</button>
         </footer>
     </div>
 </div>

@@ -12,6 +12,32 @@
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
 }
 
+/* ================== Ver detalle de atención ================== */
+.history-action {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.ver-detalle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid #c7d2fe;
+    border-radius: 8px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ver-detalle:hover {
+    background: #e0e7ff;
+    border-color: #a5b4fc;
+}
+
 /* ================== Back link ================== */
 .back-link {
     display: inline-flex;

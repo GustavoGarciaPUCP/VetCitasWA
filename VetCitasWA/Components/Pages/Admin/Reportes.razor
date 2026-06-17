@@ -1,21 +1,21 @@
-@page "/reportes"
+@page "/consolidados"
 
-<PageTitle>Reportes - VetCitas</PageTitle>
+<PageTitle>Consolidados - VetCitas</PageTitle>
 
 <SectionContent SectionName="breadcrumb">
     <span class="crumb">VetCitas</span>
     <span class="crumb-sep">›</span>
-    <span class="crumb current">Reportes</span>
+    <span class="crumb current">Consolidados</span>
 </SectionContent>
 
 <div class="page-section">
 
-    <h1 class="page-title">Reportes</h1>
+    <h1 class="page-title">Consolidados</h1>
 
     <div class="reports-grid">
 
         @* ====================================================== *@
-        @* ============== Reporte 1: Citas ===================== *@
+        @* ============== Consolidado 1: Citas ===================== *@
         @* ====================================================== *@
         <section class="report-card">
             <header class="report-head">
@@ -24,7 +24,7 @@
                         <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z" />
                     </svg>
                 </span>
-                <h2 class="report-title">Reporte de Citas</h2>
+                <h2 class="report-title">Consolidados de citas</h2>
             </header>
 
             <div class="report-body">
@@ -32,11 +32,11 @@
                 @* ----- Filtros ----- *@
                 <div class="filters-grid">
                     <div class="filter-field">
-                        <label class="filter-label" for="rep1-fini">Fecha Inicio</label>
+                        <label class="filter-label" for="rep1-fini">Fecha de inicio</label>
                         <input id="rep1-fini" type="date" class="filter-input" value="2026-05-01" />
                     </div>
                     <div class="filter-field">
-                        <label class="filter-label" for="rep1-ffin">Fecha Fin</label>
+                        <label class="filter-label" for="rep1-ffin">Fecha de fin</label>
                         <input id="rep1-ffin" type="date" class="filter-input" value="2026-05-31" />
                     </div>
                     <div class="filter-field">
@@ -137,13 +137,13 @@
                             <path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.7 7.7 0 0 1 1.482-.645 20 20 0 0 0 1.062-2.227 7.3 7.3 0 0 1-.43-1.295c-.086-.4-.119-.796-.046-1.136.075-.354.274-.672.65-.823.192-.077.4-.12.602-.077a.7.7 0 0 1 .477.365c.088.164.12.356.127.538.007.188-.012.396-.047.614-.084.51-.27 1.134-.52 1.794a11 11 0 0 0 .98 1.686 5.8 5.8 0 0 1 1.334.05c.364.066.734.195.96.465.12.144.193.32.2.518.007.192-.05.379-.149.547-.196.335-.62.563-1.085.412-.45-.116-.971-.503-1.388-.985-.766.169-1.564.43-2.388.76-.218.404-.477.795-.71 1.143-.21.314-.518.682-.815.834-.305.157-.602.166-.82.064m1.379-1.901q-.336.157-.62.317c-.404.233-.66.468-.778.6-.115.124-.111.197-.04.292.029.046.062.07.114.071a.5.5 0 0 0 .15-.05c.118-.06.27-.187.45-.4q.221-.236.435-.6a.5.5 0 0 1-.024-.024c-.246-.234-.392-.402-.487-.498m1.396-2.835c.045.184.09.367.156.55q.118-.286.182-.58c-.04-.103-.085-.213-.13-.32-.092.11-.142.22-.146.32 0 .013.001.024.003.034a.55.55 0 0 0 .002.05c0 .013.001.024.003.034a.5.5 0 0 0 .002.05c0 .013.001.024.003.034a.55.55 0 0 0 .002.05c0 .013.001.024.003.034.001.014.003.027.005.041a.55.55 0 0 0-.005-.041m.7-.18.087-.052c.071-.04.119-.077.144-.108.024-.029.031-.064.034-.094.003-.03.001-.06-.005-.084-.044-.05-.105-.092-.18-.092a1 1 0 0 0-.135.013l-.025.01-.014.005a.5.5 0 0 0-.014.006c-.012.005-.024.014-.04.022l-.016.01a.5.5 0 0 1-.026.014c-.018.012-.04.026-.062.043a.5.5 0 0 1-.077.036c.083.083.231.219.413.358" />
                         </svg>
                     </span>
-                    GENERAR REPORTE PDF
+                    Generar consolidado PDF
                 </button>
             </div>
         </section>
 
         @* ====================================================== *@
-        @* ====== Reporte 2: Clientes Frecuentes =============== *@
+        @* ====== Consolidados 2: Clientes Frecuentes =============== *@
         @* ====================================================== *@
         <section class="report-card">
             <header class="report-head">
@@ -152,7 +152,7 @@
                         <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z" />
                     </svg>
                 </span>
-                <h2 class="report-title">Reporte de Clientes Frecuentes</h2>
+                <h2 class="report-title">Consolidado de clientes frecuentes</h2>
             </header>
 
             <div class="report-body">
@@ -160,11 +160,11 @@
                 @* ----- Filtros ----- *@
                 <div class="filters-grid">
                     <div class="filter-field">
-                        <label class="filter-label" for="rep2-fini">Fecha Inicio</label>
+                        <label class="filter-label" for="rep2-fini">Fecha de inicio</label>
                         <input id="rep2-fini" type="date" class="filter-input" value="2026-01-01" />
                     </div>
                     <div class="filter-field">
-                        <label class="filter-label" for="rep2-ffin">Fecha Fin</label>
+                        <label class="filter-label" for="rep2-ffin">Fecha de fin</label>
                         <input id="rep2-ffin" type="date" class="filter-input" value="2026-05-31" />
                     </div>
                     <div class="filter-field filter-field-full">
@@ -219,12 +219,12 @@
                             <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8.5l1.5-1.5V14zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5z" />
                         </svg>
                     </span>
-                    GENERAR REPORTE PDF
+                    Generar consolidado PDF
                 </button>
 
                 <p class="report-note">
-                    <span class="report-note-label">Este reporte incluye:</span>
-                    Todos los clientes que superen la métrica ingresada como parámetro.
+                    <span class="report-note-label">Este consolidado incluye:</span>
+                    Todos los clientes que superen la métrica ingresada.
                 </p>
             </div>
         </section>
