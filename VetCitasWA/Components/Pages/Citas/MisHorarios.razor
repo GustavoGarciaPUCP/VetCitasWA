@@ -1,9 +1,9 @@
 @page "/mis-horarios"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "VETERINARIO")]
 @using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Usuario
 @using VetCitasWA.Servicios.Modelo.Common.Enums
-@inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VeterinarioService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.HorarioVeterinarioRestService HorarioService
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
@@ -25,27 +25,7 @@
         </div>
     </div>
 
-    @* ================= Selector de veterinario ================= *@
-    <div class="filter-bar">
-        <div class="vc-form-field" style="margin-bottom:0;min-width:280px;">
-            <label class="vc-form-label">Veterinario</label>
-            <select class="vc-select" @bind="vetSel" @bind:after="CargarDatosVet">
-                <option value="0" disabled>Selecciona un veterinario…</option>
-                @foreach (var v in veterinarios)
-                {
-                    <option value="@v.Id">@NombreVet(v)</option>
-                }
-            </select>
-        </div>
-    </div>
-
-    @if (vetSel == 0)
-    {
-        <p class="estado-mensaje">Selecciona un veterinario para ver y gestionar su horario.</p>
-    }
-    else
-    {
-        @* ================= Navegación de semana ================= *@
+    @* ================= Navegación de semana ================= *@
         <div class="cal-toolbar">
             <div class="tb-field tb-field-nav">
                 <label class="tb-label">Semana</label>
@@ -108,7 +88,6 @@
                 </div>
             </div>
         </div>
-    }
 </div>
 
 @* ===================== DETALLE DE CITA (solo lectura) ===================== *@
@@ -132,7 +111,10 @@
 }
 
 @code {
-    private List<Veterinario> veterinarios = new();
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    // Id del veterinario logueado (su horario es el que se muestra)
     private int vetSel = 0;
 
     private List<HorarioVeterinario> horarios = new();
@@ -152,8 +134,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try { veterinarios = await Task.Run(() => VeterinarioService.ListarTodos()); }
-        catch { veterinarios = new(); }
+        // El veterinario es el usuario logueado (claim IdUsuario = id del usuario = id del veterinario)
+        if (AuthState is not null)
+        {
+            var idClaim = (await AuthState).User.FindFirst("IdUsuario")?.Value;
+            if (int.TryParse(idClaim, out var id)) vetSel = id;
+        }
+        await CargarDatosVet();
     }
 
     private async Task CargarDatosVet()
@@ -196,9 +183,6 @@
     private string DiaNombre(int ds) => (ds >= 1 && ds <= 7) ? DiasNombre7[ds - 1] : "—";
     private string FechaCorta(DateTime d) => $"{d.Day} {MesCorto[d.Month - 1]}";
     private string FechaLarga(DateTime d) => $"{d.Day} {MesCorto[d.Month - 1]} {d.Year}";
-
-    private string NombreVet(Veterinario v)
-        => $"{v.Nombres} {v.Apellidos}" + (string.IsNullOrWhiteSpace(v.Especialidad) ? "" : $" — {v.Especialidad}");
 
     private string NombreCliente(Cita c)
     {

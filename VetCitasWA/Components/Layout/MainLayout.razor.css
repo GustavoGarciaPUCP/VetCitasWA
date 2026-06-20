@@ -137,6 +137,20 @@
     background: rgba(255, 255, 255, 0.18);
 }
 
+a.topbar-user-btn {
+    text-decoration: none;
+}
+
+.topbar-user-name {
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Sol / luna: mostrar el opuesto al modo actual */
 .theme-icon-sun {
     display: none;

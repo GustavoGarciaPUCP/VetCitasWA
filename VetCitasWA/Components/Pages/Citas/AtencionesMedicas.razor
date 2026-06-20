@@ -5,6 +5,7 @@
     cuando ya no haya referencias pendientes.
 *@
 @page "/atenciones-medicas"
+@attribute [Authorize(Roles = "VETERINARIO")]
 @inject NavigationManager Nav
 
 @code {

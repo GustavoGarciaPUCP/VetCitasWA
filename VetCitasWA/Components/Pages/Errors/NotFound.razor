@@ -1,5 +1,7 @@
 ﻿@page "/not-found"
 @layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
 
 <h3>Página no encontrada</h3>
 <p>La página que buscas no existe. <a href="/">Volver al inicio</a></p>

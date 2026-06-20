@@ -133,71 +133,71 @@ h1:focus {
 }
 
 /* ----- Admin activo ----- */
-:root.role-admin-active a.admin-only,
-:root.role-admin-active button.admin-only,
-:root.role-admin-active label.admin-only,
-:root.role-admin-active .btn-new.admin-only {
+.page.role-admin-active a.admin-only,
+.page.role-admin-active button.admin-only,
+.page.role-admin-active label.admin-only,
+.page.role-admin-active .btn-new.admin-only {
     display: inline-flex !important;
 }
 
-:root.role-admin-active th.admin-only,
-:root.role-admin-active td.admin-only {
+.page.role-admin-active th.admin-only,
+.page.role-admin-active td.admin-only {
     display: table-cell !important;
 }
 
-:root.role-admin-active div.admin-only,
-:root.role-admin-active section.admin-only {
+.page.role-admin-active div.admin-only,
+.page.role-admin-active section.admin-only {
     display: block !important;
 }
 
 /* ----- Recepcionista activo ----- */
-:root.role-recep-active a.recep-only,
-:root.role-recep-active button.recep-only,
-:root.role-recep-active label.recep-only,
-:root.role-recep-active .btn-new.recep-only {
+.page.role-recep-active a.recep-only,
+.page.role-recep-active button.recep-only,
+.page.role-recep-active label.recep-only,
+.page.role-recep-active .btn-new.recep-only {
     display: inline-flex !important;
 }
 
-:root.role-recep-active th.recep-only,
-:root.role-recep-active td.recep-only {
+.page.role-recep-active th.recep-only,
+.page.role-recep-active td.recep-only {
     display: table-cell !important;
 }
 
-:root.role-recep-active div.recep-only,
-:root.role-recep-active section.recep-only {
+.page.role-recep-active div.recep-only,
+.page.role-recep-active section.recep-only {
     display: block !important;
 }
 
 /* ----- Veterinario activo ----- */
-:root.role-vet-active a.vet-only,
-:root.role-vet-active button.vet-only,
-:root.role-vet-active label.vet-only,
-:root.role-vet-active .btn-new.vet-only {
+.page.role-vet-active a.vet-only,
+.page.role-vet-active button.vet-only,
+.page.role-vet-active label.vet-only,
+.page.role-vet-active .btn-new.vet-only {
     display: inline-flex !important;
 }
 
-:root.role-vet-active th.vet-only,
-:root.role-vet-active td.vet-only {
+.page.role-vet-active th.vet-only,
+.page.role-vet-active td.vet-only {
     display: table-cell !important;
 }
 
-:root.role-vet-active div.vet-only,
-:root.role-vet-active section.vet-only,
-:root.role-vet-active article.vet-only {
+.page.role-vet-active div.vet-only,
+.page.role-vet-active section.vet-only,
+.page.role-vet-active article.vet-only {
     display: block !important;
 }
 
 /* Si necesitamos un grid/flex, lo decidimos por el tag */
-:root.role-admin-active article.admin-only,
-:root.role-recep-active article.recep-only {
+.page.role-admin-active article.admin-only,
+.page.role-recep-active article.recep-only {
     display: block !important;
 }
 
 /* En móvil las tablas se convierten en cards y los td pasan a flex */
 @media (max-width: 640px) {
-    :root.role-admin-active td.admin-only,
-    :root.role-recep-active td.recep-only,
-    :root.role-vet-active td.vet-only {
+    .page.role-admin-active td.admin-only,
+    .page.role-recep-active td.recep-only,
+    .page.role-vet-active td.vet-only {
         display: flex !important;
     }
 }
@@ -3197,6 +3197,128 @@ h1:focus {
 :root.dark .vc-ac-list { background-color: #1e293b; border-color: #334155; }
 :root.dark .vc-ac-item:hover { background: #334155; }
 :root.dark .vc-ac-name { color: #e2e8f0; }
+
+/* ===== Filtro de estado multi-selección (reutilizable) ===== */
+.vc-ms {
+    position: relative;
+}
+
+.vc-ms-toggle {
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+.vc-ms-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: transparent;
+}
+
+.vc-ms-panel {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 220px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+    padding: 0.35rem;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.vc-ms-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #1f2937;
+    user-select: none;
+}
+
+.vc-ms-item:hover {
+    background: #f3f4f6;
+}
+
+.vc-ms-item input {
+    cursor: pointer;
+}
+
+:root.dark .vc-ms-panel {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+
+:root.dark .vc-ms-item {
+    color: #e2e8f0;
+}
+
+:root.dark .vc-ms-item:hover {
+    background: #334155;
+}
+
+/* ===== intl-tel-input (selector de código de país) en modo oscuro ===== */
+:root.dark .iti__dropdown-content,
+:root.dark .iti__country-list {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+:root.dark .iti__country,
+:root.dark .iti__country-name {
+    color: #e2e8f0;
+}
+
+:root.dark .iti__country:hover,
+:root.dark .iti__country.iti__highlight,
+:root.dark .iti__active {
+    background-color: #334155;
+}
+
+:root.dark .iti__dial-code {
+    color: #94a3b8;
+}
+
+:root.dark .iti__divider {
+    border-color: #334155;
+}
+
+:root.dark .iti__search-input {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    border-color: #334155;
+}
+
+:root.dark .iti__search-input::placeholder {
+    color: #64748b;
+}
+
+/* Botón de bandera/país seleccionado */
+:root.dark .iti__selected-flag:hover,
+:root.dark .iti__selected-country:hover,
+:root.dark .iti__selected-country-primary:hover,
+:root.dark .iti__selected-flag:focus,
+:root.dark .iti__selected-country:focus {
+    background-color: #334155;
+}
+
+:root.dark .iti__arrow {
+    border-top-color: #94a3b8;
+}
+
+:root.dark .iti__arrow--up {
+    border-bottom-color: #94a3b8;
+}
 
 .estado-mensaje {
     padding: 1.25rem;

@@ -1,5 +1,6 @@
 @page "/citas-hoy"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "VETERINARIO")]
 @using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
@@ -28,40 +29,42 @@
         <div class="filters">
             <div class="filter-field">
                 <label class="filter-label" for="filterEstado">Estado</label>
-                <div class="filter-control">
+                <div class="filter-control vc-ms">
                     <span class="filter-icon" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
                         </svg>
                     </span>
-                    <select id="filterEstado" class="filter-select" @bind="filtroEstado" @bind:after="ResetPagina" style="max-width:320px">
-                        <option value="todos">Todos los estados</option>
-                        <option value="PENDIENTE">Pendiente</option>
-                        <option value="CONFIRMADA">Confirmada</option>
-                        <option value="EN_CONSULTA">En consulta</option>
-                        <option value="ATENDIDA">Atendida</option>
-                        <option value="CANCELADA">Cancelada</option>
-                        <option value="NO_ASISTIO">No asistió</option>
-                    </select>
+                    <button type="button" class="filter-select vc-ms-toggle" @onclick="() => estadoDropdownAbierto = !estadoDropdownAbierto">
+                        @EstadosResumen
+                    </button>
+                    @if (estadoDropdownAbierto)
+                    {
+                        <div class="vc-ms-overlay" @onclick="() => estadoDropdownAbierto = false"></div>
+                        <div class="vc-ms-panel">
+                            @foreach (var e in EstadosTodos)
+                            {
+                                <label class="vc-ms-item">
+                                    <input type="checkbox" checked="@estadosSel.Contains(e)" @onchange="() => ToggleEstado(e)" />
+                                    <span>@EstadoLabel(e)</span>
+                                </label>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
 
-            @* <div class="filter-field filter-field-fecha">
-                <label class="filter-label" for="filterFecha">Fecha</label>
+            <div class="filter-field filter-field-fecha">
+                <label class="filter-label">Fecha</label>
                 <div class="filter-control">
                     <span class="filter-icon" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
                         </svg>
                     </span>
-                    <select id="filterFecha" class="filter-select" @bind="filtroFecha" @bind:after="OnFechaChanged">
-                        <option value="hoy">Hoy</option>
-                        <option value="ayer">Ayer</option>
-                        <option value="semana">Esta semana</option>
-                        <option value="mes">Este mes</option>
-                    </select>
+                    <VcSelect TValue="string" Value="filtroFecha" ValueChanged="OnFechaSel" Options="FechaOptions" />
                 </div>
-            </div>*@
+            </div>
         </div>
 
         @* ================= Tabla de citas ================= *@
@@ -204,8 +207,31 @@
     private bool procesando;
     private string? errorMensaje;
 
-    private string filtroEstado = "todos";
+    // Filtro de estado (multi-selección). Por defecto: Pendiente y En consulta.
+    private static readonly EstadoCita[] EstadosTodos =
+    {
+        EstadoCita.PENDIENTE, EstadoCita.CONFIRMADA, EstadoCita.EN_CONSULTA,
+        EstadoCita.ATENDIDA, EstadoCita.NO_ASISTIO, EstadoCita.CANCELADA
+    };
+    private HashSet<EstadoCita> estadosSel = new() { EstadoCita.PENDIENTE, EstadoCita.EN_CONSULTA };
+    private bool estadoDropdownAbierto;
+
     private string filtroFecha = "hoy";
+
+    // Opciones del filtro de estado (VcSelect)
+    private static readonly IEnumerable<VcSelectOption<string>> FechaOptions = new[]
+    {
+        new VcSelectOption<string>("hoy", "Hoy"),
+        new VcSelectOption<string>("ayer", "Ayer"),
+        new VcSelectOption<string>("semana", "Esta semana"),
+        new VcSelectOption<string>("mes", "Este mes"),
+    };
+
+    private async Task OnFechaSel(string value)
+    {
+        filtroFecha = value;
+        await OnFechaChanged();
+    }
 
     // Paginación (cliente)
     private const int PageSize = 4;
@@ -255,7 +281,24 @@
     }
 
     private IEnumerable<Cita> CitasFiltradas
-        => filtroEstado == "todos" ? citas : citas.Where(c => c.Estado.ToString() == filtroEstado);
+        => citas.Where(c => estadosSel.Contains(c.Estado));
+
+    private void ToggleEstado(EstadoCita e)
+    {
+        if (!estadosSel.Remove(e)) estadosSel.Add(e);
+        paginaActual = 1;
+    }
+
+    private string EstadosResumen
+    {
+        get
+        {
+            if (estadosSel.Count == 0) return "Ninguno";
+            if (estadosSel.Count == EstadosTodos.Length) return "Todos los estados";
+            if (estadosSel.Count == 1) return EstadoLabel(estadosSel.First());
+            return $"{estadosSel.Count} estados";
+        }
+    }
 
     // ===== Paginación (cliente) =====
     private List<Cita> FiltradasOrdenadas => CitasFiltradas.OrderBy(x => x.FechaHoraInicio).ToList();
@@ -273,7 +316,6 @@
     }
 
     private void IrAPagina(int p) => paginaActual = p;
-    private void ResetPagina() => paginaActual = 1;
     private async Task OnFechaChanged() { paginaActual = 1; await CargarCitas(); }
 
     private string NombreCliente(Cita c)

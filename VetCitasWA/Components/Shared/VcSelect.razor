@@ -1,0 +1,59 @@
+@* Dropdown personalizado con la estética del buscador (panel blanco, hover azul, bordes redondeados).
+   Reemplaza a <select> nativo. Uso:
+     <VcSelect TValue="int" @bind-Value="vetSel" Options="vetOptions" Placeholder="Selecciona…" />
+   donde vetOptions es IEnumerable<VcSelectOption<int>>.
+   Para reaccionar al cambio (equivalente a @bind:after), usar Value + ValueChanged explícitos. *@
+@typeparam TValue
+
+<div class="vc-cs @(_open ? "vc-cs-open" : "") @CssClass">
+    <button type="button" class="vc-cs-toggle" disabled="@Disabled" @onclick="Toggle">
+        <span class="@(HasSelection ? "vc-cs-text" : "vc-cs-placeholder")">@DisplayLabel</span>
+        <svg class="vc-cs-arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 5.5 8 10l4.5-4.5z" /></svg>
+    </button>
+    @if (_open)
+    {
+        <div class="vc-cs-overlay" @onclick="Close"></div>
+        <div class="vc-cs-panel" role="listbox">
+            @foreach (var o in Options)
+            {
+                <button type="button"
+                        class="vc-cs-item @(IsSelected(o) ? "vc-cs-active" : "")"
+                        disabled="@o.Disabled"
+                        @onclick="() => Pick(o)">
+                    @o.Label
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter] public IEnumerable<VcSelectOption<TValue>> Options { get; set; } = Enumerable.Empty<VcSelectOption<TValue>>();
+    [Parameter] public string Placeholder { get; set; } = "Selecciona…";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+
+    private bool _open;
+
+    private bool HasSelection => Options.Any(IsSelected);
+    private string DisplayLabel => Options.FirstOrDefault(IsSelected)?.Label ?? Placeholder;
+
+    private bool IsSelected(VcSelectOption<TValue> o)
+        => EqualityComparer<TValue>.Default.Equals(o.Value, Value!);
+
+    private void Toggle() { if (!Disabled) _open = !_open; }
+    private void Close() => _open = false;
+
+    private async Task Pick(VcSelectOption<TValue> o)
+    {
+        if (o.Disabled) return;
+        _open = false;
+        if (!EqualityComparer<TValue>.Default.Equals(o.Value, Value!))
+        {
+            Value = o.Value;
+            await ValueChanged.InvokeAsync(o.Value);
+        }
+    }
+}

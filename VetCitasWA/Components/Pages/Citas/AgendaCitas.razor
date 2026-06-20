@@ -1,5 +1,6 @@
 @page "/agenda-citas"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "RECEPCIONISTA")]
 @implements IDisposable
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using VetCitasWA.Servicios.Modelo.Cita
@@ -10,6 +11,7 @@
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VeterinarioService
+@inject VetCitasWA.Servicios.REST.UsuarioRS.HorarioVeterinarioRestService HorarioService
 @inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
 @inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
@@ -37,28 +39,29 @@
         <div class="tb-field tb-field-vet">
             <label class="tb-label" for="vetFilter">Veterinario</label>
             <div class="tb-control">
-                <select id="vetFilter" class="tb-select" @bind="vetFiltro">
-                    <option value="0">Todos</option>
-                    @foreach (var v in veterinarios)
-                    {
-                        <option value="@v.Id">@NombreVet(v)</option>
-                    }
-                </select>
+                <VcSelect TValue="int" Value="vetFiltro" ValueChanged="OnVetFiltroSel" Options="VetFiltroOptions" />
             </div>
         </div>
 
         <div class="tb-field tb-field-state">
-            <label class="tb-label" for="stateFilter">Estado</label>
-            <div class="tb-control">
-                <select id="stateFilter" class="tb-select" @bind="estadoFiltro">
-                    <option value="todos">Todos</option>
-                    <option value="PENDIENTE">Pendiente</option>
-                    <option value="CONFIRMADA">Confirmada</option>
-                    <option value="EN_CONSULTA">En consulta</option>
-                    <option value="ATENDIDA">Atendida</option>
-                    <option value="CANCELADA">Cancelada</option>
-                    <option value="NO_ASISTIO">No asistió</option>
-                </select>
+            <label class="tb-label">Estado</label>
+            <div class="tb-control vc-ms">
+                <button type="button" class="tb-select vc-ms-toggle" @onclick="() => estadoDropdownAbierto = !estadoDropdownAbierto">
+                    @EstadosResumen
+                </button>
+                @if (estadoDropdownAbierto)
+                {
+                    <div class="vc-ms-overlay" @onclick="() => estadoDropdownAbierto = false"></div>
+                    <div class="vc-ms-panel">
+                        @foreach (var e in EstadosTodos)
+                        {
+                            <label class="vc-ms-item">
+                                <input type="checkbox" checked="@estadosSel.Contains(e)" @onchange="() => ToggleEstado(e)" />
+                                <span>@EstadoLabel(e)</span>
+                            </label>
+                        }
+                    </div>
+                }
             </div>
         </div>
 
@@ -76,7 +79,7 @@
     <div class="cal-range-summary">
         <span class="range-label">Mostrando:</span>
         <strong class="range-value">@FechaLarga(semanaInicio) — @FechaLarga(SemanaFin)</strong>
-        <span class="range-sub">(5 días · @citas.Count(PasaFiltros) citas)</span>
+        <span class="range-sub">(7 días · @citas.Count(PasaFiltros) citas)</span>
     </div>
 
     @* ----- Grilla del calendario ----- *@
@@ -101,19 +104,15 @@
                 @foreach (var h in Horas)
                 {
                     <div class="cal-cell cal-time">@($"{h:00}:00")</div>
-                    @if (h == 13)
+                    @foreach (var d in DiasSemana)
                     {
-                        <div class="cal-cell cal-break cal-break-start">Refrigerio (no disponible)</div>
-                        <div class="cal-cell cal-break"></div>
-                        <div class="cal-cell cal-break"></div>
-                        <div class="cal-cell cal-break"></div>
-                        <div class="cal-cell cal-break"></div>
-                    }
-                    else
-                    {
-                        @foreach (var d in DiasSemana)
+                        var lista = CitasEn(d, h);
+                        @if (EsRefrigerio(d, h) && !lista.Any())
                         {
-                            var lista = CitasEn(d, h);
+                            <div class="cal-cell cal-break">Refrigerio</div>
+                        }
+                        else
+                        {
                             <div class="cal-cell cal-slot">
                                 @if (lista.Any())
                                 {
@@ -125,7 +124,7 @@
                                             <div class="cita-foot">@c.FechaHoraInicio.ToString("HH:mm") · @EstadoLabel(c.Estado)</div>
                                         </div>
                                     }
-                                    @if (!EsPasado(d, h))
+                                    @if (!EsPasado(d, h) && !EsRefrigerio(d, h))
                                     {
                                         <button type="button" class="slot-add-mini" @onclick="() => AbrirCrearEn(d, h)" title="Agendar otra cita en este horario"><span aria-hidden="true">+</span> Agregar</button>
                                     }
@@ -199,24 +198,14 @@
 
             <div class="vc-form-field">
                 <label class="vc-form-label">Mascota *</label>
-                <select class="vc-select" @bind="mascotaSel">
-                    <option value="0" disabled>@(clienteSel == 0 ? "Primero selecciona un cliente…" : "Selecciona una mascota…")</option>
-                    @foreach (var m in mascotasCliente)
-                    {
-                        <option value="@m.Id">@m.Nombre@(string.IsNullOrWhiteSpace(m.Raza) ? "" : $" — {m.Raza}")</option>
-                    }
-                </select>
+                <VcSelect TValue="int" @bind-Value="mascotaSel" Options="MascotaOptions"
+                          Placeholder="@(clienteSel == 0 ? "Primero selecciona un cliente…" : "Selecciona una mascota…")" />
             </div>
 
             <div class="vc-form-field">
                 <label class="vc-form-label">Servicio *</label>
-                <select class="vc-select" @bind="servicioSel">
-                    <option value="0" disabled>Selecciona un servicio…</option>
-                    @foreach (var s in servicios)
-                    {
-                        <option value="@s.Id">@s.Nombre — @s.DuracionMinutos min · S/ @s.Precio.ToString("0.00")</option>
-                    }
-                </select>
+                <VcSelect TValue="int" @bind-Value="servicioSel" Options="ServicioOptions"
+                          Placeholder="Selecciona un servicio…" />
             </div>
 
             <div class="vc-form-row">
@@ -232,13 +221,8 @@
 
             <div class="vc-form-field">
                 <label class="vc-form-label">Veterinario *</label>
-                <select class="vc-select" @bind="vetSel">
-                    <option value="0" disabled>Selecciona un veterinario…</option>
-                    @foreach (var v in veterinarios)
-                    {
-                        <option value="@v.Id">@NombreVet(v)</option>
-                    }
-                </select>
+                <VcSelect TValue="int" @bind-Value="vetSel" Options="VeterinarioOptions"
+                          Placeholder="Selecciona un veterinario…" />
                 <span class="vc-form-hint">Se valida la disponibilidad del horario.</span>
             </div>
 
@@ -368,13 +352,8 @@
             <h3 class="vc-modal-title">Cambiar veterinario</h3>
             <div class="vc-form-field">
                 <label class="vc-form-label">Nuevo veterinario</label>
-                <select class="vc-select" @bind="cambiarVetSel">
-                    <option value="0" disabled>Selecciona un veterinario…</option>
-                    @foreach (var v in veterinarios)
-                    {
-                        <option value="@v.Id">@NombreVet(v)</option>
-                    }
-                </select>
+                <VcSelect TValue="int" @bind-Value="cambiarVetSel" Options="VeterinarioOptions"
+                          Placeholder="Selecciona un veterinario…" />
             </div>
             <div class="vc-modal-actions" style="justify-content:flex-end;">
                 <button class="vc-btn vc-btn-secondary" @onclick="() => mostrarCambiarVet = false" disabled="@procesando">Volver</button>
@@ -417,11 +396,41 @@
 
     // Filtros
     private int vetFiltro = 0;
-    private string estadoFiltro = "todos";
+
+    // ===== Opciones para VcSelect =====
+    private IEnumerable<VcSelectOption<int>> VetFiltroOptions =>
+        new[] { new VcSelectOption<int>(0, "Todos") }
+            .Concat(veterinarios.Select(v => new VcSelectOption<int>(v.Id, NombreVet(v))));
+
+    private IEnumerable<VcSelectOption<int>> VeterinarioOptions =>
+        veterinarios.Select(v => new VcSelectOption<int>(v.Id, NombreVet(v)));
+
+    private IEnumerable<VcSelectOption<int>> ServicioOptions =>
+        servicios.Select(s => new VcSelectOption<int>(s.Id, $"{s.Nombre} — {s.DuracionMinutos} min · S/ {s.Precio:0.00}"));
+
+    private IEnumerable<VcSelectOption<int>> MascotaOptions =>
+        mascotasCliente.Select(m => new VcSelectOption<int>(m.Id, m.Nombre + (string.IsNullOrWhiteSpace(m.Raza) ? "" : $" — {m.Raza}")));
+
+    private async Task OnVetFiltroSel(int v) { vetFiltro = v; await OnVetFiltroChanged(); }
+
+    // Filtro de estado (multi-selección). Por defecto se ocultan ATENDIDA y CANCELADA.
+    private static readonly EstadoCita[] EstadosTodos =
+    {
+        EstadoCita.PENDIENTE, EstadoCita.CONFIRMADA, EstadoCita.EN_CONSULTA,
+        EstadoCita.ATENDIDA, EstadoCita.NO_ASISTIO, EstadoCita.CANCELADA
+    };
+    private HashSet<EstadoCita> estadosSel = new()
+    {
+        EstadoCita.PENDIENTE, EstadoCita.CONFIRMADA, EstadoCita.EN_CONSULTA, EstadoCita.NO_ASISTIO
+    };
+    private bool estadoDropdownAbierto;
 
     // Catálogos
     private List<Veterinario> veterinarios = new();
     private List<Servicio> servicios = new();
+
+    // Horario del veterinario filtrado (para pintar su refrigerio real)
+    private List<HorarioVeterinario> horariosVet = new();
 
     // Crear
     private bool mostrarCrear;
@@ -448,12 +457,12 @@
     private int cambiarVetSel;
     private string cancelarMotivo = "";
 
-    private static readonly string[] DiasNombre = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes" };
+    private static readonly string[] DiasNombre = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
     private static readonly string[] MesCorto = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
     private static readonly int[] Horas = { 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
-    private DateTime[] DiasSemana => Enumerable.Range(0, 5).Select(i => semanaInicio.AddDays(i)).ToArray();
-    private DateTime SemanaFin => semanaInicio.AddDays(4);
+    private DateTime[] DiasSemana => Enumerable.Range(0, 7).Select(i => semanaInicio.AddDays(i)).ToArray();
+    private DateTime SemanaFin => semanaInicio.AddDays(6);
 
     // Fecha mínima para los selectores de fecha (no se permiten días anteriores a hoy)
     private string HoyIso => DateTime.Today.ToString("yyyy-MM-dd");
@@ -462,6 +471,31 @@
     private bool EsPasado(DateTime dia, int hora)
         => dia.Date < DateTime.Today
         || (dia.Date == DateTime.Today && hora < DateTime.Now.Hour);
+
+    // 1=Lunes .. 7=Domingo
+    private static int DiaSemanaNum(DateTime d) => ((int)d.DayOfWeek + 6) % 7 + 1;
+
+    // Carga (o limpia) el horario del veterinario seleccionado en el filtro
+    private async Task OnVetFiltroChanged()
+    {
+        if (vetFiltro == 0)
+        {
+            horariosVet = new();
+            return;
+        }
+        try { horariosVet = await Task.Run(() => HorarioService.ListarPorVeterinario(vetFiltro)); }
+        catch { horariosVet = new(); }
+    }
+
+    // Refrigerio real: solo si hay un veterinario seleccionado y la hora cae en su descanso ese día.
+    private bool EsRefrigerio(DateTime dia, int hora)
+    {
+        if (vetFiltro == 0) return false;
+        var hor = horariosVet.FirstOrDefault(h => h.DiaSemana == DiaSemanaNum(dia) && h.Activo);
+        if (hor?.HoraDescansoInicio is null || hor.HoraDescansoFin is null) return false;
+        var t = new TimeOnly(hora, 0);
+        return t >= hor.HoraDescansoInicio.Value && t < hor.HoraDescansoFin.Value;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -513,7 +547,23 @@
 
     private bool PasaFiltros(Cita c)
         => (vetFiltro == 0 || c.Veterinario?.Id == vetFiltro)
-        && (estadoFiltro == "todos" || c.Estado.ToString() == estadoFiltro);
+        && estadosSel.Contains(c.Estado);
+
+    private void ToggleEstado(EstadoCita e)
+    {
+        if (!estadosSel.Remove(e)) estadosSel.Add(e);
+    }
+
+    private string EstadosResumen
+    {
+        get
+        {
+            if (estadosSel.Count == 0) return "Ninguno";
+            if (estadosSel.Count == EstadosTodos.Length) return "Todos los estados";
+            if (estadosSel.Count == 1) return EstadoLabel(estadosSel.First());
+            return $"{estadosSel.Count} estados";
+        }
+    }
 
     private IEnumerable<Cita> CitasEn(DateTime dia, int hora)
         => citas.Where(c => c.FechaHoraInicio.Date == dia.Date && c.FechaHoraInicio.Hour == hora && PasaFiltros(c))

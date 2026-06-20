@@ -1,0 +1,5 @@
+@using Microsoft.AspNetCore.Authorization
+
+@* Todas las páginas requieren sesión iniciada.
+   Las excepciones (Login, errores) llevan [AllowAnonymous] en su propio archivo. *@
+@attribute [Authorize]

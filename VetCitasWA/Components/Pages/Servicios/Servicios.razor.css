@@ -80,6 +80,14 @@
     color: #dc2626;
 }
 
+.btn-icon-reactivate {
+    color: #059669;
+}
+.btn-icon-reactivate:hover {
+    background: #ecfdf5;
+    color: #047857;
+}
+
 /* ================== Panel ================== */
 .panel {
     background: #ffffff;

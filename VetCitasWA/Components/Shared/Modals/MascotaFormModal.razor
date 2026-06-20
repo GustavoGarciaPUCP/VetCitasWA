@@ -22,14 +22,7 @@
             <div class="mf-field">
                 <label class="mf-label" for="mf-cliente">Cliente *</label>
                 <div class="mf-select-wrap">
-                    <select id="mf-cliente" class="mf-select" required>
-                        <option value="" disabled hidden>Selecciona un cliente</option>
-                        <option selected>Juan Pérez — DNI 12345678</option>
-                        <option>María García — DNI 23456789</option>
-                        <option>Carlos López — DNI 34567890</option>
-                        <option>Ana Martínez — DNI 45678901</option>
-                        <option>Pedro Salas — DNI 56789012</option>
-                    </select>
+                    <VcSelect TValue="string" @bind-Value="clienteSel" Options="clienteOptions" Placeholder="Selecciona un cliente" />
                 </div>
                 <span class="mf-hint">La mascota queda asociada a este cliente.</span>
             </div>
@@ -42,13 +35,7 @@
                 <div class="mf-field">
                     <label class="mf-label" for="mf-especie">Especie *</label>
                     <div class="mf-select-wrap">
-                        <select id="mf-especie" class="mf-select" required>
-                            <option>Perro</option>
-                            <option>Gato</option>
-                            <option>Conejo</option>
-                            <option>Ave</option>
-                            <option>Otro</option>
-                        </select>
+                        <VcSelect TValue="string" @bind-Value="especieSel" Options="especieOptions" />
                     </div>
                 </div>
             </div>
@@ -89,3 +76,26 @@
         </footer>
     </div>
 </div>
+
+@code {
+    private string clienteSel = "Juan Pérez — DNI 12345678";
+    private string especieSel = "Perro";
+
+    private readonly IEnumerable<VcSelectOption<string>> clienteOptions = new[]
+    {
+        new VcSelectOption<string>("Juan Pérez — DNI 12345678", "Juan Pérez — DNI 12345678"),
+        new VcSelectOption<string>("María García — DNI 23456789", "María García — DNI 23456789"),
+        new VcSelectOption<string>("Carlos López — DNI 34567890", "Carlos López — DNI 34567890"),
+        new VcSelectOption<string>("Ana Martínez — DNI 45678901", "Ana Martínez — DNI 45678901"),
+        new VcSelectOption<string>("Pedro Salas — DNI 56789012", "Pedro Salas — DNI 56789012"),
+    };
+
+    private readonly IEnumerable<VcSelectOption<string>> especieOptions = new[]
+    {
+        new VcSelectOption<string>("Perro", "Perro"),
+        new VcSelectOption<string>("Gato", "Gato"),
+        new VcSelectOption<string>("Conejo", "Conejo"),
+        new VcSelectOption<string>("Ave", "Ave"),
+        new VcSelectOption<string>("Otro", "Otro"),
+    };
+}

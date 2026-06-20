@@ -142,15 +142,15 @@
 /* El estado real vive en clases del <html> (puestas por App.razor)
    y NO en los checkboxes — porque Blazor repinta el sidebar tras
    cada navegación. */
-:root.role-vet-active .role-summary-label,
-:root.role-recep-active .role-summary-label,
-:root.role-admin-active .role-summary-label {
+.page.role-vet-active .role-summary-label,
+.page.role-recep-active .role-summary-label,
+.page.role-admin-active .role-summary-label {
     display: none;
 }
 
-:root.role-vet-active .role-chip-vet,
-:root.role-recep-active .role-chip-recep,
-:root.role-admin-active .role-chip-admin {
+.page.role-vet-active .role-chip-vet,
+.page.role-recep-active .role-chip-recep,
+.page.role-admin-active .role-chip-admin {
     display: inline-block;
 }
 
@@ -255,9 +255,9 @@
 }
 
 /* Se muestran si el rol correspondiente está activo en <html> */
-:root.role-vet-active .nav-list li.role-vet,
-:root.role-recep-active .nav-list li.role-recep,
-:root.role-admin-active .nav-list li.role-admin {
+.page.role-vet-active .nav-list li.role-vet,
+.page.role-recep-active .nav-list li.role-recep,
+.page.role-admin-active .nav-list li.role-admin {
     display: block;
 }
 
@@ -267,8 +267,8 @@
     display: none;
 }
 
-:root.role-vet-active .nav-section-operaciones,
-:root.role-recep-active .nav-section-operaciones {
+.page.role-vet-active .nav-section-operaciones,
+.page.role-recep-active .nav-section-operaciones {
     display: block;
 }
 
@@ -277,9 +277,9 @@
     display: none;
 }
 
-:root.role-vet-active .nav-section-catalogos,
-:root.role-recep-active .nav-section-catalogos,
-:root.role-admin-active .nav-section-catalogos {
+.page.role-vet-active .nav-section-catalogos,
+.page.role-recep-active .nav-section-catalogos,
+.page.role-admin-active .nav-section-catalogos {
     display: block;
 }
 
@@ -288,7 +288,7 @@
     display: none;
 }
 
-:root.role-admin-active .nav-section-sistema {
+.page.role-admin-active .nav-section-sistema {
     display: block;
 }
 

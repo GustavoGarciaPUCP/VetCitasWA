@@ -1,6 +1,7 @@
 @page "/citas-hoy/atender"
 @page "/atenciones-medicas/registro"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "VETERINARIO")]
 @using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Cliente
 @using VetCitasWA.Servicios.Modelo.Servicio
@@ -111,12 +112,7 @@
                     <div class="field">
                         <label class="field-label" for="servicioEnCurso">Servicio en curso</label>
                         <div class="select-wrap">
-                            <select id="servicioEnCurso" class="select" @bind="idServicioSeleccionado" @bind:after="OnServicioChanged" disabled="@SoloLectura">
-                                @foreach (var s in listaServicios)
-                                {
-                                    <option value="@s.Id">@s.Nombre</option>
-                                }
-                            </select>
+                            <VcSelect TValue="int" Value="idServicioSeleccionado" ValueChanged="OnServicioSel" Options="ServicioOptions" Disabled="@SoloLectura" />
                         </div>
                     </div>
 
@@ -217,6 +213,15 @@
 
     private int idServicioSeleccionado;
     private bool cargando = true;
+
+    private IEnumerable<VcSelectOption<int>> ServicioOptions
+        => listaServicios.Select(s => new VcSelectOption<int>(s.Id, s.Nombre));
+
+    private void OnServicioSel(int v)
+    {
+        idServicioSeleccionado = v;
+        OnServicioChanged();
+    }
     private bool guardando;
     private string? errorMensaje;
 

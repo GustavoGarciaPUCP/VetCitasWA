@@ -1,4 +1,5 @@
 @page "/consolidados"
+@attribute [Authorize(Roles = "ADMINISTRADOR")]
 
 <PageTitle>Consolidados - VetCitas</PageTitle>
 
@@ -41,26 +42,15 @@
                     </div>
                     <div class="filter-field">
                         <label class="filter-label" for="rep1-estado">Estado</label>
-                        <select id="rep1-estado" class="filter-select">
-                            <option>Todas</option>
-                            <option>Pendiente</option>
-                            <option>Confirmada</option>
-                            <option>En consulta</option>
-                            <option>Atendida</option>
-                            <option>Cancelada</option>
-                            <option>No asistió</option>
-                        </select>
+                        <VcSelect TValue="string"
+                                  @bind-Value="filtroEstado"
+                                  Options="OpcionesEstado" />
                     </div>
                     <div class="filter-field">
                         <label class="filter-label" for="rep1-servicio">Servicio</label>
-                        <select id="rep1-servicio" class="filter-select">
-                            <option>Todos</option>
-                            <option>Consulta General</option>
-                            <option>Esterilización Canina</option>
-                            <option>Vacunación Múltiple</option>
-                            <option>Cirugía Menor</option>
-                            <option>Control Post-Operatorio</option>
-                        </select>
+                        <VcSelect TValue="string"
+                                  @bind-Value="filtroServicio"
+                                  Options="OpcionesServicio" />
                     </div>
                 </div>
 
@@ -232,3 +222,29 @@
     </div>
 
 </div>
+
+@code {
+    private string filtroEstado = "Todas";
+    private string filtroServicio = "Todos";
+
+    private static readonly IEnumerable<VcSelectOption<string>> OpcionesEstado = new[]
+    {
+        new VcSelectOption<string>("Todas", "Todas"),
+        new VcSelectOption<string>("Pendiente", "Pendiente"),
+        new VcSelectOption<string>("Confirmada", "Confirmada"),
+        new VcSelectOption<string>("En consulta", "En consulta"),
+        new VcSelectOption<string>("Atendida", "Atendida"),
+        new VcSelectOption<string>("Cancelada", "Cancelada"),
+        new VcSelectOption<string>("No asistió", "No asistió")
+    };
+
+    private static readonly IEnumerable<VcSelectOption<string>> OpcionesServicio = new[]
+    {
+        new VcSelectOption<string>("Todos", "Todos"),
+        new VcSelectOption<string>("Consulta General", "Consulta General"),
+        new VcSelectOption<string>("Esterilización Canina", "Esterilización Canina"),
+        new VcSelectOption<string>("Vacunación Múltiple", "Vacunación Múltiple"),
+        new VcSelectOption<string>("Cirugía Menor", "Cirugía Menor"),
+        new VcSelectOption<string>("Control Post-Operatorio", "Control Post-Operatorio")
+    };
+}

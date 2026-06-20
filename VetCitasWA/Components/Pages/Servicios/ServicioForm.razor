@@ -1,6 +1,7 @@
 @page "/servicios/crear"
 @page "/servicios/editar"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "ADMINISTRADOR")]
 @using VetCitasWA.Servicios.Modelo.Servicio
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
@@ -60,10 +61,7 @@
                         <div class="form-field">
                             <label class="form-label" for="sv-tipo">Tipo <span class="req">*</span></label>
                             <div class="form-select-wrap">
-                                <select id="sv-tipo" class="form-select" @bind="modelo.Tipo" required>
-                                    <option value="@TipoServicio.CLINICA">Clínica</option>
-                                    <option value="@TipoServicio.NO_CLINICA">No clínica</option>
-                                </select>
+                                <VcSelect TValue="TipoServicio" @bind-Value="modelo.Tipo" Options="TipoOptions" />
                             </div>
                             <span class="form-hint">Clínica: requiere atención veterinaria.</span>
                         </div>
@@ -95,12 +93,6 @@
                         <span class="form-hint">Máximo 255 caracteres. Aparece como detalle del servicio.</span>
                     </div>
 
-                    <label class="form-check">
-                        <input type="checkbox" class="form-check-input" @bind="modelo.Activo" />
-                        <span class="form-check-visual" aria-hidden="true"></span>
-                        <span class="form-check-text">Servicio activo</span>
-                    </label>
-                    <span class="form-hint form-hint-indent">Si lo desactivas, no aparecerá disponible al agendar nuevas citas (las existentes no se ven afectadas).</span>
                 </fieldset>
 
                 @if (errorMensaje is not null)
@@ -135,6 +127,13 @@
     public int Id { get; set; }
 
     private Servicio modelo = new() { Tipo = TipoServicio.CLINICA, DuracionMinutos = 30, Activo = true };
+
+    // Opciones del tipo de servicio (VcSelect)
+    private static readonly IEnumerable<VcSelectOption<TipoServicio>> TipoOptions = new[]
+    {
+        new VcSelectOption<TipoServicio>(TipoServicio.CLINICA, "Clínica"),
+        new VcSelectOption<TipoServicio>(TipoServicio.NO_CLINICA, "No clínica"),
+    };
     private bool EsEdicion => Id > 0;
     private bool cargando = true;
     private bool procesando = false;

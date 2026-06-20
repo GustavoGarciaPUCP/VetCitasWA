@@ -1,5 +1,6 @@
 @page "/clientes-mascotas"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "VETERINARIO,RECEPCIONISTA")]
 @using System.Text.RegularExpressions
 @using VetCitasWA.Servicios.Modelo.Cliente
 @using VetCitasWA.Servicios.Modelo.Common.Enums
@@ -34,21 +35,17 @@
             <input type="text" class="vc-search-input" placeholder="@(tab == "clientes" ? "Buscar cliente por nombre o DNI..." : "Buscar mascota o dueño...")"
                    value="@textoBusqueda" @oninput="OnBusquedaInput" />
         </div>
-        <select class="vc-select" @bind="filtroEstado" @bind:after="OnFiltroEstadoChanged">
-            <option value="activos">Activos</option>
-            <option value="inactivos">Inactivos</option>
-            <option value="todos">Todos</option>
-        </select>
+        <VcSelect TValue="string" CssClass="vc-cs-filtro" Value="filtroEstado" ValueChanged="OnFiltroEstadoSel" Options="filtroEstadoOptions" />
         @if (tab == "clientes")
         {
-            <button type="button" class="btn-new" style="margin-left:auto;" @onclick="NuevoCliente">
+            <button type="button" class="btn-new recep-only" style="margin-left:auto;" @onclick="NuevoCliente">
                 <span class="btn-plus" aria-hidden="true">+</span>
                 <span>Nuevo cliente</span>
             </button>
         }
         else
         {
-            <button type="button" class="btn-new" style="margin-left:auto;" @onclick="NuevaMascota">
+            <button type="button" class="btn-new recep-only" style="margin-left:auto;" @onclick="NuevaMascota">
                 <span class="btn-plus" aria-hidden="true">+</span>
                 <span>Nueva mascota</span>
             </button>
@@ -121,10 +118,10 @@
                                             </a>
                                             @if (c.Activo)
                                             {
-                                                <button type="button" class="btn-pencil btn-edit" aria-label="Editar cliente" @onclick="() => EditarCliente(c)">
+                                                <button type="button" class="btn-pencil btn-edit recep-only" aria-label="Editar cliente" @onclick="() => EditarCliente(c)">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
                                                 </button>
-                                                <button type="button" class="btn-pencil btn-del" aria-label="Eliminar cliente" @onclick="() => clienteAEliminar = c">
+                                                <button type="button" class="btn-pencil btn-del recep-only" aria-label="Eliminar cliente" @onclick="() => clienteAEliminar = c">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
                                                 </button>
                                             }
@@ -189,10 +186,10 @@
                                             </a>
                                             @if (m.Activo)
                                             {
-                                                <button type="button" class="btn-pencil btn-edit" aria-label="Editar mascota" @onclick="() => EditarMascota(m)">
+                                                <button type="button" class="btn-pencil btn-edit recep-only" aria-label="Editar mascota" @onclick="() => EditarMascota(m)">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
                                                 </button>
-                                                <button type="button" class="btn-pencil btn-del" aria-label="Eliminar mascota" @onclick="() => mascotaAEliminar = m">
+                                                <button type="button" class="btn-pencil btn-del recep-only" aria-label="Eliminar mascota" @onclick="() => mascotaAEliminar = m">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
                                                 </button>
                                             }
@@ -350,10 +347,7 @@
                 </div>
                 <div class="vc-form-field">
                     <label class="vc-form-label">Especie *</label>
-                    <select class="vc-select" @bind="mascotaEdit.Especie">
-                        <option value="@TipoEspecie.PERRO">Perro</option>
-                        <option value="@TipoEspecie.GATO">Gato</option>
-                    </select>
+                    <VcSelect TValue="TipoEspecie?" @bind-Value="mascotaEdit.Especie" Options="especieOptions" />
                 </div>
             </div>
 
@@ -582,7 +576,25 @@
         }
     }
 
-    private void OnFiltroEstadoChanged() => paginaActual = 1;
+    private void OnFiltroEstadoSel(string nuevoEstado)
+    {
+        filtroEstado = nuevoEstado;
+        paginaActual = 1;
+    }
+
+    // ===== Opciones para VcSelect =====
+    private readonly IEnumerable<VcSelectOption<string>> filtroEstadoOptions = new[]
+    {
+        new VcSelectOption<string>("activos", "Activos"),
+        new VcSelectOption<string>("inactivos", "Inactivos"),
+        new VcSelectOption<string>("todos", "Todos"),
+    };
+
+    private readonly IEnumerable<VcSelectOption<TipoEspecie?>> especieOptions = new[]
+    {
+        new VcSelectOption<TipoEspecie?>(TipoEspecie.PERRO, "Perro"),
+        new VcSelectOption<TipoEspecie?>(TipoEspecie.GATO, "Gato"),
+    };
 
     // ===== Paginación (cliente) — usa la pestaña activa =====
     private List<Cliente> ClientesFiltradosLista => ClientesFiltrados.ToList();

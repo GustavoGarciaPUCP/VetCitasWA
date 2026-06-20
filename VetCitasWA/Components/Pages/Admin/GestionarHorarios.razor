@@ -1,4 +1,5 @@
 @page "/gestionar-horarios"
+@attribute [Authorize(Roles = "RECEPCIONISTA")]
 @using VetCitasWA.Servicios.Modelo.Usuario
 @inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VetService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.HorarioVeterinarioRestService HorarioService
@@ -16,13 +17,11 @@
         <div class="vet-field">
             <label class="field-label" for="veterinario">Veterinario</label>
             <div class="select-wrap">
-                <select id="veterinario" class="select" @onchange="OnVetChanged">
-                    <option value="0">Selecciona un veterinario</option>
-                    @foreach (var vet in listaVeterinarios)
-                    {
-                        <option value="@vet.Id">@vet.Nombres @vet.Apellidos</option>
-                    }
-                </select>
+                <VcSelect TValue="int"
+                          Value="idVetSeleccionado"
+                          ValueChanged="OnVetChanged"
+                          Options="OpcionesVeterinarios"
+                          Placeholder="Selecciona un veterinario" />
             </div>
         </div>
 
@@ -72,24 +71,24 @@
     private List<HorarioVeterinario> listaHorarios = new();
     private int idVetSeleccionado = 0;
 
+    private IEnumerable<VcSelectOption<int>> OpcionesVeterinarios =>
+        listaVeterinarios.Select(vet => new VcSelectOption<int>(vet.Id, $"{vet.Nombres} {vet.Apellidos}"));
+
     protected override void OnInitialized()
     {
         listaVeterinarios = VetService.ListarTodos();
     }
 
-    private void OnVetChanged(ChangeEventArgs e)
+    private void OnVetChanged(int id)
     {
-        if (int.TryParse(e.Value?.ToString(), out int id))
+        idVetSeleccionado = id;
+        if (id > 0)
         {
-            idVetSeleccionado = id;
-            if (id > 0)
-            {
-                listaHorarios = HorarioService.ListarPorVeterinario(id);
-            }
-            else
-            {
-                listaHorarios = new();
-            }
+            listaHorarios = HorarioService.ListarPorVeterinario(id);
+        }
+        else
+        {
+            listaHorarios = new();
         }
     }
 

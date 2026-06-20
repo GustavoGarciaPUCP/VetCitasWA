@@ -124,7 +124,7 @@
 
 .cal-grid {
     display: grid;
-    grid-template-columns: 70px repeat(5, minmax(140px, 1fr));
+    grid-template-columns: 70px repeat(7, minmax(110px, 1fr));
     background: #ffffff;
     border-radius: 8px;
     overflow: hidden;
@@ -878,6 +878,8 @@ button.slot-trigger {
     min-width: 150px;
 }
 
+/* Los estilos del filtro multi-selección (.vc-ms*) viven en app.css (globales) */
+
 .tb-field-nav {
     min-width: 0;
 }
@@ -988,8 +990,8 @@ button.slot-trigger {
     }
 
     .cal-grid {
-        grid-template-columns: 55px repeat(5, minmax(120px, 1fr));
-        min-width: 660px;
+        grid-template-columns: 55px repeat(7, minmax(110px, 1fr));
+        min-width: 880px;
     }
 
     .cal-time {
@@ -1026,7 +1028,7 @@ button.slot-trigger {
     }
 
     .cal-grid {
-        grid-template-columns: 50px repeat(5, minmax(100px, 1fr));
-        min-width: 550px;
+        grid-template-columns: 50px repeat(7, minmax(90px, 1fr));
+        min-width: 690px;
     }
 }

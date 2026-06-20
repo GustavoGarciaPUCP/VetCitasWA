@@ -1,6 +1,29 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.Errors.NotFound)">
+@using Microsoft.AspNetCore.Components.Authorization
+@using VetCitasWA.Components.Layout
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.Errors.NotFound)">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized Context="authState">
+                @if (authState.User.Identity?.IsAuthenticated != true)
+                {
+                    @* No ha iniciado sesión → al login *@
+                    <RedirectToLogin />
+                }
+                else
+                {
+                    @* Logueado pero sin el rol requerido *@
+                    <div class="page-section">
+                        <h1 class="page-title">Acceso denegado</h1>
+                        <p class="estado-mensaje estado-error">No tienes permiso para ver esta página con tu rol actual.</p>
+                        <p class="estado-mensaje"><a href="/">Volver al inicio</a></p>
+                    </div>
+                }
+            </NotAuthorized>
+            <Authorizing>
+                <p class="estado-mensaje">Verificando sesión…</p>
+            </Authorizing>
+        </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>

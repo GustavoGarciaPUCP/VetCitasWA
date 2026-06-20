@@ -1,5 +1,7 @@
 @page "/login"
 @layout EmptyLayout
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
 
 <PageTitle>Iniciar sesión - VetCitas</PageTitle>
 
@@ -21,13 +23,15 @@
             <p class="brand-subtitle">Sistema de gestión veterinaria</p>
         </div>
 
-        <form class="login-form" autocomplete="off">
+        <form class="login-form" method="post" action="/auth/login" autocomplete="off" data-enhance="false">
             <div class="mb-3">
                 <input type="text"
                        class="form-control form-control-lg"
                        id="usuario"
+                       name="username"
                        placeholder="Usuario"
-                       aria-label="Usuario" />
+                       aria-label="Usuario"
+                       required />
             </div>
 
             <div class="mb-4">
@@ -35,8 +39,10 @@
                     <input type="password"
                            class="form-control"
                            id="contrasena"
+                           name="contrasena"
                            placeholder="Contraseña"
-                           aria-label="Contraseña" />
+                           aria-label="Contraseña"
+                           required />
                     <button type="button" class="btn btn-toggle-password" tabindex="-1"
                             onclick="vetTogglePwd('contrasena', this)"
                             aria-label="Mostrar contraseña" title="Mostrar contraseña">
@@ -55,14 +61,20 @@
                 </div>
             </div>
 
-            <a href="/" type="submit" class="btn btn-primary btn-lg w-100 btn-login">
+            @if (Error == "1")
+            {
+                <div class="login-error" role="alert">Usuario o contraseña incorrectos.</div>
+            }
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 btn-login">
                 Iniciar sesión
-            </a>
+            </button>
         </form>
 
     </div>
 </div>
 
 @code {
-
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
 }

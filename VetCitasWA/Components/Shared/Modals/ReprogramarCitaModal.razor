@@ -43,9 +43,7 @@
 
             <div class="rp-field">
                 <label class="rp-label" for="rp-vet">Veterinario</label>
-                <select id="rp-vet" class="rp-input" disabled>
-                    <option>Dr. Sánchez (actual)</option>
-                </select>
+                <VcSelect TValue="int" @bind-Value="vetReprogramar" Options="VetReprogramarOptions" Disabled="true" />
                 <span class="rp-hint">Para cambiar de veterinario usa la opción <strong>Cambiar veterinario</strong>.</span>
             </div>
 
@@ -85,3 +83,10 @@
         </footer>
     </div>
 </div>
+
+@code {
+    private int vetReprogramar = 1;
+
+    private IEnumerable<VcSelectOption<int>> VetReprogramarOptions
+        => new[] { new VcSelectOption<int>(1, "Dr. Sánchez (actual)") };
+}

@@ -1,0 +1,151 @@
+.vc-cs {
+    position: relative;
+    width: 100%;
+}
+
+/* Variante para barras de filtro: no ocupar todo el ancho */
+.vc-cs-filtro {
+    width: auto;
+    min-width: 200px;
+}
+
+.vc-cs-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 0.875rem;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.vc-cs-toggle:hover:not(:disabled) {
+    border-color: #9ca3af;
+}
+
+.vc-cs-toggle:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f9fafb;
+}
+
+.vc-cs.vc-cs-open .vc-cs-toggle,
+.vc-cs-toggle:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.vc-cs-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-cs-placeholder {
+    color: #9ca3af;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-cs-arrow {
+    flex-shrink: 0;
+    color: #6b7280;
+    transition: transform 0.15s ease;
+}
+
+.vc-cs.vc-cs-open .vc-cs-arrow {
+    transform: rotate(180deg);
+}
+
+.vc-cs-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: transparent;
+}
+
+.vc-cs-panel {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+    padding: 0.25rem;
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.vc-cs-item {
+    text-align: left;
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #111827;
+    font-family: inherit;
+    transition: background 0.12s ease;
+}
+
+.vc-cs-item:hover:not(:disabled) {
+    background: #eff6ff;
+}
+
+.vc-cs-item.vc-cs-active {
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.vc-cs-item:disabled {
+    color: #9ca3af;
+    cursor: default;
+}
+
+/* ===== Modo oscuro ===== */
+:root.dark .vc-cs-toggle {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    border-color: #334155;
+}
+
+:root.dark .vc-cs-toggle:disabled {
+    background: #0f172a;
+}
+
+:root.dark .vc-cs-panel {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+
+:root.dark .vc-cs-item {
+    color: #e2e8f0;
+}
+
+:root.dark .vc-cs-item:hover:not(:disabled) {
+    background: #334155;
+}
+
+:root.dark .vc-cs-item.vc-cs-active {
+    background: #334155;
+    color: #93c5fd;
+}

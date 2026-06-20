@@ -1,4 +1,5 @@
 @page "/usuarios-roles"
+@attribute [Authorize(Roles = "ADMINISTRADOR")]
 @using VetCitasWA.Servicios.Modelo.Usuario
 @inject VetCitasWA.Servicios.REST.UsuarioRS.AdministradorRestService AdminService
 
@@ -22,12 +23,9 @@
         <div class="filter-field filter-rol">
             <label class="filter-label" for="filtroRol">Filtrar por rol</label>
             <div class="select-wrap">
-                <select id="filtroRol" class="select">
-                    <option>Todos los roles</option>
-                    <option>Administrador</option>
-                    <option>Veterinario</option>
-                    <option>Recepcionista</option>
-                </select>
+                <VcSelect TValue="string"
+                          @bind-Value="filtroRol"
+                          Options="OpcionesRoles" />
             </div>
         </div>
         <div class="filter-action">
@@ -164,6 +162,16 @@
 
 @code {
     private List<Usuario> listaUsuarios = new List<Usuario>();
+
+    private string filtroRol = "Todos los roles";
+
+    private static readonly IEnumerable<VcSelectOption<string>> OpcionesRoles = new[]
+    {
+        new VcSelectOption<string>("Todos los roles", "Todos los roles"),
+        new VcSelectOption<string>("Administrador", "Administrador"),
+        new VcSelectOption<string>("Veterinario", "Veterinario"),
+        new VcSelectOption<string>("Recepcionista", "Recepcionista")
+    };
 
     protected override void OnInitialized()
     {

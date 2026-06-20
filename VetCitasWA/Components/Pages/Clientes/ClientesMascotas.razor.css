@@ -198,8 +198,8 @@
 }
 
 /* Visibilidad condicional: solo el botón del tab activo, y solo si recep está activo */
-:root.role-recep-active .page-section:has(#cm-tab-clientes:checked) .btn-new-cliente,
-:root.role-recep-active .page-section:has(#cm-tab-mascotas:checked) .btn-new-mascota {
+.page.role-recep-active .page-section:has(#cm-tab-clientes:checked) .btn-new-cliente,
+.page.role-recep-active .page-section:has(#cm-tab-mascotas:checked) .btn-new-mascota {
     display: inline-flex;
 }
 

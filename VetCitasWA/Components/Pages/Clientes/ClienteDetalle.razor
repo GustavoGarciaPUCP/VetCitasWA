@@ -1,5 +1,6 @@
 @page "/clientes-mascotas/cliente"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "VETERINARIO,RECEPCIONISTA")]
 @using VetCitasWA.Servicios.Modelo.Cliente
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
