@@ -7,6 +7,10 @@
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
 @inject VetCitasWA.Servicios.REST.CitaRS.RecordatorioRestService RecordatorioService
+@inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VeterinarioService
+@inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
+@inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
+@inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
 
 <PageTitle>Inicio - VetCitas</PageTitle>
 
@@ -343,7 +347,7 @@
                 <span class="dash-role-pill dash-role-admin">Administración</span>
                 Visión integral de la clínica
             </h2>
-            <span class="dash-block-sub">Mayo 2026 · datos consolidados</span>
+            <span class="dash-block-sub">@NombreMesActual @Hoy.Year · datos consolidados</span>
         </header>
 
         @* ----- KPIs del Admin ----- *@
@@ -359,8 +363,8 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Citas del mes</div>
-                    <div class="kpi-value">487</div>
-                    <div class="kpi-sub">+12% vs. abril</div>
+                    <div class="kpi-value">@CitasAdminMes.Count</div>
+                    <div class="kpi-sub">@ResumenCitasAdminMes</div>
                 </div>
             </article>
 
@@ -373,7 +377,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Ingresos del mes</div>
-                    <div class="kpi-value">S/ 38,420</div>
+                    <div class="kpi-value">@FormatoMoneda(IngresosAdminMes)</div>
                     <div class="kpi-sub">Neto de descuentos aplicados</div>
                 </div>
             </article>
@@ -387,7 +391,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Veterinarios</div>
-                    <div class="kpi-value">8</div>
+                    <div class="kpi-value">@VeterinariosActivosAdmin</div>
                     <div class="kpi-sub">Activos en plantilla</div>
                 </div>
             </article>
@@ -400,8 +404,8 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Clientes activos</div>
-                    <div class="kpi-value">342</div>
-                    <div class="kpi-sub">812 mascotas registradas</div>
+                    <div class="kpi-value">@ClientesActivosAdmin</div>
+                    <div class="kpi-sub">@MascotasActivasAdmin mascotas activas</div>
                 </div>
             </article>
 
@@ -418,31 +422,27 @@
                 </header>
                 <div class="panel-body">
                     <div class="bar-list">
-                        <div class="bar-row">
-                            <span class="bar-label">Consulta General · S/ 50</span>
-                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 95%"></div></div>
-                            <span class="bar-value">182</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Vacunación · S/ 35</span>
-                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 78%"></div></div>
-                            <span class="bar-value">149</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Control Post-Op · S/ 30</span>
-                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 45%"></div></div>
-                            <span class="bar-value">86</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Esterilización · S/ 250</span>
-                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 25%"></div></div>
-                            <span class="bar-value">48</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Cirugía Menor · S/ 300</span>
-                            <div class="bar-track"><div class="bar-fill bar-green" style="width: 12%"></div></div>
-                            <span class="bar-value">22</span>
-                        </div>
+                        @if (cargandoAdminDashboard)
+                        {
+                            <p class="estado-mensaje">Calculando servicios demandados...</p>
+                        }
+                        else if (!TopServiciosAdmin.Any())
+                        {
+                            <p class="estado-mensaje">Aun no hay servicios con atenciones este mes.</p>
+                        }
+                        else
+                        {
+                            @foreach (var item in TopServiciosAdmin)
+                            {
+                                <div class="bar-row">
+                                    <span class="bar-label">@ServicioAdminLabel(item)</span>
+                                    <div class="bar-track">
+                                        <div class="bar-fill bar-green" style="width: @PorcentajeServicioAdmin(item.TotalAtenciones)%"></div>
+                                    </div>
+                                    <span class="bar-value">@item.TotalAtenciones</span>
+                                </div>
+                            }
+                        }
                     </div>
                 </div>
             </section>
@@ -455,66 +455,31 @@
                 </header>
                 <div class="panel-body">
                     <div class="top-list">
-
-                        <div class="top-item">
-                            <span class="top-rank">1</span>
-                            <div class="top-info">
-                                <span class="top-name">Dra. Ramírez</span>
-                                <span class="top-meta">Medicina general · CMPV-3421</span>
-                            </div>
-                            <div class="top-stat">
-                                <span class="top-value">112</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
-
-                        <div class="top-item">
-                            <span class="top-rank">2</span>
-                            <div class="top-info">
-                                <span class="top-name">Dr. Carlos Mendoza</span>
-                                <span class="top-meta">Medicina general · CMPV-1820</span>
-                            </div>
-                            <div class="top-stat">
-                                <span class="top-value">98</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
-
-                        <div class="top-item">
-                            <span class="top-rank">3</span>
-                            <div class="top-info">
-                                <span class="top-name">Dr. Castillo</span>
-                                <span class="top-meta">Cirugía · CMPV-2890</span>
-                            </div>
-                            <div class="top-stat">
-                                <span class="top-value">61</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
-
-                        <div class="top-item">
-                            <span class="top-rank">4</span>
-                            <div class="top-info">
-                                <span class="top-name">Dr. Pérez</span>
-                                <span class="top-meta">Dermatología · CMPV-4102</span>
-                            </div>
-                            <div class="top-stat">
-                                <span class="top-value">48</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
-
-                        <div class="top-item">
-                            <span class="top-rank">5</span>
-                            <div class="top-info">
-                                <span class="top-name">Dra. Torres</span>
-                                <span class="top-meta">Oncología · CMPV-5210</span>
-                            </div>
-                            <div class="top-stat">
-                                <span class="top-value">37</span>
-                                <span class="top-label">atenciones</span>
-                            </div>
-                        </div>
+                        @if (cargandoAdminDashboard)
+                        {
+                            <p class="estado-mensaje">Calculando ranking de veterinarios...</p>
+                        }
+                        else if (!TopVeterinariosAdmin.Any())
+                        {
+                            <p class="estado-mensaje">Aun no hay atenciones registradas este mes.</p>
+                        }
+                        else
+                        {
+                            @foreach (var item in TopVeterinariosAdmin.Select((value, index) => new { value, index }))
+                            {
+                                <div class="top-item">
+                                    <span class="top-rank">@(item.index + 1)</span>
+                                    <div class="top-info">
+                                        <span class="top-name">@NombreVeterinario(item.value.Veterinario)</span>
+                                        <span class="top-meta">@MetaVeterinario(item.value.Veterinario)</span>
+                                    </div>
+                                    <div class="top-stat">
+                                        <span class="top-value">@item.value.TotalAtenciones</span>
+                                        <span class="top-label">atenciones</span>
+                                    </div>
+                                </div>
+                            }
+                        }
 
                     </div>
                 </div>
@@ -557,15 +522,40 @@
     private List<Cita> CitasRecepPendientes = new();
     private List<CargaVeterinarioResumen> CargaVeterinariosRecep = new();
     private int RecordatoriosPendientes;
+    private bool cargandoAdminDashboard;
+    private List<Cita> CitasAdminMes = new();
+    private List<ServicioAtencionResumen> TopServiciosAdmin = new();
+    private List<VeterinarioAtencionResumen> TopVeterinariosAdmin = new();
+    private double IngresosAdminMes;
+    private int VeterinariosActivosAdmin;
+    private int ClientesActivosAdmin;
+    private int MascotasActivasAdmin;
 
     private DateTime SemanaInicio => InicioSemana(Hoy);
     private DateTime SemanaFin => SemanaInicio.AddDays(6);
+    private DateTime MesInicio => new(Hoy.Year, Hoy.Month, 1);
+    private DateTime MesFin => MesInicio.AddMonths(1).AddDays(-1);
     private int PendientesVetHoy => CitasVetHoy.Count(c => c.Estado == EstadoCita.PENDIENTE || c.Estado == EstadoCita.CONFIRMADA);
     private int SinConfirmarRecepHoy => CitasRecepHoy.Count(c => c.Estado == EstadoCita.PENDIENTE);
     private int CancelacionesRecepHoy => CitasRecepHoy.Count(c => c.Estado == EstadoCita.CANCELADA);
     private string NombreMesActual => culturaEs.TextInfo.ToTitleCase(Hoy.ToString("MMMM", culturaEs));
     private string FechaHoyTexto => culturaEs.TextInfo.ToTitleCase(Hoy.ToString("dddd d 'de' MMMM 'de' yyyy", culturaEs));
     private string RangoSemanaTexto => $"{SemanaInicio:dd/MM/yyyy} - {SemanaFin:dd/MM/yyyy}";
+    private string ResumenCitasAdminMes
+    {
+        get
+        {
+            if (!CitasAdminMes.Any())
+            {
+                return "Sin citas registradas este mes";
+            }
+
+            var atendidas = CitasAdminMes.Count(c => c.Estado == EstadoCita.ATENDIDA);
+            var noConcretadas = CitasAdminMes.Count(c => c.Estado == EstadoCita.CANCELADA || c.Estado == EstadoCita.NO_ASISTIO);
+            return $"{atendidas} atendidas · {noConcretadas} no concretadas";
+        }
+    }
+
     private string ResumenRecepcionHoy
     {
         get
@@ -614,6 +604,11 @@
         if (user.IsInRole("RECEPCIONISTA"))
         {
             await CargarDashboardRecepcionAsync();
+        }
+
+        if (user.IsInRole("ADMINISTRADOR"))
+        {
+            await CargarDashboardAdminAsync();
         }
     }
 
@@ -804,6 +799,89 @@
         }
 
         return Math.Clamp((int)Math.Round(total * 100.0 / maximo), 8, 100);
+    }
+
+    private async Task CargarDashboardAdminAsync()
+    {
+        cargandoAdminDashboard = true;
+
+        try
+        {
+            await Task.Yield();
+            CitasAdminMes = CitaService.ListarFiltradas(0, MesInicio, MesFin, "", "")
+                .Where(c => c.FechaHoraInicio.Date >= MesInicio.Date && c.FechaHoraInicio.Date <= MesFin.Date)
+                .ToList();
+
+            IngresosAdminMes = AtencionService.SumarMontosNetosPorMes(Hoy.Year, Hoy.Month);
+            VeterinariosActivosAdmin = VeterinarioService.ListarTodos().Count(v => v.Activo);
+            ClientesActivosAdmin = ClienteService.ContarActivos();
+            MascotasActivasAdmin = MascotaService.ContarActivas();
+            TopServiciosAdmin = ServicioService.TopNMasDemandados(MesInicio, MesFin, 5);
+            TopVeterinariosAdmin = AtencionService.TopVeterinariosPorAtenciones(Hoy.Year, Hoy.Month, 5);
+        }
+        catch
+        {
+            CitasAdminMes = new();
+            TopServiciosAdmin = new();
+            TopVeterinariosAdmin = new();
+            IngresosAdminMes = 0;
+            VeterinariosActivosAdmin = 0;
+            ClientesActivosAdmin = 0;
+            MascotasActivasAdmin = 0;
+        }
+        finally
+        {
+            cargandoAdminDashboard = false;
+        }
+    }
+
+    private string FormatoMoneda(double monto)
+        => monto.ToString("C0", culturaEs);
+
+    private string ServicioAdminLabel(ServicioAtencionResumen item)
+    {
+        var servicio = item.Servicio;
+        if (servicio is null)
+        {
+            return "Servicio sin nombre";
+        }
+
+        var nombre = string.IsNullOrWhiteSpace(servicio.Nombre) ? "Servicio sin nombre" : servicio.Nombre;
+        return $"{nombre} · {FormatoMoneda(servicio.Precio)}";
+    }
+
+    private int PorcentajeServicioAdmin(int total)
+    {
+        var maximo = TopServiciosAdmin.Count == 0 ? 0 : TopServiciosAdmin.Max(s => s.TotalAtenciones);
+        if (maximo <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Clamp((int)Math.Round(total * 100.0 / maximo), 8, 100);
+    }
+
+    private static string NombreVeterinario(VetCitasWA.Servicios.Modelo.Usuario.Veterinario? vet)
+    {
+        if (vet is null)
+        {
+            return "Veterinario sin datos";
+        }
+
+        var nombre = $"{vet.Nombres} {vet.Apellidos}".Trim();
+        return string.IsNullOrWhiteSpace(nombre) ? "Veterinario sin datos" : nombre;
+    }
+
+    private static string MetaVeterinario(VetCitasWA.Servicios.Modelo.Usuario.Veterinario? vet)
+    {
+        if (vet is null)
+        {
+            return "Sin especialidad";
+        }
+
+        var especialidad = string.IsNullOrWhiteSpace(vet.Especialidad) ? "Sin especialidad" : vet.Especialidad;
+        var cmp = string.IsNullOrWhiteSpace(vet.Cmp) ? "CMPV sin registrar" : vet.Cmp;
+        return $"{especialidad} · {cmp}";
     }
 
     private sealed record CargaVeterinarioResumen(string Nombre, string Especialidad, int Total);
