@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using VetCitasWA.Servicios.Modelo.Usuario;
@@ -22,14 +24,28 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
                 new KeyValuePair<string, string>("contrasenaPlana", contrasenaPlana)
             });
 
-            var response = http.PostAsync("UsuarioRS/autenticar", content).GetAwaiter().GetResult();
+            HttpResponseMessage response;
+            try
+            {
+                response = http.PostAsync("UsuarioRS/autenticar", content).GetAwaiter().GetResult();
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new InvalidOperationException("No se pudo conectar con el backend de VetCitas.", ex);
+            }
 
             if (response.IsSuccessStatusCode)
             {
                 return response.Content.ReadFromJsonAsync<Usuario>().GetAwaiter().GetResult();
             }
 
-            return null;
+            if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            {
+                return null;
+            }
+
+            var detalle = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            throw new InvalidOperationException($"El backend rechazo la autenticacion con estado {(int)response.StatusCode}. {detalle}");
         }
 
         public void CambiarContrasena(int idUsuario, string contrasenaActual, string nuevaContrasena)

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using VetCitasWA.Components;
+using VetCitasWA.Servicios.Modelo.Usuario;
 using VetCitasWA.Servicios.REST.UsuarioRS;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -76,7 +77,16 @@ app.MapPost("/auth/login", async (HttpContext context, UsuarioRestService usuari
     string username = form["username"].ToString();
     string contrasena = form["contrasena"].ToString();
 
-    var usuario = usuarioService.Autenticar(username, contrasena);
+    Usuario? usuario;
+    try
+    {
+        usuario = usuarioService.Autenticar(username, contrasena);
+    }
+    catch
+    {
+        return Results.Redirect("/login?error=server");
+    }
+
     if (usuario is null || !usuario.Activo)
     {
         return Results.Redirect("/login?error=1");
