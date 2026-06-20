@@ -61,18 +61,28 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
             return http.GetFromJsonAsync<List<Usuario>>(url).GetAwaiter().GetResult() ?? new List<Usuario>();
         }
 
+        public int ModificarUsuarioBasico(Usuario usuario, int modifiedBy)
+        {
+            var response = http.PutAsJsonAsync($"AdministradorRS/modificarUsuarioBasico/{modifiedBy}", usuario)
+                .GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+        }
+
         public void AsignarRol(int idUsuario, string codigoRol)
         {
             string rol = Uri.EscapeDataString(codigoRol ?? "");
-            http.PostAsync($"AdministradorRS/asignarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
+            var response = http.PostAsync($"AdministradorRS/asignarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
                 .GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
         }
 
         public void RevocarRol(int idUsuario, string codigoRol)
         {
             string rol = Uri.EscapeDataString(codigoRol ?? "");
-            http.PostAsync($"AdministradorRS/revocarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
+            var response = http.PostAsync($"AdministradorRS/revocarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
                 .GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
         }
     }
 }
