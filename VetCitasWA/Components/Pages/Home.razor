@@ -6,6 +6,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
+@inject VetCitasWA.Servicios.REST.CitaRS.RecordatorioRestService RecordatorioService
 
 <PageTitle>Inicio - VetCitas</PageTitle>
 
@@ -190,7 +191,7 @@
                 <span class="dash-role-pill dash-role-recep">Recepción</span>
                 Centro de operaciones del día
             </h2>
-            <span class="dash-block-sub">Lunes 12 de mayo de 2026</span>
+            <span class="dash-block-sub">@FechaHoyTexto</span>
         </header>
 
         @* ----- KPIs del Recepcionista ----- *@
@@ -206,8 +207,8 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Citas hoy</div>
-                    <div class="kpi-value">23</div>
-                    <div class="kpi-sub">4 vets · 5 servicios</div>
+                    <div class="kpi-value">@CitasRecepHoy.Count</div>
+                    <div class="kpi-sub">@ResumenRecepcionHoy</div>
                 </div>
             </article>
 
@@ -220,7 +221,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Sin confirmar</div>
-                    <div class="kpi-value">7</div>
+                    <div class="kpi-value">@SinConfirmarRecepHoy</div>
                     <div class="kpi-sub">En estado pendiente</div>
                 </div>
             </article>
@@ -234,7 +235,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Recordatorios</div>
-                    <div class="kpi-value">12</div>
+                    <div class="kpi-value">@RecordatoriosPendientes</div>
                     <div class="kpi-sub">Pendientes de envío</div>
                 </div>
             </article>
@@ -248,7 +249,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Cancelaciones</div>
-                    <div class="kpi-value">3</div>
+                    <div class="kpi-value">@CancelacionesRecepHoy</div>
                     <div class="kpi-sub">Hoy · ver motivos</div>
                 </div>
             </article>
@@ -265,54 +266,31 @@
                     <a href="/agenda-citas" class="panel-link">Ver agenda →</a>
                 </header>
                 <div class="panel-body">
-
-                    <div class="cola-item">
-                        <div class="cola-when">
-                            <span class="cola-date">Hoy</span>
-                            <span class="cola-time">15:30</span>
-                        </div>
-                        <div class="cola-info">
-                            <span class="cola-pet">Coco · Gato</span>
-                            <span class="cola-meta">Sara Vega · Consulta · Dr. Carlos</span>
-                        </div>
-                        <span class="badge badge-pending">Pendiente</span>
-                    </div>
-
-                    <div class="cola-item">
-                        <div class="cola-when">
-                            <span class="cola-date">Mañana</span>
-                            <span class="cola-time">09:00</span>
-                        </div>
-                        <div class="cola-info">
-                            <span class="cola-pet">Toby · Perro</span>
-                            <span class="cola-meta">Pedro Bravo · Vacunación · Dra. Ramírez</span>
-                        </div>
-                        <span class="badge badge-pending">Pendiente</span>
-                    </div>
-
-                    <div class="cola-item">
-                        <div class="cola-when">
-                            <span class="cola-date">Mar 13/05</span>
-                            <span class="cola-time">11:30</span>
-                        </div>
-                        <div class="cola-info">
-                            <span class="cola-pet">Luna · Gato</span>
-                            <span class="cola-meta">María García · Vacunación · Dr. Carlos</span>
-                        </div>
-                        <span class="badge badge-pending">Pendiente</span>
-                    </div>
-
-                    <div class="cola-item">
-                        <div class="cola-when">
-                            <span class="cola-date">Mié 14/05</span>
-                            <span class="cola-time">16:00</span>
-                        </div>
-                        <div class="cola-info">
-                            <span class="cola-pet">Bruno · Perro</span>
-                            <span class="cola-meta">Ana Vargas · Cirugía Menor · Dr. Castillo</span>
-                        </div>
-                        <span class="badge badge-pending">Pendiente</span>
-                    </div>
+                    @if (cargandoRecepcionDashboard)
+                    {
+                        <p class="estado-mensaje">Cargando datos de recepcion...</p>
+                    }
+                    else if (!CitasRecepPendientes.Any())
+                    {
+                        <p class="estado-mensaje">No hay citas pendientes de confirmacion para hoy.</p>
+                    }
+                    else
+                    {
+                        @foreach (var cita in CitasRecepPendientes.Take(6))
+                        {
+                            <div class="cola-item">
+                                <div class="cola-when">
+                                    <span class="cola-date">@FechaCortaRecepcion(cita.FechaHoraInicio)</span>
+                                    <span class="cola-time">@cita.FechaHoraInicio.ToString("HH:mm")</span>
+                                </div>
+                                <div class="cola-info">
+                                    <span class="cola-pet">@NombreMascota(cita) · @EspecieMascota(cita)</span>
+                                    <span class="cola-meta">@NombreCliente(cita) · @ServicioNombre(cita) · @NombreVeterinario(cita)</span>
+                                </div>
+                                <span class="badge badge-pending">Pendiente</span>
+                            </div>
+                        }
+                    }
 
                 </div>
             </section>
@@ -325,26 +303,27 @@
                 </header>
                 <div class="panel-body">
                     <div class="bar-list">
-                        <div class="bar-row">
-                            <span class="bar-label">Dr. Carlos · Medicina general</span>
-                            <div class="bar-track"><div class="bar-fill bar-purple" style="width: 75%"></div></div>
-                            <span class="bar-value">6</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Dra. Ramírez · Medicina general</span>
-                            <div class="bar-track"><div class="bar-fill bar-purple" style="width: 87%"></div></div>
-                            <span class="bar-value">7</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Dr. Castillo · Cirugía</span>
-                            <div class="bar-track"><div class="bar-fill bar-purple" style="width: 50%"></div></div>
-                            <span class="bar-value">4</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Dr. Pérez · Dermatología</span>
-                            <div class="bar-track"><div class="bar-fill bar-purple" style="width: 75%"></div></div>
-                            <span class="bar-value">6</span>
-                        </div>
+                        @if (cargandoRecepcionDashboard)
+                        {
+                            <p class="estado-mensaje">Calculando carga por veterinario...</p>
+                        }
+                        else if (!CargaVeterinariosRecep.Any())
+                        {
+                            <p class="estado-mensaje">No hay citas asignadas a veterinarios hoy.</p>
+                        }
+                        else
+                        {
+                            @foreach (var item in CargaVeterinariosRecep)
+                            {
+                                <div class="bar-row">
+                                    <span class="bar-label">@item.Nombre · @item.Especialidad</span>
+                                    <div class="bar-track">
+                                        <div class="bar-fill bar-purple" style="width: @PorcentajeCargaRecepcion(item.Total)%"></div>
+                                    </div>
+                                    <span class="bar-value">@item.Total</span>
+                                </div>
+                            }
+                        }
                     </div>
                 </div>
             </section>
@@ -573,13 +552,34 @@
     private List<Cita> CitasVetSemana = new();
     private List<ServicioAtencionResumen> TopServiciosVet = new();
     private int AtencionesVetMes;
+    private bool cargandoRecepcionDashboard;
+    private List<Cita> CitasRecepHoy = new();
+    private List<Cita> CitasRecepPendientes = new();
+    private List<CargaVeterinarioResumen> CargaVeterinariosRecep = new();
+    private int RecordatoriosPendientes;
 
     private DateTime SemanaInicio => InicioSemana(Hoy);
     private DateTime SemanaFin => SemanaInicio.AddDays(6);
     private int PendientesVetHoy => CitasVetHoy.Count(c => c.Estado == EstadoCita.PENDIENTE || c.Estado == EstadoCita.CONFIRMADA);
+    private int SinConfirmarRecepHoy => CitasRecepHoy.Count(c => c.Estado == EstadoCita.PENDIENTE);
+    private int CancelacionesRecepHoy => CitasRecepHoy.Count(c => c.Estado == EstadoCita.CANCELADA);
     private string NombreMesActual => culturaEs.TextInfo.ToTitleCase(Hoy.ToString("MMMM", culturaEs));
     private string FechaHoyTexto => culturaEs.TextInfo.ToTitleCase(Hoy.ToString("dddd d 'de' MMMM 'de' yyyy", culturaEs));
     private string RangoSemanaTexto => $"{SemanaInicio:dd/MM/yyyy} - {SemanaFin:dd/MM/yyyy}";
+    private string ResumenRecepcionHoy
+    {
+        get
+        {
+            if (!CitasRecepHoy.Any())
+            {
+                return "Sin citas programadas hoy";
+            }
+
+            var vets = CitasRecepHoy.Where(c => c.Veterinario?.Id > 0).Select(c => c.Veterinario.Id).Distinct().Count();
+            var servicios = CitasRecepHoy.Where(c => c.Servicio?.Id > 0).Select(c => c.Servicio.Id).Distinct().Count();
+            return $"{vets} vets · {servicios} servicios";
+        }
+    }
 
     private string ResumenCitasHoy
     {
@@ -609,6 +609,11 @@
         if (user.IsInRole("VETERINARIO") && usuarioActualId > 0)
         {
             await CargarDashboardVeterinarioAsync();
+        }
+
+        if (user.IsInRole("RECEPCIONISTA"))
+        {
+            await CargarDashboardRecepcionAsync();
         }
     }
 
@@ -689,6 +694,26 @@
         return string.IsNullOrWhiteSpace(nombre) ? "Cliente sin datos" : nombre;
     }
 
+    private static string NombreVeterinario(Cita cita)
+    {
+        if (cita.Veterinario is null)
+        {
+            return "Sin veterinario";
+        }
+
+        var nombre = $"{cita.Veterinario.Nombres} {cita.Veterinario.Apellidos}".Trim();
+        return string.IsNullOrWhiteSpace(nombre) ? "Sin veterinario" : nombre;
+    }
+
+    private static string ServicioNombre(Cita cita)
+        => string.IsNullOrWhiteSpace(cita.Servicio?.Nombre) ? "Servicio sin nombre" : cita.Servicio.Nombre;
+
+    private static string EspecieMascota(Cita cita)
+        => cita.Mascota?.Especie?.ToString() ?? "Sin especie";
+
+    private string FechaCortaRecepcion(DateTime fecha)
+        => fecha.Date == Hoy.Date ? "Hoy" : culturaEs.TextInfo.ToTitleCase(fecha.ToString("ddd dd/MM", culturaEs));
+
     private static int DuracionCita(Cita cita)
         => Math.Max(0, (int)Math.Round((cita.FechaHoraFin - cita.FechaHoraInicio).TotalMinutes));
 
@@ -722,4 +747,64 @@
 
         return Math.Clamp((int)Math.Round(total * 100.0 / maximo), 8, 100);
     }
+
+    private async Task CargarDashboardRecepcionAsync()
+    {
+        cargandoRecepcionDashboard = true;
+
+        try
+        {
+            await Task.Yield();
+            CitasRecepHoy = CitaService.ListarFiltradas(0, Hoy, Hoy, "", "")
+                .Where(c => c.FechaHoraInicio.Date == Hoy.Date)
+                .OrderBy(c => c.FechaHoraInicio)
+                .ToList();
+
+            CitasRecepPendientes = CitasRecepHoy
+                .Where(c => c.Estado == EstadoCita.PENDIENTE)
+                .OrderBy(c => c.FechaHoraInicio)
+                .ToList();
+
+            CargaVeterinariosRecep = CitasRecepHoy
+                .Where(c => c.Veterinario?.Id > 0)
+                .GroupBy(c => c.Veterinario.Id)
+                .Select(g =>
+                {
+                    var vet = g.First().Veterinario;
+                    return new CargaVeterinarioResumen(
+                        Nombre: $"{vet.Nombres} {vet.Apellidos}".Trim(),
+                        Especialidad: string.IsNullOrWhiteSpace(vet.Especialidad) ? "Sin especialidad" : vet.Especialidad,
+                        Total: g.Count());
+                })
+                .OrderByDescending(v => v.Total)
+                .ThenBy(v => v.Nombre)
+                .ToList();
+
+            RecordatoriosPendientes = RecordatorioService.ContarPendientes();
+        }
+        catch
+        {
+            CitasRecepHoy = new();
+            CitasRecepPendientes = new();
+            CargaVeterinariosRecep = new();
+            RecordatoriosPendientes = 0;
+        }
+        finally
+        {
+            cargandoRecepcionDashboard = false;
+        }
+    }
+
+    private int PorcentajeCargaRecepcion(int total)
+    {
+        var maximo = CargaVeterinariosRecep.Count == 0 ? 0 : CargaVeterinariosRecep.Max(v => v.Total);
+        if (maximo <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Clamp((int)Math.Round(total * 100.0 / maximo), 8, 100);
+    }
+
+    private sealed record CargaVeterinarioResumen(string Nombre, string Especialidad, int Total);
 }

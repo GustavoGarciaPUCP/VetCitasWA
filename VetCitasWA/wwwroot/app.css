@@ -3599,6 +3599,90 @@ h1:focus {
 :root.dark .estado-mensaje { color: #94a3b8; }
 :root.dark .vc-btn-secondary { background: #1e293b; color: #cbd5e1 !important; border-color: #334155; }
 :root.dark .vc-btn-secondary:hover { background: #27303f; border-color: #475569; color: #f1f5f9 !important; }
+:root.dark .vc-btn-secondary:focus-visible,
+:root.dark .vc-btn-danger:focus-visible,
+:root.dark .vc-modal-close:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+}
+
+:root.dark .vc-btn-danger {
+    background: #7f1d1d;
+    border-color: #ef4444;
+    color: #fecaca !important;
+}
+
+:root.dark .vc-btn-danger:hover,
+:root.dark .vc-btn-danger:focus-visible {
+    background: #dc2626;
+    border-color: #f87171;
+    color: #ffffff !important;
+}
+
+:root.dark .vc-modal-close {
+    color: #cbd5e1;
+}
+
+:root.dark .vc-modal-close:hover,
+:root.dark .vc-modal-close:focus-visible {
+    background: #27303f;
+    color: #f8fafc;
+}
+
+/* Controles compartidos de agenda/horarios/modales en modo oscuro */
+:root.dark .tb-nav-btn,
+:root.dark .btn-mh-ghost,
+:root.dark .btn-cv-ghost,
+:root.dark .btn-modal-ghost {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+:root.dark .tb-nav-btn:hover,
+:root.dark .tb-nav-btn:focus-visible,
+:root.dark .btn-mh-ghost:hover,
+:root.dark .btn-mh-ghost:focus-visible,
+:root.dark .btn-cv-ghost:hover,
+:root.dark .btn-cv-ghost:focus-visible,
+:root.dark .btn-modal-ghost:hover,
+:root.dark .btn-modal-ghost:focus-visible {
+    background: #27303f !important;
+    border-color: #475569 !important;
+    color: #f1f5f9 !important;
+    outline: none;
+}
+
+:root.dark .tb-nav-today {
+    background: rgba(59, 130, 246, 0.18) !important;
+    border-color: rgba(96, 165, 250, 0.45) !important;
+    color: #bfdbfe !important;
+}
+
+:root.dark .tb-nav-today:hover,
+:root.dark .tb-nav-today:focus-visible {
+    background: rgba(59, 130, 246, 0.28) !important;
+    border-color: rgba(147, 197, 253, 0.65) !important;
+    color: #ffffff !important;
+}
+
+:root.dark .btn-mh-danger-ghost,
+:root.dark .acc-item-danger {
+    color: #fca5a5 !important;
+}
+
+:root.dark .btn-mh-danger-ghost {
+    background: rgba(127, 29, 29, 0.35) !important;
+    border-color: rgba(248, 113, 113, 0.45) !important;
+}
+
+:root.dark .btn-mh-danger-ghost:hover,
+:root.dark .btn-mh-danger-ghost:focus-visible,
+:root.dark .acc-item-danger:hover,
+:root.dark .acc-item-danger:focus-visible {
+    background: rgba(239, 68, 68, 0.18) !important;
+    color: #fecaca !important;
+}
 :root.dark .vc-toast { background: #1e293b; color: #e2e8f0; box-shadow: 0 10px 30px rgba(0, 0, 0, .4); }
 :root.dark .vc-toast-close { color: #64748b; }
 
