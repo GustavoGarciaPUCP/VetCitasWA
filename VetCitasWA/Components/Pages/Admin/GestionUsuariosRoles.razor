@@ -5,6 +5,8 @@
 @using VetCitasWA.Servicios.Modelo.Usuario
 @inject AuthenticationStateProvider AuthStateProvider
 @inject VetCitasWA.Servicios.REST.UsuarioRS.AdministradorRestService AdminService
+@inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VeterinarioService
+@inject VetCitasWA.Servicios.REST.UsuarioRS.RecepcionistaRestService RecepcionistaService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
 
 <PageTitle>Usuarios y roles - VetCitas</PageTitle>
@@ -40,10 +42,10 @@
             </div>
         </div>
         <div class="filter-action">
-            <label for="usuario-form-modal" class="btn-new">
+            <button type="button" class="btn-new" @onclick="AbrirNuevo" disabled="@procesando">
                 <span class="btn-plus" aria-hidden="true">+</span>
                 <span>Nuevo usuario</span>
-            </label>
+            </button>
         </div>
     </div>
 
@@ -88,7 +90,7 @@
                     }
                     else
                     {
-                        @foreach (var usuario in listaUsuarios)
+                        @foreach (var usuario in UsuariosPaginados)
                         {
                             <tr class="@(!usuario.Activo ? "row-inactive" : "")">
                                 <td data-label="ID">@usuario.Id</td>
@@ -118,19 +120,6 @@
                                         <span class="text-muted">Sin roles</span>
                                     }
 
-                                    <div class="role-actions" aria-label="Gestionar roles">
-                                        @foreach (var rolGestionable in RolesGestionables)
-                                        {
-                                            var tieneRol = TieneRol(usuario, rolGestionable.Codigo);
-                                            <button type="button"
-                                                    class="role-toggle @(tieneRol ? "role-toggle-on" : "")"
-                                                    disabled="@(procesando || NoPuedeModificarRol(usuario, rolGestionable.Codigo))"
-                                                    title="@TituloRol(usuario, rolGestionable.Codigo, rolGestionable.Label)"
-                                                    @onclick="() => CambiarRolAsync(usuario, rolGestionable.Codigo)">
-                                                @(tieneRol ? "Quitar" : "Asignar") @rolGestionable.Label
-                                            </button>
-                                        }
-                                    </div>
                                 </td>
                                 <td data-label="Estado">
                                     @if (usuario.Activo)
@@ -192,11 +181,86 @@
         </div>
 
         <nav class="pager" aria-label="Paginacion">
-            <button type="button" class="pager-btn pager-active">@((listaUsuarios?.Count ?? 0)) usuarios</button>
+            <button type="button" class="pager-btn" disabled="@(paginaActual <= 1)" @onclick="PaginaAnterior">Anterior</button>
+            <button type="button" class="pager-btn pager-active">Pagina @paginaActual de @TotalPaginas</button>
+            <button type="button" class="pager-btn" disabled="@(paginaActual >= TotalPaginas)" @onclick="PaginaSiguiente">Siguiente</button>
+            <span class="pager-summary">@((listaUsuarios?.Count ?? 0)) usuarios</span>
         </nav>
     </section>
 
 </div>
+
+@if (usuarioNuevo is not null)
+{
+    <div class="inline-modal-backdrop" @onclick="CerrarNuevo"></div>
+    <section class="inline-modal" role="dialog" aria-modal="true" aria-labelledby="nuevoUsuarioTitulo">
+        <div class="inline-modal-header">
+            <div>
+                <h2 id="nuevoUsuarioTitulo">Nuevo usuario</h2>
+                <p>Registra un usuario con su rol principal. Luego puedes ajustar roles desde editar.</p>
+            </div>
+            <button type="button" class="modal-close" aria-label="Cerrar" @onclick="CerrarNuevo">x</button>
+        </div>
+
+        <div class="edit-grid">
+            <label>
+                <span>Rol principal</span>
+                <VcSelect TValue="CodigoRol" @bind-Value="rolPrincipalNuevo" Options="OpcionesRolPrincipal" />
+            </label>
+            <label>
+                <span>Usuario</span>
+                <input class="search-input" @bind="usuarioNuevo.Username" autocomplete="off" />
+            </label>
+            <label>
+                <span>Contrasena inicial</span>
+                <input class="search-input" type="password" @bind="passwordNuevo" autocomplete="new-password" />
+            </label>
+            <label>
+                <span>Nombres</span>
+                <input class="search-input" @bind="usuarioNuevo.Nombres" />
+            </label>
+            <label>
+                <span>Apellidos</span>
+                <input class="search-input" @bind="usuarioNuevo.Apellidos" />
+            </label>
+            <label>
+                <span>Telefono</span>
+                <input class="search-input" @bind="usuarioNuevo.Telefono" />
+            </label>
+            <label class="edit-grid-wide">
+                <span>Correo</span>
+                <input class="search-input" type="email" @bind="usuarioNuevo.Email" />
+            </label>
+
+            @if (rolPrincipalNuevo == CodigoRol.ADMINISTRADOR || rolPrincipalNuevo == CodigoRol.RECEPCIONISTA)
+            {
+                <label class="edit-grid-wide">
+                    <span>Area</span>
+                    <input class="search-input" @bind="areaNuevo" placeholder="Ej. Recepcion" />
+                </label>
+            }
+
+            @if (rolPrincipalNuevo == CodigoRol.VETERINARIO)
+            {
+                <label>
+                    <span>CMPV</span>
+                    <input class="search-input" @bind="cmpvNuevo" />
+                </label>
+                <label>
+                    <span>Especialidad</span>
+                    <input class="search-input" @bind="especialidadNuevo" />
+                </label>
+            }
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" disabled="@procesando" @onclick="CerrarNuevo">Cancelar</button>
+            <button type="button" class="btn-new" disabled="@procesando" @onclick="GuardarNuevoAsync">
+                @(procesando ? "Creando..." : "Crear usuario")
+            </button>
+        </div>
+    </section>
+}
 
 @if (usuarioEditando is not null)
 {
@@ -237,6 +301,24 @@
             </label>
         </div>
 
+        <div class="roles-editor">
+            <h3>Roles del usuario</h3>
+            <p>Asigna o quita roles desde aqui. Los cambios se guardan al instante.</p>
+            <div class="role-actions role-actions-editor" aria-label="Gestionar roles">
+                @foreach (var rolGestionable in RolesGestionables)
+                {
+                    var tieneRol = TieneRol(usuarioEditando, rolGestionable.Codigo);
+                    <button type="button"
+                            class="role-toggle @(tieneRol ? "role-toggle-on" : "")"
+                            disabled="@(procesando || NoPuedeModificarRol(usuarioEditando, rolGestionable.Codigo))"
+                            title="@TituloRol(usuarioEditando, rolGestionable.Codigo, rolGestionable.Label)"
+                            @onclick="() => CambiarRolAsync(usuarioEditando, rolGestionable.Codigo)">
+                        @(tieneRol ? "Quitar" : "Asignar") @rolGestionable.Label
+                    </button>
+                }
+            </div>
+        </div>
+
         <div class="modal-actions">
             <button type="button" class="btn-secondary" disabled="@procesando" @onclick="CerrarEditar">Cancelar</button>
             <button type="button" class="btn-new" disabled="@procesando" @onclick="GuardarEdicionAsync">
@@ -274,9 +356,23 @@
     private bool procesando;
     private string? errorMensaje;
     private int usuarioActualId;
+    private int paginaActual = 1;
+    private const int PageSize = 7;
+    private Usuario? usuarioNuevo;
     private Usuario? usuarioEditando;
     private Usuario? usuarioCambioEstado;
     private bool nuevoEstadoUsuario;
+    private CodigoRol rolPrincipalNuevo = CodigoRol.VETERINARIO;
+    private string passwordNuevo = "";
+    private string areaNuevo = "";
+    private string cmpvNuevo = "";
+    private string especialidadNuevo = "";
+
+    private IEnumerable<Usuario> UsuariosPaginados
+        => listaUsuarios.Skip((paginaActual - 1) * PageSize).Take(PageSize);
+
+    private int TotalPaginas
+        => Math.Max(1, (int)Math.Ceiling((listaUsuarios?.Count ?? 0) / (double)PageSize));
 
     private static readonly IEnumerable<VcSelectOption<string>> OpcionesRoles = new[]
     {
@@ -284,6 +380,13 @@
         new VcSelectOption<string>(CodigoRol.ADMINISTRADOR.ToString(), "Administrador"),
         new VcSelectOption<string>(CodigoRol.VETERINARIO.ToString(), "Veterinario"),
         new VcSelectOption<string>(CodigoRol.RECEPCIONISTA.ToString(), "Recepcionista")
+    };
+
+    private static readonly IEnumerable<VcSelectOption<CodigoRol>> OpcionesRolPrincipal = new[]
+    {
+        new VcSelectOption<CodigoRol>(CodigoRol.ADMINISTRADOR, "Administrador"),
+        new VcSelectOption<CodigoRol>(CodigoRol.VETERINARIO, "Veterinario"),
+        new VcSelectOption<CodigoRol>(CodigoRol.RECEPCIONISTA, "Recepcionista")
     };
 
     private static readonly (CodigoRol Codigo, string Label)[] RolesGestionables =
@@ -307,12 +410,14 @@
 
     private async Task BuscarUsuarios()
     {
+        paginaActual = 1;
         await CargarUsuariosAsync();
     }
 
     private async Task OnRolChanged(string value)
     {
         filtroRol = value ?? "";
+        paginaActual = 1;
         await CargarUsuariosAsync();
     }
 
@@ -325,6 +430,10 @@
         {
             await Task.Yield();
             listaUsuarios = AdminService.ListarUsuariosFiltrados(textoBusqueda, filtroRol, null);
+            if (paginaActual > TotalPaginas)
+            {
+                paginaActual = TotalPaginas;
+            }
         }
         catch (Exception ex)
         {
@@ -351,6 +460,108 @@
     {
         usuarioEditando = CopiarUsuario(usuario);
         errorMensaje = null;
+    }
+
+    private void AbrirNuevo()
+    {
+        usuarioNuevo = new Usuario { Activo = true };
+        rolPrincipalNuevo = CodigoRol.VETERINARIO;
+        passwordNuevo = "";
+        areaNuevo = "";
+        cmpvNuevo = "";
+        especialidadNuevo = "";
+        errorMensaje = null;
+    }
+
+    private void CerrarNuevo()
+    {
+        if (!procesando)
+        {
+            usuarioNuevo = null;
+        }
+    }
+
+    private async Task GuardarNuevoAsync()
+    {
+        if (usuarioNuevo is null)
+        {
+            return;
+        }
+
+        if (!DatosBasicosValidos(usuarioNuevo) || string.IsNullOrWhiteSpace(passwordNuevo))
+        {
+            Toasts.Error("Completa usuario, contrasena, nombres, apellidos y correo.");
+            return;
+        }
+
+        if (rolPrincipalNuevo == CodigoRol.VETERINARIO && (string.IsNullOrWhiteSpace(cmpvNuevo) || string.IsNullOrWhiteSpace(especialidadNuevo)))
+        {
+            Toasts.Error("Para veterinario debes indicar CMPV y especialidad.");
+            return;
+        }
+
+        if ((rolPrincipalNuevo == CodigoRol.ADMINISTRADOR || rolPrincipalNuevo == CodigoRol.RECEPCIONISTA) && string.IsNullOrWhiteSpace(areaNuevo))
+        {
+            Toasts.Error("Indica el area del usuario.");
+            return;
+        }
+
+        await EjecutarOperacionAsync(() =>
+        {
+            var auditor = new Usuario { Id = usuarioActualId };
+            var idCreado = rolPrincipalNuevo switch
+            {
+                CodigoRol.ADMINISTRADOR => AdminService.Insertar(new Administrador
+                {
+                    Username = usuarioNuevo.Username,
+                    ContrasenaHash = passwordNuevo,
+                    Nombres = usuarioNuevo.Nombres,
+                    Apellidos = usuarioNuevo.Apellidos,
+                    Telefono = usuarioNuevo.Telefono,
+                    Email = usuarioNuevo.Email,
+                    Activo = true,
+                    Area = areaNuevo,
+                    EsSuperAdmin = false,
+                    ModifiedBy = auditor
+                }),
+                CodigoRol.RECEPCIONISTA => RecepcionistaService.Insertar(new Recepcionista
+                {
+                    Username = usuarioNuevo.Username,
+                    ContrasenaHash = passwordNuevo,
+                    Nombres = usuarioNuevo.Nombres,
+                    Apellidos = usuarioNuevo.Apellidos,
+                    Telefono = usuarioNuevo.Telefono,
+                    Email = usuarioNuevo.Email,
+                    Activo = true,
+                    Area = areaNuevo,
+                    ModifiedBy = auditor
+                }),
+                _ => VeterinarioService.Insertar(new Veterinario
+                {
+                    Username = usuarioNuevo.Username,
+                    ContrasenaHash = passwordNuevo,
+                    Nombres = usuarioNuevo.Nombres,
+                    Apellidos = usuarioNuevo.Apellidos,
+                    Telefono = usuarioNuevo.Telefono,
+                    Email = usuarioNuevo.Email,
+                    Activo = true,
+                    Cmp = cmpvNuevo,
+                    Especialidad = especialidadNuevo,
+                    ModifiedBy = auditor
+                })
+            };
+
+            if (idCreado <= 0)
+            {
+                throw new InvalidOperationException("El backend no confirmo la creacion del usuario.");
+            }
+
+            Toasts.Exito("Usuario creado.");
+        });
+
+        usuarioNuevo = null;
+        paginaActual = 1;
+        await CargarUsuariosAsync();
     }
 
     private void CerrarEditar()
@@ -453,6 +664,14 @@
         });
 
         await CargarUsuariosAsync();
+        if (usuarioEditando?.Id == usuario.Id)
+        {
+            var actualizado = listaUsuarios.FirstOrDefault(u => u.Id == usuario.Id);
+            if (actualizado is not null)
+            {
+                usuarioEditando.Roles = actualizado.Roles?.ToList() ?? new List<RolSistema>();
+            }
+        }
     }
 
     private async Task EjecutarOperacionAsync(Action operacion)
@@ -519,4 +738,20 @@
         => NoPuedeModificarRol(usuario, codigoRol)
             ? "No puedes quitar tu propio rol administrativo"
             : $"{(TieneRol(usuario, codigoRol) ? "Quitar" : "Asignar")} {label}";
+
+    private void PaginaAnterior()
+    {
+        if (paginaActual > 1)
+        {
+            paginaActual--;
+        }
+    }
+
+    private void PaginaSiguiente()
+    {
+        if (paginaActual < TotalPaginas)
+        {
+            paginaActual++;
+        }
+    }
 }

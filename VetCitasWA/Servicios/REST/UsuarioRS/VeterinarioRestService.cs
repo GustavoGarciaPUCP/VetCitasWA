@@ -18,18 +18,21 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         public int Insertar(Veterinario veterinario)
         {
             var response = http.PostAsJsonAsync("VeterinarioRS/insertar", veterinario).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Modificar(Veterinario veterinario)
         {
             var response = http.PutAsJsonAsync("VeterinarioRS/modificar", veterinario).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Eliminar(int id)
         {
             var response = http.DeleteAsync($"VeterinarioRS/eliminar/{id}").GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 

@@ -18,18 +18,21 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         public int Insertar(Administrador administrador)
         {
             var response = http.PostAsJsonAsync("AdministradorRS/insertar", administrador).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Modificar(Administrador administrador)
         {
             var response = http.PutAsJsonAsync("AdministradorRS/modificar", administrador).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Eliminar(int id)
         {
             var response = http.DeleteAsync($"AdministradorRS/eliminar/{id}").GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
