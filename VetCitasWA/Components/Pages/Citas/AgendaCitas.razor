@@ -352,8 +352,9 @@
             <h3 class="vc-modal-title">Cambiar veterinario</h3>
             <div class="vc-form-field">
                 <label class="vc-form-label">Nuevo veterinario</label>
-                <VcSelect TValue="int" @bind-Value="cambiarVetSel" Options="VeterinarioOptions"
+                <VcSelect TValue="int" @bind-Value="cambiarVetSel" Options="VeterinarioCambioOptions"
                           Placeholder="Selecciona un veterinario…" />
+                <span class="vc-form-hint">@VeterinarioCambioHint</span>
             </div>
             <div class="vc-modal-actions" style="justify-content:flex-end;">
                 <button class="vc-btn vc-btn-secondary" @onclick="() => mostrarCambiarVet = false" disabled="@procesando">Volver</button>
@@ -407,6 +408,9 @@
 
     private IEnumerable<VcSelectOption<int>> VeterinarioCrearOptions =>
         veterinariosDisponiblesCrear.Select(v => new VcSelectOption<int>(v.Id, NombreVet(v)));
+
+    private IEnumerable<VcSelectOption<int>> VeterinarioCambioOptions =>
+        veterinariosDisponiblesCambio.Select(v => new VcSelectOption<int>(v.Id, NombreVet(v)));
 
     private IEnumerable<VcSelectOption<int>> ServicioOptions =>
         servicios.Select(s => new VcSelectOption<int>(s.Id, $"{s.Nombre} — {s.DuracionMinutos} min · S/ {s.Precio:0.00}"));
@@ -464,6 +468,17 @@
             ? "Solo se muestran veterinarios activos y disponibles para ese horario."
             : "No hay veterinarios activos disponibles para ese servicio y horario.";
 
+    private string VeterinarioCambioPlaceholder =>
+        cargandoVeterinariosCambio ? "Buscando disponibles..." :
+        !veterinariosDisponiblesCambio.Any() ? "Sin veterinarios disponibles" :
+        "Selecciona un veterinario";
+
+    private string VeterinarioCambioHint =>
+        cargandoVeterinariosCambio ? "Validando horario y cruces de citas..." :
+        veterinariosDisponiblesCambio.Any()
+            ? "Solo se muestran veterinarios disponibles para el horario actual de la cita."
+            : "No hay otro veterinario disponible para ese horario.";
+
     // Detalle / acciones
     private Cita? citaDetalle;
     private Cita? citaAccion;
@@ -473,6 +488,8 @@
     private string reprogMotivo = "";
     private int cambiarVetSel;
     private string cancelarMotivo = "";
+    private List<Veterinario> veterinariosDisponiblesCambio = new();
+    private bool cargandoVeterinariosCambio;
 
     private static readonly string[] DiasNombre = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
     private static readonly string[] MesCorto = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
@@ -842,12 +859,14 @@
         mostrarReprogramar = true;
     }
 
-    private void AbrirCambiarVet(Cita c)
+    private async Task AbrirCambiarVet(Cita c)
     {
         citaAccion = c;
         cambiarVetSel = 0;
+        veterinariosDisponiblesCambio = new();
         citaDetalle = null;
         mostrarCambiarVet = true;
+        await CargarVeterinariosDisponiblesCambio();
     }
 
     private void AbrirCancelar(Cita c)
@@ -876,6 +895,31 @@
         var fin = inicio.AddMinutes(dur);
         string motivo = string.IsNullOrWhiteSpace(reprogMotivo) ? "Reprogramación" : reprogMotivo.Trim();
 
+        var idVeterinario = citaAccion.Veterinario?.Id ?? 0;
+
+        if (idVeterinario <= 0)
+        {
+            Toasts.Error("No se pudo identificar el veterinario actual de la cita.");
+            return;
+        }
+
+        bool disponible;
+        try
+        {
+            disponible = await Task.Run(() => CitaService.ValidarDisponibilidadSlot(idVeterinario, inicio, fin));
+        }
+        catch
+        {
+            Toasts.Error("No se pudo validar la disponibilidad para la nueva fecha y hora.");
+            return;
+        }
+
+        if (!disponible)
+        {
+            Toasts.Error("El veterinario no esta disponible en la nueva fecha u hora. Elige otro horario.");
+            return;
+        }
+
         await Ejecutar(() => CitaService.Reprogramar(citaAccion.Id, inicio, fin, motivo, ModBy(citaAccion)),
                        "Cita reprogramada correctamente.", () => mostrarReprogramar = false);
     }
@@ -888,8 +932,43 @@
             Toasts.Error("Selecciona un veterinario.");
             return;
         }
+        if (!veterinariosDisponiblesCambio.Any(v => v.Id == cambiarVetSel))
+        {
+            Toasts.Error("El veterinario seleccionado ya no esta disponible para esta cita.");
+            await CargarVeterinariosDisponiblesCambio();
+            return;
+        }
         await Ejecutar(() => CitaService.CambiarVeterinario(citaAccion.Id, cambiarVetSel, ModBy(citaAccion)),
                        "Veterinario actualizado correctamente.", () => mostrarCambiarVet = false);
+    }
+
+    private async Task CargarVeterinariosDisponiblesCambio()
+    {
+        if (citaAccion?.Servicio is null)
+        {
+            veterinariosDisponiblesCambio = new();
+            return;
+        }
+
+        cargandoVeterinariosCambio = true;
+        try
+        {
+            var disponibles = await Task.Run(() => VeterinarioService.ListarDisponibles(citaAccion.FechaHoraInicio, citaAccion.Servicio.Id));
+            var idActual = citaAccion.Veterinario?.Id ?? 0;
+            veterinariosDisponiblesCambio = disponibles
+                .Where(v => v.Id != idActual)
+                .OrderBy(NombreVet)
+                .ToList();
+        }
+        catch
+        {
+            veterinariosDisponiblesCambio = new();
+            Toasts.Error("No se pudo consultar veterinarios disponibles.");
+        }
+        finally
+        {
+            cargandoVeterinariosCambio = false;
+        }
     }
 
     private async Task ConfirmarCancelar()
