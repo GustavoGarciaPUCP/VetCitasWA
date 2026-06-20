@@ -14,9 +14,18 @@
 }
 
 /* ================== Selector de veterinario ================== */
-.vet-field {
+.schedule-toolbar {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
     margin-bottom: 1rem;
+}
+
+.vet-field {
+    margin-bottom: 0;
     max-width: 280px;
+    width: 100%;
 }
 
 .field-label {
@@ -68,6 +77,25 @@
     font-weight: 700;
     color: #111827;
     margin: 0 0 0.85rem 0;
+}
+
+.schedule-alert {
+    margin: 0 0 1rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 0.87rem;
+    font-weight: 600;
+}
+
+.editor-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+    padding: 1rem;
+    margin-bottom: 1.2rem;
 }
 
 .table-wrapper {
@@ -270,7 +298,9 @@
 /* ===== Acciones apiladas ===== */
 .actions-stack {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 0.6rem;
     margin-top: 0.5rem;
 }
@@ -291,6 +321,13 @@
     background: #0e9d70;
 }
 
+.btn-save-h:disabled,
+.btn-reset-h:disabled,
+.btn-inactivar:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
 .btn-reset-h {
     background: #2563eb;
     color: #ffffff;
@@ -307,10 +344,42 @@
     background: #1d4ed8;
 }
 
+.btn-toolbar {
+    white-space: nowrap;
+    height: 42px;
+}
+
+.btn-small {
+    padding: 0.42rem 0.7rem;
+    font-size: 0.76rem;
+    border-radius: 6px;
+}
+
+.active-row {
+    align-self: end;
+    min-height: 42px;
+}
+
+.schedule-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
 /* ================== Responsive ================== */
 @media (max-width: 767.98px) {
     .panel {
         padding: 1rem;
+    }
+
+    .schedule-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .btn-toolbar {
+        width: 100%;
     }
 
     .editor-title {
@@ -410,5 +479,13 @@
 
     .time-grid {
         grid-template-columns: 1fr;
+    }
+
+    .actions-stack {
+        flex-direction: column;
+    }
+
+    .schedule-actions {
+        justify-content: flex-end;
     }
 }
