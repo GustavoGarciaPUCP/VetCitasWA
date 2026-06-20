@@ -624,13 +624,17 @@ h1:focus {
 
 /* ===== Paginador ===== */
 :root.dark .pager-btn {
-    background: #18181b;
-    border-color: #27272a;
-    color: #cbd5e1;
+    background: #18181b !important;
+    border-color: #27272a !important;
+    color: #cbd5e1 !important;
 }
 
-:root.dark .pager-btn:hover {
-    background: #27272a;
+:root.dark .pager-btn:hover,
+:root.dark .pager-btn:focus-visible {
+    background: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #f8fafc !important;
+    outline: none;
 }
 
 :root.dark .pager-dots {
@@ -887,6 +891,84 @@ h1:focus {
 :root.dark .btn-act-on:hover {
     background: rgba(16, 185, 129, 0.15);
     color: #86efac;
+}
+
+:root.dark .admin-alert {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.32);
+    color: #fecaca;
+}
+
+:root.dark .role-toggle {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.32);
+    color: #93c5fd;
+}
+
+:root.dark .role-toggle:hover:not(:disabled),
+:root.dark .role-toggle:focus-visible:not(:disabled) {
+    background: rgba(59, 130, 246, 0.22);
+    border-color: rgba(59, 130, 246, 0.45);
+    color: #bfdbfe;
+}
+
+:root.dark .role-toggle-on {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.32);
+    color: #fca5a5;
+}
+
+:root.dark .role-toggle-on:hover:not(:disabled),
+:root.dark .role-toggle-on:focus-visible:not(:disabled) {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #fecaca;
+}
+
+:root.dark .inline-modal,
+:root.dark .confirm-modal {
+    background: #1f1f23;
+    color: #e2e8f0;
+    border-color: #27272a;
+}
+
+:root.dark .inline-modal h2,
+:root.dark .confirm-modal h2 {
+    color: #f1f5f9;
+}
+
+:root.dark .inline-modal p,
+:root.dark .confirm-modal p,
+:root.dark .edit-grid label {
+    color: #94a3b8;
+}
+
+:root.dark .modal-close,
+:root.dark .btn-secondary {
+    background: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+}
+
+:root.dark .modal-close:hover,
+:root.dark .modal-close:focus-visible,
+:root.dark .btn-secondary:hover,
+:root.dark .btn-secondary:focus-visible {
+    background: #27303f;
+    border-color: #475569;
+    color: #f1f5f9;
+}
+
+:root.dark .btn-danger {
+    background: #dc2626;
+    border-color: #ef4444;
+    color: #ffffff;
+}
+
+:root.dark .btn-danger:hover,
+:root.dark .btn-danger:focus-visible {
+    background: #b91c1c;
+    border-color: #dc2626;
 }
 
 /* Editor de usuario */
@@ -1681,13 +1763,16 @@ h1:focus {
 }
 
 :root.dark .btn-cancel {
-    background: transparent;
-    color: #f87171 !important;
-    border-color: #f87171;
+    background: rgba(220, 38, 38, 0.14);
+    color: #fca5a5 !important;
+    border-color: rgba(248, 113, 113, 0.45);
 }
 
-:root.dark .btn-cancel:hover {
-    background: rgba(239, 68, 68, 0.12);
+:root.dark .btn-cancel:hover,
+:root.dark .btn-cancel:focus-visible {
+    background: rgba(220, 38, 38, 0.26);
+    color: #fecaca !important;
+    border-color: #f87171;
 }
 
 /* ===== Modales de Agenda de Citas en oscuro ===== */
@@ -2224,6 +2309,17 @@ h1:focus {
     background: #7f1d1d;
 }
 
+:root.dark .editor-card {
+    background: #111827;
+    border-color: #334155;
+}
+
+:root.dark .schedule-alert {
+    background: rgba(127, 29, 29, 0.22);
+    border-color: rgba(248, 113, 113, 0.45);
+    color: #fecaca;
+}
+
 /* ===== Botones icon-only de Servicios (Editar / Eliminar) ===== */
 :root.dark .btn-icon {
     color: #94a3b8;
@@ -2349,25 +2445,30 @@ h1:focus {
 
 /* ===== Pager (paginador) ===== */
 :root.dark .pager-btn {
-    background: #18181b;
-    color: #cbd5e1;
-    border-color: #27272a;
+    background: #18181b !important;
+    color: #cbd5e1 !important;
+    border-color: #27272a !important;
 }
 
-:root.dark .pager-btn:hover {
-    background: #27272a;
-    border-color: #3f3f46;
+:root.dark .pager-btn:hover,
+:root.dark .pager-btn:focus-visible {
+    background: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #f8fafc !important;
+    outline: none;
 }
 
 :root.dark .pager-active {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: #ffffff;
+    background: #3b82f6 !important;
+    border-color: #60a5fa !important;
+    color: #ffffff !important;
 }
 
-:root.dark .pager-active:hover {
-    background: #2563eb;
-    border-color: #2563eb;
+:root.dark .pager-active:hover,
+:root.dark .pager-active:focus-visible {
+    background: #2563eb !important;
+    border-color: #93c5fd !important;
+    color: #ffffff !important;
 }
 
 :root.dark .pager-arrow {
@@ -2731,12 +2832,15 @@ h1:focus {
 
 :root.dark .btn-cc-danger {
     background: #ef4444;
+    color: #ffffff;
     border-color: #ef4444;
 }
 
-:root.dark .btn-cc-danger:hover {
+:root.dark .btn-cc-danger:hover,
+:root.dark .btn-cc-danger:focus-visible {
     background: #dc2626;
-    border-color: #dc2626;
+    border-color: #f87171;
+    color: #ffffff;
 }
 
 /* ============================================================ */
