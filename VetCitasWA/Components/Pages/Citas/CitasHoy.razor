@@ -5,6 +5,7 @@
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Citas de hoy - VetCitas</PageTitle>
 
@@ -206,6 +207,7 @@
     private bool cargando = true;
     private bool procesando;
     private string? errorMensaje;
+    private int usuarioActualId;
 
     // Filtro de estado (multi-selección). Por defecto: Pendiente y En consulta.
     private static readonly EstadoCita[] EstadosTodos =
@@ -248,8 +250,16 @@
         errorMensaje = null;
         try
         {
+            usuarioActualId = await ObtenerUsuarioActualId();
+            if (usuarioActualId <= 0)
+            {
+                citas = new();
+                errorMensaje = "No se pudo identificar al veterinario autenticado. Vuelve a iniciar sesion.";
+                return;
+            }
+
             var (inicio, fin) = RangoFechas();
-            citas = await Task.Run(() => CitaService.ListarFiltradas(0, inicio, fin, "", ""));
+            citas = await Task.Run(() => CitaService.ListarFiltradas(usuarioActualId, inicio, fin, "", ""));
         }
         catch (Exception ex)
         {
@@ -260,6 +270,14 @@
         {
             cargando = false;
         }
+    }
+
+    private async Task<int> ObtenerUsuarioActualId()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var claim = authState.User.FindFirst("IdUsuario")?.Value
+            ?? authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(claim, out var id) ? id : 0;
     }
 
     private (DateTime, DateTime) RangoFechas()
@@ -281,7 +299,10 @@
     }
 
     private IEnumerable<Cita> CitasFiltradas
-        => citas.Where(c => estadosSel.Contains(c.Estado));
+        => citas.Where(c => EsCitaDelVeterinarioActual(c) && estadosSel.Contains(c.Estado));
+
+    private bool EsCitaDelVeterinarioActual(Cita c)
+        => usuarioActualId > 0 && c.Veterinario?.Id == usuarioActualId;
 
     private void ToggleEstado(EstadoCita e)
     {
@@ -325,7 +346,7 @@
     }
 
     // Sin autenticación todavía: usamos el id del veterinario de la cita como modificador (FK válida)
-    private int ModBy(Cita c) => c.Veterinario?.Id ?? 0;
+    private int ModBy(Cita c) => usuarioActualId;
 
     private string EstadoBadge(EstadoCita e) => e switch
     {
@@ -363,6 +384,12 @@
     private async Task Accion(Func<int> accion, string okMsg)
     {
         if (procesando) return;
+        if (usuarioActualId <= 0)
+        {
+            Toasts.Error("No se pudo identificar al usuario autenticado.");
+            return;
+        }
+
         procesando = true;
         try
         {

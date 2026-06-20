@@ -11,6 +11,7 @@
 @inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Registro de atención - VetCitas</PageTitle>
 
@@ -32,10 +33,10 @@
     {
         <p class="estado-mensaje">Cargando…</p>
     }
-    else if (cita is null)
-    {
-        <p class="estado-mensaje estado-error">No se encontró la cita.</p>
-    }
+else if (cita is null)
+{
+    <p class="estado-mensaje estado-error">@(errorMensaje ?? "No se encontro la cita.")</p>
+}
     else
     {
         <div class="grid-2col">
@@ -191,8 +192,7 @@
 </div>
 
 @code {
-    // TODO: reemplazar por el usuario autenticado (modified_by).
-    private const int UsuarioActualId = 1;
+    private int usuarioActualId;
 
     [SupplyParameterFromQuery(Name = "id")]
     public int CitaId { get; set; }
@@ -232,11 +232,25 @@
     {
         try
         {
+            usuarioActualId = await ObtenerUsuarioActualId();
+            if (usuarioActualId <= 0)
+            {
+                errorMensaje = "No se pudo identificar al veterinario autenticado. Vuelve a iniciar sesion.";
+                return;
+            }
+
             listaServicios = await Task.Run(() => ServicioService.ListarTodos());
             cita = await Task.Run(() => CitaService.ObtenerPorId(CitaId));
 
             if (cita is not null)
             {
+                if (cita.Veterinario?.Id != usuarioActualId)
+                {
+                    cita = null;
+                    errorMensaje = "No tienes acceso a esta cita.";
+                    return;
+                }
+
                 mascota = cita.Mascota;
                 cliente = mascota?.Cliente;
 
@@ -269,6 +283,14 @@
         {
             cargando = false;
         }
+    }
+
+    private async Task<int> ObtenerUsuarioActualId()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var claim = authState.User.FindFirst("IdUsuario")?.Value
+            ?? authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(claim, out var id) ? id : 0;
     }
 
     // Al elegir un servicio, el monto referencial toma su precio
@@ -314,6 +336,11 @@
     private async Task Guardar()
     {
         if (guardando || cita is null) return;
+        if (usuarioActualId <= 0 || cita.Veterinario?.Id != usuarioActualId)
+        {
+            errorMensaje = "No tienes acceso para registrar la atencion de esta cita.";
+            return;
+        }
 
         var error = ValidarAtencion();
         if (error is not null)
@@ -338,7 +365,7 @@
             if (r > 0)
             {
                 // Finalizamos: la cita pasa a "Atendida"
-                await Task.Run(() => CitaService.MarcarAtendida(cita.Id, UsuarioActualId));
+                await Task.Run(() => CitaService.MarcarAtendida(cita.Id, usuarioActualId));
                 Toasts.Exito("Atención registrada. La cita se marcó como atendida.");
                 Nav.NavigateTo("/citas-hoy");
             }

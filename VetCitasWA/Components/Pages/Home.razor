@@ -1,4 +1,11 @@
 @page "/"
+@using System.Globalization
+@using System.Security.Claims
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Common.Enums
+@inject AuthenticationStateProvider AuthStateProvider
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
+@inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
 
 <PageTitle>Inicio - VetCitas</PageTitle>
 
@@ -28,9 +35,9 @@
         <header class="dash-block-head">
             <h2 class="dash-block-title">
                 <span class="dash-role-pill dash-role-vet">Veterinario</span>
-                Hola, Dr. Carlos. Esta es tu jornada de hoy
+                Hola, @NombreUsuarioCorto. Esta es tu jornada de hoy
             </h2>
-            <span class="dash-block-sub">Lunes 12 de mayo de 2026</span>
+            <span class="dash-block-sub">@FechaHoyTexto</span>
         </header>
 
         @* ----- KPIs del Veterinario ----- *@
@@ -47,8 +54,8 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Mis citas hoy</div>
-                    <div class="kpi-value">6</div>
-                    <div class="kpi-sub">2 atendidas · 1 en consulta · 3 confirmadas</div>
+                    <div class="kpi-value">@CitasVetHoy.Count</div>
+                    <div class="kpi-sub">@ResumenCitasHoy</div>
                 </div>
             </article>
 
@@ -61,8 +68,8 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Atenciones del mes</div>
-                    <div class="kpi-value">73</div>
-                    <div class="kpi-sub">+12 respecto al mes anterior</div>
+                    <div class="kpi-value">@AtencionesVetMes</div>
+                    <div class="kpi-sub">@NombreMesActual @Hoy.Year</div>
                 </div>
             </article>
 
@@ -74,9 +81,9 @@
                     </svg>
                 </div>
                 <div class="kpi-text">
-                    <div class="kpi-title">Próximos controles</div>
-                    <div class="kpi-value">9</div>
-                    <div class="kpi-sub">Programados en los próximos 7 días</div>
+                    <div class="kpi-title">Citas esta semana</div>
+                    <div class="kpi-value">@CitasVetSemana.Count</div>
+                    <div class="kpi-sub">@RangoSemanaTexto</div>
                 </div>
             </article>
 
@@ -88,9 +95,9 @@
                     </svg>
                 </div>
                 <div class="kpi-text">
-                    <div class="kpi-title">Mascotas únicas</div>
-                    <div class="kpi-value">128</div>
-                    <div class="kpi-sub">Atendidas este año</div>
+                    <div class="kpi-title">Pendientes hoy</div>
+                    <div class="kpi-value">@PendientesVetHoy</div>
+                    <div class="kpi-sub">Pendientes y confirmadas</div>
                 </div>
             </article>
 
@@ -106,62 +113,36 @@
                     <a href="/mis-horarios" class="panel-link">Ver la semana completa →</a>
                 </header>
                 <div class="panel-body">
-
-                    <div class="ag-item">
-                        <div class="ag-time">09:00</div>
-                        <div class="ag-info">
-                            <div class="ag-info-head">
-                                <span class="ag-pet">Mimi · Gata</span>
-                                <span class="badge badge-atendida">Atendida</span>
+                    @if (cargandoDashboard)
+                    {
+                        <p class="estado-mensaje">Cargando datos del tablero...</p>
+                    }
+                    else if (!CitasVetHoy.Any())
+                    {
+                        <p class="estado-mensaje">No tienes citas asignadas para hoy.</p>
+                    }
+                    else
+                    {
+                        @foreach (var cita in CitasVetHoy.OrderBy(c => c.FechaHoraInicio).Take(6))
+                        {
+                            <div class="ag-item">
+                                <div class="ag-time">@cita.FechaHoraInicio.ToString("HH:mm")</div>
+                                <div class="ag-info">
+                                    <div class="ag-info-head">
+                                        <span class="ag-pet">@NombreMascota(cita)</span>
+                                        <span class="badge @BadgeEstado(cita.Estado)">
+                                            @if (cita.Estado == EstadoCita.EN_CONSULTA)
+                                            {
+                                                <span class="dash-pulse-dot" aria-hidden="true"></span>
+                                            }
+                                            @EstadoLabel(cita.Estado)
+                                        </span>
+                                    </div>
+                                    <span class="ag-info-sub">@NombreCliente(cita) · @(cita.Servicio?.Nombre ?? "Servicio sin nombre") · @DuracionCita(cita) min</span>
+                                </div>
                             </div>
-                            <span class="ag-info-sub">Ana Martínez · Control Post-Operatorio · 20 min</span>
-                        </div>
-                    </div>
-
-                    <div class="ag-item">
-                        <div class="ag-time">10:00</div>
-                        <div class="ag-info">
-                            <div class="ag-info-head">
-                                <span class="ag-pet">Bobby · Perro</span>
-                                <span class="badge badge-enconsulta">
-                                    <span class="dash-pulse-dot" aria-hidden="true"></span>
-                                    En consulta
-                                </span>
-                            </div>
-                            <span class="ag-info-sub">Pedro Salas · Esterilización · 120 min</span>
-                        </div>
-                    </div>
-
-                    <div class="ag-item">
-                        <div class="ag-time">10:30</div>
-                        <div class="ag-info">
-                            <div class="ag-info-head">
-                                <span class="ag-pet">Max · Perro</span>
-                                <span class="badge badge-confirmada">Confirmada</span>
-                            </div>
-                            <span class="ag-info-sub">Juan Pérez · Consulta General · 30 min</span>
-                        </div>
-                    </div>
-
-                    <div class="ag-item ag-item-break">
-                        <div class="ag-time">13:00</div>
-                        <div class="ag-info">
-                            <div class="ag-break-title">Refrigerio</div>
-                            <span class="ag-info-sub">13:00 — 14:00</span>
-                        </div>
-                    </div>
-
-                    <div class="ag-item">
-                        <div class="ag-time">14:30</div>
-                        <div class="ag-info">
-                            <div class="ag-info-head">
-                                <span class="ag-pet">Rocky · Perro</span>
-                                <span class="badge badge-confirmada">Confirmada</span>
-                            </div>
-                            <span class="ag-info-sub">Carlos López · Cirugía Menor · 60 min</span>
-                        </div>
-                    </div>
-
+                        }
+                    }
                 </div>
             </section>
 
@@ -173,31 +154,23 @@
                 </header>
                 <div class="panel-body">
                     <div class="bar-list">
-                        <div class="bar-row">
-                            <span class="bar-label">Consulta General</span>
-                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 92%"></div></div>
-                            <span class="bar-value">28</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Vacunación</span>
-                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 68%"></div></div>
-                            <span class="bar-value">21</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Control Post-Operatorio</span>
-                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 44%"></div></div>
-                            <span class="bar-value">14</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Esterilización</span>
-                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 23%"></div></div>
-                            <span class="bar-value">7</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Cirugía Menor</span>
-                            <div class="bar-track"><div class="bar-fill bar-blue" style="width: 10%"></div></div>
-                            <span class="bar-value">3</span>
-                        </div>
+                        @if (!TopServiciosVet.Any())
+                        {
+                            <p class="estado-mensaje">Aun no hay atenciones registradas este mes.</p>
+                        }
+                        else
+                        {
+                            @foreach (var item in TopServiciosVet)
+                            {
+                                <div class="bar-row">
+                                    <span class="bar-label">@(item.Servicio?.Nombre ?? "Servicio")</span>
+                                    <div class="bar-track">
+                                        <div class="bar-fill bar-blue" style="width: @PorcentajeServicio(item.TotalAtenciones)%"></div>
+                                    </div>
+                                    <span class="bar-value">@item.TotalAtenciones</span>
+                                </div>
+                            }
+                        }
                     </div>
                 </div>
             </section>
@@ -584,8 +557,169 @@
                 <line x1="12" y1="16" x2="12.01" y2="16" stroke-linecap="round" />
             </svg>
         </div>
-        <h2 class="dash-empty-title">Selecciona un rol para ver tu tablero</h2>
-        <p class="dash-empty-text">Tu tablero depende del rol activo. Selecciona uno o más en el menú lateral para ver las métricas y los accesos correspondientes.</p>
+        <h2 class="dash-empty-title">No tienes roles activos para este tablero</h2>
+        <p class="dash-empty-text">El tablero y el menu se construyen con los roles asignados a tu usuario. Solicita a un administrador que revise tus permisos si necesitas acceso.</p>
     </div>
 
 </div>
+
+@code {
+    private readonly CultureInfo culturaEs = new("es-PE");
+    private DateTime Hoy = DateTime.Today;
+    private int usuarioActualId;
+    private string NombreUsuarioCorto = "usuario";
+    private bool cargandoDashboard;
+    private List<Cita> CitasVetHoy = new();
+    private List<Cita> CitasVetSemana = new();
+    private List<ServicioAtencionResumen> TopServiciosVet = new();
+    private int AtencionesVetMes;
+
+    private DateTime SemanaInicio => InicioSemana(Hoy);
+    private DateTime SemanaFin => SemanaInicio.AddDays(6);
+    private int PendientesVetHoy => CitasVetHoy.Count(c => c.Estado == EstadoCita.PENDIENTE || c.Estado == EstadoCita.CONFIRMADA);
+    private string NombreMesActual => culturaEs.TextInfo.ToTitleCase(Hoy.ToString("MMMM", culturaEs));
+    private string FechaHoyTexto => culturaEs.TextInfo.ToTitleCase(Hoy.ToString("dddd d 'de' MMMM 'de' yyyy", culturaEs));
+    private string RangoSemanaTexto => $"{SemanaInicio:dd/MM/yyyy} - {SemanaFin:dd/MM/yyyy}";
+
+    private string ResumenCitasHoy
+    {
+        get
+        {
+            if (!CitasVetHoy.Any())
+            {
+                return "Sin citas asignadas hoy";
+            }
+
+            var atendidas = CitasVetHoy.Count(c => c.Estado == EstadoCita.ATENDIDA);
+            var enConsulta = CitasVetHoy.Count(c => c.Estado == EstadoCita.EN_CONSULTA);
+            var confirmadas = CitasVetHoy.Count(c => c.Estado == EstadoCita.CONFIRMADA);
+            var pendientes = CitasVetHoy.Count(c => c.Estado == EstadoCita.PENDIENTE);
+            return $"{atendidas} atendidas · {enConsulta} en consulta · {confirmadas} confirmadas · {pendientes} pendientes";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        NombreUsuarioCorto = ObtenerNombreCorto(user);
+        usuarioActualId = ObtenerUsuarioId(user);
+
+        if (user.IsInRole("VETERINARIO") && usuarioActualId > 0)
+        {
+            await CargarDashboardVeterinarioAsync();
+        }
+    }
+
+    private async Task CargarDashboardVeterinarioAsync()
+    {
+        cargandoDashboard = true;
+
+        try
+        {
+            await Task.Yield();
+            CitasVetHoy = CitaService.ListarFiltradas(usuarioActualId, Hoy, Hoy, "", "")
+                .Where(c => c.Veterinario?.Id == usuarioActualId)
+                .ToList();
+
+            CitasVetSemana = CitaService.ListarFiltradas(usuarioActualId, SemanaInicio, SemanaFin, "", "")
+                .Where(c => c.Veterinario?.Id == usuarioActualId)
+                .ToList();
+
+            AtencionesVetMes = AtencionService.ContarPorVeterinarioEnMes(usuarioActualId, Hoy.Year, Hoy.Month);
+            TopServiciosVet = AtencionService.TopServiciosPorVeterinario(usuarioActualId, Hoy.Year, Hoy.Month, 5);
+        }
+        catch
+        {
+            CitasVetHoy = new();
+            CitasVetSemana = new();
+            TopServiciosVet = new();
+            AtencionesVetMes = 0;
+        }
+        finally
+        {
+            cargandoDashboard = false;
+        }
+    }
+
+    private static int ObtenerUsuarioId(ClaimsPrincipal user)
+    {
+        var valor = user.FindFirst("IdUsuario")?.Value
+            ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        return int.TryParse(valor, out var id) ? id : 0;
+    }
+
+    private static string ObtenerNombreCorto(ClaimsPrincipal user)
+    {
+        var nombre = user.Identity?.Name ?? user.FindFirst("Username")?.Value ?? "usuario";
+        var primerNombre = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        return string.IsNullOrWhiteSpace(primerNombre) ? "usuario" : primerNombre;
+    }
+
+    private static DateTime InicioSemana(DateTime fecha)
+    {
+        int diff = (7 + (int)fecha.DayOfWeek - (int)DayOfWeek.Monday) % 7;
+        return fecha.Date.AddDays(-diff);
+    }
+
+    private static string NombreMascota(Cita cita)
+    {
+        var mascota = cita.Mascota;
+        if (mascota is null)
+        {
+            return "Mascota sin nombre";
+        }
+
+        return string.IsNullOrWhiteSpace(mascota.Nombre)
+            ? "Mascota sin nombre"
+            : mascota.Nombre;
+    }
+
+    private static string NombreCliente(Cita cita)
+    {
+        var cliente = cita.Mascota?.Cliente;
+        if (cliente is null)
+        {
+            return "Cliente sin datos";
+        }
+
+        var nombre = $"{cliente.Nombres} {cliente.Apellidos}".Trim();
+        return string.IsNullOrWhiteSpace(nombre) ? "Cliente sin datos" : nombre;
+    }
+
+    private static int DuracionCita(Cita cita)
+        => Math.Max(0, (int)Math.Round((cita.FechaHoraFin - cita.FechaHoraInicio).TotalMinutes));
+
+    private static string BadgeEstado(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "badge-pending",
+        EstadoCita.CONFIRMADA => "badge-confirmada",
+        EstadoCita.EN_CONSULTA => "badge-enconsulta",
+        EstadoCita.ATENDIDA => "badge-atendida",
+        _ => "badge-cancelled"
+    };
+
+    private static string EstadoLabel(EstadoCita estado) => estado switch
+    {
+        EstadoCita.PENDIENTE => "Pendiente",
+        EstadoCita.CONFIRMADA => "Confirmada",
+        EstadoCita.EN_CONSULTA => "En consulta",
+        EstadoCita.ATENDIDA => "Atendida",
+        EstadoCita.CANCELADA => "Cancelada",
+        EstadoCita.NO_ASISTIO => "No asistio",
+        _ => estado.ToString()
+    };
+
+    private int PorcentajeServicio(int total)
+    {
+        var maximo = TopServiciosVet.Count == 0 ? 0 : TopServiciosVet.Max(s => s.TotalAtenciones);
+        if (maximo <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Clamp((int)Math.Round(total * 100.0 / maximo), 8, 100);
+    }
+}
