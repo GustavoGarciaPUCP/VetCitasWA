@@ -357,6 +357,13 @@ button.btn-action {
     border-color: rgba(220, 38, 38, 0.32);
 }
 
+:root.dark .btn-cancel:hover,
+:root.dark .btn-cancel:focus-visible {
+    background: rgba(220, 38, 38, 0.26);
+    border-color: rgba(248, 113, 113, 0.55);
+    color: #fecaca !important;
+}
+
 .action-hint {
     color: #9ca3af;
     font-size: 0.78rem;
@@ -458,6 +465,12 @@ button.btn-action {
 
 :root.dark .acc-item:hover {
     background: #27303f;
+}
+
+:root.dark .acc-item-danger:hover,
+:root.dark .acc-item-danger:focus-visible {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fecaca;
 }
 
 /* ================== Paginación ================== */

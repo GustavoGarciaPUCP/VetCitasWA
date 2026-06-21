@@ -18,18 +18,21 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         public int Insertar(Administrador administrador)
         {
             var response = http.PostAsJsonAsync("AdministradorRS/insertar", administrador).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Modificar(Administrador administrador)
         {
             var response = http.PutAsJsonAsync("AdministradorRS/modificar", administrador).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Eliminar(int id)
         {
             var response = http.DeleteAsync($"AdministradorRS/eliminar/{id}").GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -61,18 +64,28 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
             return http.GetFromJsonAsync<List<Usuario>>(url).GetAwaiter().GetResult() ?? new List<Usuario>();
         }
 
+        public int ModificarUsuarioBasico(Usuario usuario, int modifiedBy)
+        {
+            var response = http.PutAsJsonAsync($"AdministradorRS/modificarUsuarioBasico/{modifiedBy}", usuario)
+                .GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+        }
+
         public void AsignarRol(int idUsuario, string codigoRol)
         {
             string rol = Uri.EscapeDataString(codigoRol ?? "");
-            http.PostAsync($"AdministradorRS/asignarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
+            var response = http.PostAsync($"AdministradorRS/asignarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
                 .GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
         }
 
         public void RevocarRol(int idUsuario, string codigoRol)
         {
             string rol = Uri.EscapeDataString(codigoRol ?? "");
-            http.PostAsync($"AdministradorRS/revocarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
+            var response = http.PostAsync($"AdministradorRS/revocarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
                 .GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
         }
     }
 }

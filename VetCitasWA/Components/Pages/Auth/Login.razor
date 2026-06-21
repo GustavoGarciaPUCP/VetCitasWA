@@ -61,7 +61,11 @@
                 </div>
             </div>
 
-            @if (Error == "1")
+            @if (Error == "server")
+            {
+                <div class="login-error" role="alert">No se pudo conectar con el backend o la base de datos. Verifica GlassFish, XAMPP/MySQL y vuelve a intentar.</div>
+            }
+            else if (Error == "1")
             {
                 <div class="login-error" role="alert">Usuario o contraseña incorrectos.</div>
             }

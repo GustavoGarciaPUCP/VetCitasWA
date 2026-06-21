@@ -18,6 +18,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int Insertar(Recordatorio recordatorio)
         {
             var response = http.PostAsJsonAsync("RecordatorioRS/insertar", recordatorio).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -25,6 +26,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int Modificar(Recordatorio recordatorio)
         {
             var response = http.PutAsJsonAsync("RecordatorioRS/modificar", recordatorio).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -32,6 +34,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int Eliminar(int id)
         {
             var response = http.DeleteAsync($"RecordatorioRS/eliminar/{id}").GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -71,6 +74,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int MarcarEnviado(int idRecordatorio, int modifiedBy)
         {
             var response = http.PutAsync($"RecordatorioRS/marcarEnviado/{idRecordatorio}/{modifiedBy}", null).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 

@@ -195,7 +195,7 @@
 
 .input-sm {
     padding: 0.45rem 0.65rem;
-    width: 90px;
+    width: 100%;
 }
 
 /* Select con chevron custom */
@@ -250,10 +250,10 @@
 
 /* ================== Cierre y Cobro ================== */
 .closing-row {
-    display: flex;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 1.5rem 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(140px, 1fr));
+    align-items: end;
+    gap: 1rem;
     margin-bottom: 1.25rem;
 }
 
@@ -261,7 +261,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    min-width: 110px;
+    min-width: 0;
 }
 
 .closing-label {
@@ -281,6 +281,9 @@
     font-weight: 700;
     color: #111827;
     line-height: 1;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
 }
 
 .closing-action {
@@ -368,6 +371,7 @@
     }
 
     .closing-row {
+        grid-template-columns: 1fr;
         gap: 1rem;
     }
 

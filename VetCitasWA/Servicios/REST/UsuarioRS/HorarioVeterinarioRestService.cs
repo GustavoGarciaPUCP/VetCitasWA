@@ -17,18 +17,21 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         public int Insertar(HorarioVeterinario horario)
         {
             var response = http.PostAsJsonAsync("HorarioVeterinarioRS/insertar", horario).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Modificar(HorarioVeterinario horario)
         {
             var response = http.PutAsJsonAsync("HorarioVeterinarioRS/modificar", horario).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Eliminar(int id)
         {
             var response = http.DeleteAsync($"HorarioVeterinarioRS/eliminar/{id}").GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
