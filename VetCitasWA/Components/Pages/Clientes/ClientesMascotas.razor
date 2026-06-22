@@ -40,6 +40,15 @@
                    value="@textoBusqueda" @oninput="OnBusquedaInput" />
         </div>
         <VcSelect TValue="string" CssClass="vc-cs-filtro" Value="filtroEstado" ValueChanged="OnFiltroEstadoSel" Options="filtroEstadoOptions" />
+        @if (PuedeAlternarVistaVeterinaria)
+        {
+            <button type="button"
+                    class="btn-scope-toggle @(verSoloMisClientes ? "is-active" : "")"
+                    aria-pressed="@verSoloMisClientes"
+                    @onclick="AlternarVistaVeterinaria">
+                @(verSoloMisClientes ? "Ver todos" : "Ver mis clientes")
+            </button>
+        }
         @if (tab == "clientes" && PuedeGestionarClientes)
         {
             <button type="button" class="btn-new recep-only" style="margin-left:auto;" @onclick="NuevoCliente">
@@ -432,8 +441,11 @@
     private bool usuarioEsAdministrador;
     private HashSet<int> clienteIdsPermitidos = new();
     private HashSet<int> mascotaIdsPermitidas = new();
+    private bool verSoloMisClientes;
 
     private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
+    private bool UsaAlcanceVeterinario => EsVeterinarioPuro || verSoloMisClientes;
+    private bool PuedeAlternarVistaVeterinaria => usuarioEsVeterinario && PuedeGestionarClientes;
     private bool PuedeGestionarClientes => usuarioEsRecepcionista || usuarioEsAdministrador;
 
     private string tab = "mascotas";
@@ -499,7 +511,7 @@
             clientes = await Task.Run(() => ClienteService.ListarTodos());
             mascotas = await Task.Run(() => MascotaService.ListarTodos());
 
-            if (EsVeterinarioPuro)
+            if (usuarioEsVeterinario)
             {
                 await CargarAlcanceVeterinario();
             }
@@ -522,6 +534,10 @@
         usuarioEsVeterinario = user.IsInRole("VETERINARIO");
         usuarioEsRecepcionista = user.IsInRole("RECEPCIONISTA");
         usuarioEsAdministrador = user.IsInRole("ADMINISTRADOR");
+        if (!usuarioEsVeterinario || !PuedeGestionarClientes)
+        {
+            verSoloMisClientes = false;
+        }
 
         var claim = user.FindFirst("IdUsuario")?.Value
             ?? user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -581,6 +597,14 @@
         tab = t;
         paginaActual = 1;
         LimpiarFiltros();
+    }
+
+    private void AlternarVistaVeterinaria()
+    {
+        if (!PuedeAlternarVistaVeterinaria) return;
+
+        verSoloMisClientes = !verSoloMisClientes;
+        paginaActual = 1;
     }
 
     // ===== Filtros =====
@@ -660,12 +684,12 @@
     }
 
     private IEnumerable<Cliente> ClientesBase
-        => EsVeterinarioPuro
+        => UsaAlcanceVeterinario
             ? clientes.Where(c => clienteIdsPermitidos.Contains(c.Id))
             : clientes;
 
     private IEnumerable<Mascota> MascotasBase
-        => EsVeterinarioPuro
+        => UsaAlcanceVeterinario
             ? mascotas.Where(m => mascotaIdsPermitidas.Contains(m.Id))
             : mascotas;
 
