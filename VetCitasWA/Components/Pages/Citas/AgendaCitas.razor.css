@@ -459,6 +459,55 @@ button.cita {
     white-space: nowrap;
 }
 
+.rp-slots-block {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+.rp-slots-title {
+    color: #111827;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 0.55rem;
+}
+
+.rp-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+    gap: 0.45rem;
+}
+
+.rp-slot {
+    min-height: 36px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #334155;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.rp-slot:hover,
+.rp-slot:focus-visible {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+    outline: none;
+}
+
+.rp-slot-selected,
+.rp-slot-selected:hover,
+.rp-slot-selected:focus-visible {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
 .vc-ac-list,
 .vc-ac-item,
 .vc-ms-panel,
@@ -481,6 +530,36 @@ button.cita {
 :root.dark .grupo-cita-item:hover,
 :root.dark .grupo-cita-item:focus-visible {
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+}
+
+:root.dark .rp-slots-block {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+:root.dark .rp-slots-title {
+    color: #f1f5f9;
+}
+
+:root.dark .rp-slot {
+    background: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+}
+
+:root.dark .rp-slot:hover,
+:root.dark .rp-slot:focus-visible {
+    background: rgba(37, 99, 235, 0.18);
+    border-color: #60a5fa;
+    color: #bfdbfe;
+}
+
+:root.dark .rp-slot-selected,
+:root.dark .rp-slot-selected:hover,
+:root.dark .rp-slot-selected:focus-visible {
+    background: #2563eb;
+    border-color: #60a5fa;
+    color: #ffffff;
 }
 
 /* ================== Leyenda ================== */

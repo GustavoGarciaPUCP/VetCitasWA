@@ -65,6 +65,23 @@ namespace VetCitasWA.Servicios.REST.CitaRS
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
+        public (bool Ok, int Resultado, string Mensaje) ReprogramarSeguro(int idCita, DateTime fechaInicio, DateTime fechaFin, string motivo, int modifiedBy)
+        {
+            string inicioStr = fechaInicio.ToString("yyyy-MM-ddTHH:mm:ss");
+            string finStr = fechaFin.ToString("yyyy-MM-ddTHH:mm:ss");
+            string mot = string.IsNullOrWhiteSpace(motivo) ? "null" : Uri.EscapeDataString(motivo.Trim());
+
+            var response = http.PutAsync($"CitaRS/reprogramar/{idCita}/{inicioStr}/{finStr}/{mot}/{modifiedBy}", null).GetAwaiter().GetResult();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, 0, response.ReadVetCitasMessage());
+            }
+
+            var resultado = response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+            return (resultado == 1, resultado, resultado == 1 ? "" : "No se pudo reprogramar la cita.");
+        }
+
         // 7. CAMBIAR VETERINARIO
         public int CambiarVeterinario(int idCita, int idNuevoVeterinario, int modifiedBy)
         {

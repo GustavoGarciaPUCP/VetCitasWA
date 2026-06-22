@@ -24,6 +24,19 @@ namespace VetCitasWA.Servicios.REST
             throw new InvalidOperationException(mensaje);
         }
 
+        public static string ReadVetCitasMessage(this HttpResponseMessage response)
+        {
+            var detalle = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var mensaje = ExtraerMensaje(detalle);
+
+            if (string.IsNullOrWhiteSpace(mensaje))
+            {
+                mensaje = $"El backend respondio con estado {(int)response.StatusCode}.";
+            }
+
+            return mensaje;
+        }
+
         private static string ExtraerMensaje(string detalle)
         {
             if (string.IsNullOrWhiteSpace(detalle))

@@ -360,20 +360,52 @@
             <div class="vc-form-row">
                 <div class="vc-form-field">
                     <label class="vc-form-label">Nueva fecha</label>
-                    <input type="date" class="vc-form-input" min="@HoyIso" @bind="reprogFecha" />
+                    <input type="date" class="vc-form-input" min="@HoyIso" value="@reprogFecha.ToString("yyyy-MM-dd")" @onchange="OnReprogFechaChanged" />
                 </div>
-                <div class="vc-form-field">
-                    <label class="vc-form-label">Nueva hora</label>
-                    <input type="time" step="900" class="vc-form-input" @bind="reprogHora" />
-                </div>
+            </div>
+            <div class="vc-form-field">
+                <label class="vc-form-label">Horario disponible</label>
+                @if (cargandoSlotsReprogramacion)
+                {
+                    <div class="rp-slots-block">
+                        <span class="vc-form-hint">Buscando horarios disponibles...</span>
+                    </div>
+                }
+                else if (!slotsReprogramacion.Any())
+                {
+                    <div class="rp-slots-block">
+                        <span class="vc-form-hint">No hay horarios disponibles para ese veterinario en la fecha seleccionada.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="rp-slots-block">
+                        <div class="rp-slots-title">Elige una hora</div>
+                        <div class="rp-slots-grid">
+                            @foreach (var slot in slotsReprogramacion)
+                            {
+                                <button type="button"
+                                        class="rp-slot @(reprogInicioSeleccionado == slot ? "rp-slot-selected" : "")"
+                                        @onclick="() => SeleccionarSlotReprogramacion(slot)">
+                                    @slot.ToString("HH:mm")
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+                <span class="vc-form-hint">@ReprogramarHint</span>
             </div>
             <div class="vc-form-field">
                 <label class="vc-form-label">Motivo</label>
                 <textarea class="vc-form-textarea" rows="2" @bind="reprogMotivo"></textarea>
             </div>
+            @if (!string.IsNullOrWhiteSpace(errorReprogramar))
+            {
+                <p class="vc-form-error">@errorReprogramar</p>
+            }
             <div class="vc-modal-actions" style="justify-content:flex-end;">
                 <button class="vc-btn vc-btn-secondary" @onclick="() => mostrarReprogramar = false" disabled="@procesando">Volver</button>
-                <button class="vc-btn vc-btn-primary" @onclick="ConfirmarReprogramar" disabled="@procesando">
+                <button class="vc-btn vc-btn-primary" @onclick="ConfirmarReprogramar" disabled="@(procesando || reprogInicioSeleccionado is null)">
                     @if (procesando) { <span class="vc-spinner" aria-hidden="true"></span><span>Guardando…</span> }
                     else { <span>Reprogramar</span> }
                 </button>
@@ -528,6 +560,11 @@
     private bool mostrarReprogramar, mostrarCambiarVet, mostrarCancelar;
     private DateTime reprogFecha = DateTime.Today;
     private TimeOnly reprogHora = new(8, 0);
+    private DateTime? reprogInicioSeleccionado;
+    private List<DateTime> slotsReprogramacion = new();
+    private List<Cita> citasDiaReprogramacion = new();
+    private bool cargandoSlotsReprogramacion;
+    private string? errorReprogramar;
     private string reprogMotivo = "";
     private int cambiarVetSel;
     private string cancelarMotivo = "";
@@ -538,6 +575,7 @@
     private static readonly string[] MesCorto = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
     private const int HoraAperturaFallback = 8;
     private const int HoraCierreMaxima = 23;
+    private const int MinutosPasoAgenda = 15;
     private IEnumerable<int> Horas => CalcularHorasAgenda();
 
     private DateTime[] DiasSemana => Enumerable.Range(0, 7).Select(i => semanaInicio.AddDays(i)).ToArray();
@@ -969,14 +1007,19 @@
     // ===== Detalle =====
     private void AbrirDetalle(Cita c) => citaDetalle = c;
 
-    private void AbrirReprogramar(Cita c)
+    private async Task AbrirReprogramar(Cita c)
     {
         citaAccion = c;
         reprogFecha = c.FechaHoraInicio.Date;
         reprogHora = TimeOnly.FromDateTime(c.FechaHoraInicio);
+        reprogInicioSeleccionado = c.FechaHoraInicio;
+        slotsReprogramacion = new();
+        citasDiaReprogramacion = new();
+        errorReprogramar = null;
         reprogMotivo = "";
         citaDetalle = null;
         mostrarReprogramar = true;
+        await CargarSlotsReprogramacion();
     }
 
     private async Task AbrirCambiarVet(Cita c)
@@ -1002,16 +1045,169 @@
         await Ejecutar(() => CitaService.ConfirmarCita(c.Id, ModBy(c)), "Cita confirmada correctamente.", cerrarDetalle: true);
     }
 
+    private async Task OnReprogFechaChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var fecha))
+        {
+            reprogFecha = fecha.Date;
+            await CargarSlotsReprogramacion();
+        }
+    }
+
+    private void SeleccionarSlotReprogramacion(DateTime slot)
+    {
+        reprogInicioSeleccionado = slot;
+        reprogHora = TimeOnly.FromDateTime(slot);
+        errorReprogramar = null;
+    }
+
+    private string ReprogramarHint
+    {
+        get
+        {
+            if (citaAccion is null) return "";
+            var dur = DuracionCita(citaAccion);
+            var vet = citaAccion.Veterinario is null ? "el veterinario" : NombreVet(citaAccion.Veterinario);
+            return $"Se muestran bloques de {MinutosPasoAgenda} min dentro del horario de {vet}, respetando la duracion del servicio ({dur} min), descansos y citas existentes.";
+        }
+    }
+
+    private async Task CargarSlotsReprogramacion()
+    {
+        reprogInicioSeleccionado = null;
+        slotsReprogramacion = new();
+        citasDiaReprogramacion = new();
+        errorReprogramar = null;
+
+        if (citaAccion?.Veterinario is null || citaAccion.Servicio is null || citaAccion.Mascota is null)
+        {
+            errorReprogramar = "No se pudo cargar la informacion de la cita.";
+            return;
+        }
+
+        if (reprogFecha.Date < DateTime.Today)
+        {
+            errorReprogramar = "No se puede reprogramar a una fecha anterior a hoy.";
+            return;
+        }
+
+        cargandoSlotsReprogramacion = true;
+        try
+        {
+            var dia = reprogFecha.Date;
+            citasDiaReprogramacion = await Task.Run(() => CitaService.ListarFiltradas(0, dia, dia, "", ""));
+            slotsReprogramacion = CalcularSlotsReprogramacion();
+
+            var actual = citaAccion.FechaHoraInicio;
+            if (actual.Date == dia && slotsReprogramacion.Contains(actual))
+            {
+                SeleccionarSlotReprogramacion(actual);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorReprogramar = string.IsNullOrWhiteSpace(ex.Message)
+                ? "No se pudieron consultar los horarios disponibles."
+                : ex.Message;
+        }
+        finally
+        {
+            cargandoSlotsReprogramacion = false;
+        }
+    }
+
+    private List<DateTime> CalcularSlotsReprogramacion()
+    {
+        if (citaAccion?.Veterinario is null || citaAccion.Servicio is null || citaAccion.Mascota is null)
+        {
+            return new();
+        }
+
+        var idVeterinario = citaAccion.Veterinario.Id;
+        var idMascota = citaAccion.Mascota.Id;
+        var duracion = DuracionCita(citaAccion);
+        var diaSemana = DiaSemanaNum(reprogFecha);
+        var maxHora = new TimeOnly(HoraCierreMaxima, 0);
+
+        var horarios = horariosAgenda
+            .Where(h => h.Activo && h.Veterinario?.Id == idVeterinario && h.DiaSemana == diaSemana)
+            .OrderBy(h => h.HoraInicio)
+            .ToList();
+
+        var slots = new List<DateTime>();
+
+        foreach (var horario in horarios)
+        {
+            var inicioHorario = horario.HoraInicio;
+            var finHorario = horario.HoraFin > maxHora ? maxHora : horario.HoraFin;
+
+            for (var hora = inicioHorario; hora.AddMinutes(duracion) <= finHorario; hora = hora.AddMinutes(MinutosPasoAgenda))
+            {
+                var inicio = reprogFecha.Date.Add(hora.ToTimeSpan());
+                var fin = inicio.AddMinutes(duracion);
+
+                if (inicio < DateTime.Now) continue;
+                if (CruzaDescanso(inicio, fin, horario)) continue;
+                if (CruzaConCitasExistentes(inicio, fin, idVeterinario, idMascota, citaAccion.Id)) continue;
+
+                slots.Add(inicio);
+            }
+        }
+
+        return slots.Distinct().OrderBy(x => x).ToList();
+    }
+
+    private int DuracionCita(Cita c)
+    {
+        var servicioId = c.Servicio?.Id ?? 0;
+        return servicios.FirstOrDefault(s => s.Id == servicioId)?.DuracionMinutos
+            ?? c.Servicio?.DuracionMinutos
+            ?? Math.Max(15, (int)Math.Round((c.FechaHoraFin - c.FechaHoraInicio).TotalMinutes));
+    }
+
+    private static bool CruzaDescanso(DateTime inicio, DateTime fin, HorarioVeterinario horario)
+    {
+        if (horario.HoraDescansoInicio is null || horario.HoraDescansoFin is null) return false;
+
+        var descansoInicio = inicio.Date.Add(horario.HoraDescansoInicio.Value.ToTimeSpan());
+        var descansoFin = inicio.Date.Add(horario.HoraDescansoFin.Value.ToTimeSpan());
+        return RangosSeCruzan(inicio, fin, descansoInicio, descansoFin);
+    }
+
+    private bool CruzaConCitasExistentes(DateTime inicio, DateTime fin, int idVeterinario, int idMascota, int idCitaActual)
+    {
+        return citasDiaReprogramacion.Any(c =>
+            c.Id != idCitaActual
+            && EsEstadoBloqueante(c.Estado)
+            && (c.Veterinario?.Id == idVeterinario || c.Mascota?.Id == idMascota)
+            && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
+    }
+
+    private static bool EsEstadoBloqueante(EstadoCita estado)
+        => estado == EstadoCita.PENDIENTE
+        || estado == EstadoCita.CONFIRMADA
+        || estado == EstadoCita.EN_CONSULTA;
+
+    private static bool RangosSeCruzan(DateTime inicioA, DateTime finA, DateTime inicioB, DateTime finB)
+        => inicioA < finB && finA > inicioB;
+
     private async Task ConfirmarReprogramar()
     {
         if (procesando || citaAccion is null) return;
+        errorReprogramar = null;
         if (reprogFecha.Date < DateTime.Today)
         {
-            Toasts.Error("No se puede reprogramar la cita a una fecha anterior a hoy.");
+            errorReprogramar = "No se puede reprogramar la cita a una fecha anterior a hoy.";
             return;
         }
-        var inicio = reprogFecha.Date.Add(reprogHora.ToTimeSpan());
-        int dur = servicios.FirstOrDefault(s => s.Id == (citaAccion.Servicio?.Id ?? 0))?.DuracionMinutos ?? 30;
+        if (reprogInicioSeleccionado is null)
+        {
+            errorReprogramar = "Selecciona un horario disponible.";
+            return;
+        }
+
+        var inicio = reprogInicioSeleccionado.Value;
+        int dur = DuracionCita(citaAccion);
         var fin = inicio.AddMinutes(dur);
         string motivo = string.IsNullOrWhiteSpace(reprogMotivo) ? "Reprogramación" : reprogMotivo.Trim();
 
@@ -1019,12 +1215,32 @@
 
         if (idVeterinario <= 0)
         {
-            Toasts.Error("No se pudo identificar el veterinario actual de la cita.");
+            errorReprogramar = "No se pudo identificar el veterinario actual de la cita.";
             return;
         }
 
-        await Ejecutar(() => CitaService.Reprogramar(citaAccion.Id, inicio, fin, motivo, ModBy(citaAccion)),
-                       "Cita reprogramada correctamente.", () => mostrarReprogramar = false);
+        procesando = true;
+        try
+        {
+            var resultado = await Task.Run(() => CitaService.ReprogramarSeguro(citaAccion.Id, inicio, fin, motivo, ModBy(citaAccion)));
+            if (resultado.Ok)
+            {
+                Toasts.Exito("Cita reprogramada correctamente.");
+                mostrarReprogramar = false;
+                await CargarCitas();
+            }
+            else
+            {
+                await CargarSlotsReprogramacion();
+                errorReprogramar = string.IsNullOrWhiteSpace(resultado.Mensaje)
+                    ? "No se pudo reprogramar la cita."
+                    : resultado.Mensaje;
+            }
+        }
+        finally
+        {
+            procesando = false;
+        }
     }
 
     private async Task ConfirmarCambiarVet()
