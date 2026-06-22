@@ -59,7 +59,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Mis citas hoy</div>
-                    <div class="kpi-value">@CitasVetHoy.Count</div>
+                    <div class="kpi-value">@CitasVetHoyActivas.Count</div>
                     <div class="kpi-sub">@ResumenCitasHoy</div>
                 </div>
             </article>
@@ -87,7 +87,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Citas esta semana</div>
-                    <div class="kpi-value">@CitasVetSemana.Count</div>
+                    <div class="kpi-value">@CitasVetSemanaActivas.Count</div>
                     <div class="kpi-sub">@RangoSemanaTexto</div>
                 </div>
             </article>
@@ -122,13 +122,13 @@
                     {
                         <p class="estado-mensaje">Cargando datos del tablero...</p>
                     }
-                    else if (!CitasVetHoy.Any())
+                    else if (!CitasVetHoyActivas.Any())
                     {
-                        <p class="estado-mensaje">No tienes citas asignadas para hoy.</p>
+                        <p class="estado-mensaje">No tienes citas activas asignadas para hoy.</p>
                     }
                     else
                     {
-                        @foreach (var cita in CitasVetHoy.OrderBy(c => c.FechaHoraInicio).Take(6))
+                        @foreach (var cita in CitasVetHoyActivas.OrderBy(c => c.FechaHoraInicio).Take(6))
                         {
                             <div class="ag-item">
                                 <div class="ag-time">@cita.FechaHoraInicio.ToString("HH:mm")</div>
@@ -211,7 +211,7 @@
                 </div>
                 <div class="kpi-text">
                     <div class="kpi-title">Citas hoy</div>
-                    <div class="kpi-value">@CitasRecepHoy.Count</div>
+                    <div class="kpi-value">@CitasRecepHoyActivas.Count</div>
                     <div class="kpi-sub">@ResumenRecepcionHoy</div>
                 </div>
             </article>
@@ -303,7 +303,7 @@
             <section class="panel">
                 <header class="panel-head">
                     <h3 class="panel-title">Carga por veterinario</h3>
-                    <span class="panel-sub">Citas asignadas hoy</span>
+                    <span class="panel-sub">Citas activas asignadas hoy</span>
                 </header>
                 <div class="panel-body">
                     <div class="bar-list">
@@ -539,7 +539,10 @@
     private DateTime SemanaFin => SemanaInicio.AddDays(6);
     private DateTime MesInicio => new(Hoy.Year, Hoy.Month, 1);
     private DateTime MesFin => MesInicio.AddMonths(1).AddDays(-1);
-    private int PendientesVetHoy => CitasVetHoy.Count(c => c.Estado == EstadoCita.PENDIENTE || c.Estado == EstadoCita.CONFIRMADA);
+    private List<Cita> CitasVetHoyActivas => CitasVetHoy.Where(EsCitaActiva).ToList();
+    private List<Cita> CitasVetSemanaActivas => CitasVetSemana.Where(EsCitaActiva).ToList();
+    private List<Cita> CitasRecepHoyActivas => CitasRecepHoy.Where(EsCitaActiva).ToList();
+    private int PendientesVetHoy => CitasVetHoyActivas.Count(c => c.Estado == EstadoCita.PENDIENTE || c.Estado == EstadoCita.CONFIRMADA);
     private int SinConfirmarRecepHoy => CitasRecepHoy.Count(c => c.Estado == EstadoCita.PENDIENTE);
     private int CancelacionesRecepHoy => CitasRecepHoy.Count(c => c.Estado == EstadoCita.CANCELADA);
     private string NombreMesActual => culturaEs.TextInfo.ToTitleCase(Hoy.ToString("MMMM", culturaEs));
@@ -564,13 +567,13 @@
     {
         get
         {
-            if (!CitasRecepHoy.Any())
+            if (!CitasRecepHoyActivas.Any())
             {
-                return "Sin citas programadas hoy";
+                return "Sin citas activas hoy";
             }
 
-            var vets = CitasRecepHoy.Where(c => c.Veterinario?.Id > 0).Select(c => c.Veterinario.Id).Distinct().Count();
-            var servicios = CitasRecepHoy.Where(c => c.Servicio?.Id > 0).Select(c => c.Servicio.Id).Distinct().Count();
+            var vets = CitasRecepHoyActivas.Where(c => c.Veterinario?.Id > 0).Select(c => c.Veterinario.Id).Distinct().Count();
+            var servicios = CitasRecepHoyActivas.Where(c => c.Servicio?.Id > 0).Select(c => c.Servicio.Id).Distinct().Count();
             return $"{vets} vets · {servicios} servicios";
         }
     }
@@ -579,16 +582,15 @@
     {
         get
         {
-            if (!CitasVetHoy.Any())
+            if (!CitasVetHoyActivas.Any())
             {
-                return "Sin citas asignadas hoy";
+                return "Sin citas activas hoy";
             }
 
-            var atendidas = CitasVetHoy.Count(c => c.Estado == EstadoCita.ATENDIDA);
-            var enConsulta = CitasVetHoy.Count(c => c.Estado == EstadoCita.EN_CONSULTA);
-            var confirmadas = CitasVetHoy.Count(c => c.Estado == EstadoCita.CONFIRMADA);
-            var pendientes = CitasVetHoy.Count(c => c.Estado == EstadoCita.PENDIENTE);
-            return $"{atendidas} atendidas · {enConsulta} en consulta · {confirmadas} confirmadas · {pendientes} pendientes";
+            var enConsulta = CitasVetHoyActivas.Count(c => c.Estado == EstadoCita.EN_CONSULTA);
+            var confirmadas = CitasVetHoyActivas.Count(c => c.Estado == EstadoCita.CONFIRMADA);
+            var pendientes = CitasVetHoyActivas.Count(c => c.Estado == EstadoCita.PENDIENTE);
+            return $"{enConsulta} en consulta - {confirmadas} confirmadas - {pendientes} pendientes";
         }
     }
 
@@ -719,6 +721,11 @@
     private static int DuracionCita(Cita cita)
         => Math.Max(0, (int)Math.Round((cita.FechaHoraFin - cita.FechaHoraInicio).TotalMinutes));
 
+    private static bool EsCitaActiva(Cita cita)
+        => cita.Estado == EstadoCita.PENDIENTE
+        || cita.Estado == EstadoCita.CONFIRMADA
+        || cita.Estado == EstadoCita.EN_CONSULTA;
+
     private static string BadgeEstado(EstadoCita estado) => estado switch
     {
         EstadoCita.PENDIENTE => "badge-pending",
@@ -767,7 +774,7 @@
                 .OrderBy(c => c.FechaHoraInicio)
                 .ToList();
 
-            CargaVeterinariosRecep = CitasRecepHoy
+            CargaVeterinariosRecep = CitasRecepHoyActivas
                 .Where(c => c.Veterinario?.Id > 0)
                 .GroupBy(c => c.Veterinario.Id)
                 .Select(g =>

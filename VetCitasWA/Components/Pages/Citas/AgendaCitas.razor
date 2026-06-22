@@ -502,11 +502,11 @@
     private IEnumerable<VcSelectOption<int>> MascotaOptionsAgenda =>
         mascotasCliente.Select(m =>
         {
-            var bloqueada = MascotaTieneCruceCrear(m.Id);
+            var bloqueada = MascotaBloqueadaPorClienteCrear(m);
             var label = m.Nombre + (string.IsNullOrWhiteSpace(m.Raza) ? "" : $" - {m.Raza}");
             return new VcSelectOption<int>(
                 m.Id,
-                bloqueada ? $"{label} (ya tiene cita en ese horario)" : label,
+                bloqueada ? $"{label} (cliente con cita en ese horario)" : label,
                 bloqueada);
         });
 
@@ -583,12 +583,13 @@
             if (!mascotasCliente.Any()) return "Este cliente no tiene mascotas activas para agendar.";
             if (!PuedeConsultarDisponibilidadCrear) return "";
 
-            var bloqueadas = mascotasCliente.Count(m => MascotaTieneCruceCrear(m.Id));
-            if (bloqueadas == 0) return "";
+            if (ClienteTieneCruceCrear(clienteSel))
+            {
+                return "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de seleccionar mascota.";
+            }
 
-            return bloqueadas == mascotasCliente.Count
-                ? "Todas las mascotas activas de este cliente ya tienen una cita que se cruza con ese horario."
-                : "Las mascotas que ya tienen una cita cruzada aparecen deshabilitadas.";
+            var bloqueadas = mascotasCliente.Count(m => MascotaTieneCruceCrear(m.Id));
+            return bloqueadas == 0 ? "" : "Las mascotas que ya tienen una cita cruzada aparecen deshabilitadas.";
         }
     }
 
@@ -875,7 +876,12 @@
 
     private Task OnMascotaNuevaSel(int value)
     {
-        if (MascotaTieneCruceCrear(value))
+        if (ClienteTieneCruceCrear(clienteSel))
+        {
+            mascotaSel = 0;
+            errorCrear = "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
+        }
+        else if (MascotaTieneCruceCrear(value))
         {
             mascotaSel = 0;
             errorCrear = "La mascota ya tiene una cita que se cruza con ese horario. Elige otra hora o revisa su agenda.";
@@ -914,7 +920,12 @@
             var inicio = fechaNueva.Date.Add(horaNueva.ToTimeSpan());
             await RefrescarCitasDiaCrear(forzar: true);
             veterinariosDisponiblesCrear = await Task.Run(() => VeterinarioService.ListarDisponibles(inicio, servicioSel));
-            if (mascotaSel > 0 && MascotaTieneCruceCrear(mascotaSel))
+            if (mascotaSel > 0 && ClienteTieneCruceCrear(clienteSel))
+            {
+                mascotaSel = 0;
+                errorCrear = "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
+            }
+            else if (mascotaSel > 0 && MascotaTieneCruceCrear(mascotaSel))
             {
                 mascotaSel = 0;
                 errorCrear = "La mascota seleccionada ya tiene una cita que se cruza con ese horario.";
@@ -979,6 +990,26 @@
         var (inicio, fin) = RangoNuevaCita();
         return citasDiaCrear.Any(c =>
             c.Mascota?.Id == idMascota
+            && EsEstadoBloqueante(c.Estado)
+            && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
+    }
+
+    private bool MascotaBloqueadaPorClienteCrear(Mascota mascota)
+    {
+        var idCliente = mascota.Cliente?.Id ?? clienteSel;
+        return ClienteTieneCruceCrear(idCliente) || MascotaTieneCruceCrear(mascota.Id);
+    }
+
+    private bool ClienteTieneCruceCrear(int idCliente)
+    {
+        if (idCliente <= 0 || !PuedeConsultarDisponibilidadCrear || !citasDiaCrear.Any())
+        {
+            return false;
+        }
+
+        var (inicio, fin) = RangoNuevaCita();
+        return citasDiaCrear.Any(c =>
+            c.Mascota?.Cliente?.Id == idCliente
             && EsEstadoBloqueante(c.Estado)
             && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
     }
@@ -1079,7 +1110,15 @@
             var citasDiaOk = await RefrescarCitasDiaCrear(forzar: true);
             if (!citasDiaOk)
             {
-                errorCrear = "No se pudo validar si la mascota ya tiene una cita en ese horario. Intenta nuevamente.";
+                errorCrear = "No se pudo validar si el cliente ya tiene una cita en ese horario. Intenta nuevamente.";
+                procesando = false;
+                return;
+            }
+
+            if (ClienteTieneCruceCrear(clienteSel))
+            {
+                mascotaSel = 0;
+                errorCrear = "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
                 procesando = false;
                 return;
             }
@@ -1161,6 +1200,12 @@
         }
 
         var limpio = mensaje.Replace("ERROR insertando cita:", "", StringComparison.OrdinalIgnoreCase).Trim();
+        if (limpio.Contains("cliente", StringComparison.OrdinalIgnoreCase)
+            && limpio.Contains("cita", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
+        }
+
         if (limpio.Contains("mascota", StringComparison.OrdinalIgnoreCase)
             && limpio.Contains("cita", StringComparison.OrdinalIgnoreCase))
         {
@@ -1297,6 +1342,7 @@
 
         var idVeterinario = citaAccion.Veterinario.Id;
         var idMascota = citaAccion.Mascota.Id;
+        var idCliente = citaAccion.Mascota.Cliente?.Id ?? 0;
         var duracion = DuracionCita(citaAccion);
         var diaSemana = DiaSemanaNum(reprogFecha);
         var maxHora = new TimeOnly(HoraCierreMaxima, 0);
@@ -1320,7 +1366,7 @@
 
                 if (inicio < DateTime.Now) continue;
                 if (CruzaDescanso(inicio, fin, horario)) continue;
-                if (CruzaConCitasExistentes(inicio, fin, idVeterinario, idMascota, citaAccion.Id)) continue;
+                if (CruzaConCitasExistentes(inicio, fin, idVeterinario, idMascota, idCliente, citaAccion.Id)) continue;
 
                 slots.Add(inicio);
             }
@@ -1346,12 +1392,16 @@
         return RangosSeCruzan(inicio, fin, descansoInicio, descansoFin);
     }
 
-    private bool CruzaConCitasExistentes(DateTime inicio, DateTime fin, int idVeterinario, int idMascota, int idCitaActual)
+    private bool CruzaConCitasExistentes(DateTime inicio, DateTime fin, int idVeterinario, int idMascota, int idCliente, int idCitaActual)
     {
         return citasDiaReprogramacion.Any(c =>
             c.Id != idCitaActual
             && EsEstadoBloqueante(c.Estado)
-            && (c.Veterinario?.Id == idVeterinario || c.Mascota?.Id == idMascota)
+            && (
+                c.Veterinario?.Id == idVeterinario
+                || c.Mascota?.Id == idMascota
+                || (idCliente > 0 && c.Mascota?.Cliente?.Id == idCliente)
+            )
             && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
     }
 
