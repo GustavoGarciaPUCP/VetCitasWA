@@ -236,6 +236,28 @@
 .btn-pencil.btn-del { color: #dc2626; }
 .btn-pencil.btn-del:hover { background: #fef2f2; color: #b91c1c; }
 
+:root.dark .row-actions .btn-pencil.btn-edit {
+    color: #60a5fa;
+}
+
+:root.dark .row-actions .btn-pencil.btn-edit:hover,
+:root.dark .row-actions .btn-pencil.btn-edit:focus-visible {
+    background: rgba(37, 99, 235, 0.18);
+    color: #93c5fd;
+    outline: none;
+}
+
+:root.dark .row-actions .btn-pencil.btn-del {
+    color: #f87171;
+}
+
+:root.dark .row-actions .btn-pencil.btn-del:hover,
+:root.dark .row-actions .btn-pencil.btn-del:focus-visible {
+    background: rgba(220, 38, 38, 0.16);
+    color: #fca5a5;
+    outline: none;
+}
+
 /* ===== Ajustes para la versión interactiva (Blazor) ===== */
 /* Los botones de ícono ahora son <button>: reseteamos el chrome por defecto */
 button.btn-pencil,

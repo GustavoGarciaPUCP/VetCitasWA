@@ -7,6 +7,8 @@
 @inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 @inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
 @inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Detalle de mascota - VetCitas</PageTitle>
 
@@ -170,15 +172,28 @@
     private Cliente? dueno;
     private List<Atencion> historial = new();
     private bool cargando = true;
+    private int usuarioActualId;
+    private bool usuarioEsVeterinario;
+    private bool usuarioEsRecepcionista;
+    private bool usuarioEsAdministrador;
+
+    private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            await CargarContextoUsuario();
             mascota = await Task.Run(() => MascotaService.BuscarPorId(Id));
 
             if (mascota is not null)
             {
+                if (EsVeterinarioPuro && !await MascotaPermitidaParaVeterinario(Id))
+                {
+                    mascota = null;
+                    return;
+                }
+
                 if (mascota.Cliente is not null && mascota.Cliente.Id > 0)
                 {
                     dueno = await Task.Run(() => ClienteService.BuscarPorId(mascota.Cliente.Id));
@@ -202,6 +217,41 @@
         finally
         {
             cargando = false;
+        }
+    }
+
+    private async Task CargarContextoUsuario()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        usuarioEsVeterinario = user.IsInRole("VETERINARIO");
+        usuarioEsRecepcionista = user.IsInRole("RECEPCIONISTA");
+        usuarioEsAdministrador = user.IsInRole("ADMINISTRADOR");
+
+        var claim = user.FindFirst("IdUsuario")?.Value
+            ?? user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        usuarioActualId = int.TryParse(claim, out var id) ? id : 0;
+    }
+
+    private async Task<bool> MascotaPermitidaParaVeterinario(int idMascota)
+    {
+        if (usuarioActualId <= 0) return false;
+
+        var citasVet = await Task.Run(() => CitaService.ListarFiltradas(usuarioActualId, null, null, "", ""));
+        if (citasVet.Any(c => c.Veterinario?.Id == usuarioActualId && c.Mascota?.Id == idMascota))
+        {
+            return true;
+        }
+
+        try
+        {
+            var atencionesVet = await Task.Run(() => AtencionService.ListarFiltradas(usuarioActualId, "", null, ""));
+            return atencionesVet.Any(a => a.Cita?.Veterinario?.Id == usuarioActualId && a.Cita?.Mascota?.Id == idMascota);
+        }
+        catch
+        {
+            return false;
         }
     }
 

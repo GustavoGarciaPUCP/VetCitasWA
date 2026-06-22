@@ -68,37 +68,6 @@ else if (cita is null)
                     </div>
                 </section>
 
-                @if (historial.Any())
-                {
-                    @* --- Historial Clínico Reciente (colapsable) --- *@
-                    <section class="card">
-                        <details class="collapse" open>
-                            <summary class="collapse-summary">
-                                <span class="card-title collapse-title">Historial clínico reciente</span>
-                                <span class="collapse-chevron" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M1.646 6.646a.5.5 0 0 1 .708 0L8 12.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
-                                    </svg>
-                                </span>
-                            </summary>
-
-                            <div class="collapse-body">
-                                @foreach (var h in historial)
-                                {
-                                    <span class="history-item">
-                                        <span class="history-arrow" aria-hidden="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
-                                            </svg>
-                                        </span>
-                                        @h.FechaHora.ToString("dd/MM/yy"): @(string.IsNullOrWhiteSpace(h.Diagnostico) ? "Sin diagnóstico registrado" : h.Diagnostico)
-                                    </span>
-                                }
-                            </div>
-                        </details>
-                    </section>
-                }
-
             </div>
 
             @* ================= COLUMNA DERECHA ================= *@
@@ -190,6 +159,8 @@ else if (cita is null)
 @code {
     private int usuarioActualId;
     private bool usuarioEsVeterinario;
+    private bool usuarioEsRecepcionista;
+    private bool usuarioEsAdministrador;
 
     [SupplyParameterFromQuery(Name = "id")]
     public int CitaId { get; set; }
@@ -203,7 +174,6 @@ else if (cita is null)
     private Cita? cita;
     private Atencion atencion = new() { FechaHora = DateTime.Now };
     private List<Servicio> listaServicios = new();
-    private List<Atencion> historial = new();
 
     private Mascota? mascota;
     private Cliente? cliente;
@@ -248,6 +218,13 @@ else if (cita is null)
                     return;
                 }
 
+                if (SoloLectura && EsVeterinarioPuro && cita.Veterinario?.Id != usuarioActualId)
+                {
+                    cita = null;
+                    errorMensaje = "No tienes acceso a esta atención médica.";
+                    return;
+                }
+
                 mascota = cita.Mascota;
                 cliente = mascota?.Cliente;
 
@@ -273,10 +250,6 @@ else if (cita is null)
                 idServicioSeleccionado = cita.Servicio?.Id ?? listaServicios.FirstOrDefault()?.Id ?? 0;
                 if (atencion.Id <= 0) OnServicioChanged();
 
-                if (mascota is not null)
-                {
-                    historial = await Task.Run(() => AtencionService.ListarHistorialPorMascota(mascota.Id));
-                }
             }
         }
         catch (Exception ex)
@@ -293,10 +266,14 @@ else if (cita is null)
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         usuarioEsVeterinario = authState.User.IsInRole("VETERINARIO");
+        usuarioEsRecepcionista = authState.User.IsInRole("RECEPCIONISTA");
+        usuarioEsAdministrador = authState.User.IsInRole("ADMINISTRADOR");
         var claim = authState.User.FindFirst("IdUsuario")?.Value
             ?? authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         return int.TryParse(claim, out var id) ? id : 0;
     }
+
+    private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
 
     // Al elegir un servicio, el monto referencial toma su precio
     private void OnServicioChanged()

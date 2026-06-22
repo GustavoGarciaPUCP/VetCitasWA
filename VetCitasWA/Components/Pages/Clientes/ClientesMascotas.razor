@@ -2,11 +2,15 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "VETERINARIO,RECEPCIONISTA")]
 @using System.Text.RegularExpressions
+@using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Cliente
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
 @inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
+@inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
+@inject AuthenticationStateProvider AuthStateProvider
 @implements IDisposable
 
 <PageTitle>Clientes y mascotas - VetCitas</PageTitle>
@@ -36,14 +40,14 @@
                    value="@textoBusqueda" @oninput="OnBusquedaInput" />
         </div>
         <VcSelect TValue="string" CssClass="vc-cs-filtro" Value="filtroEstado" ValueChanged="OnFiltroEstadoSel" Options="filtroEstadoOptions" />
-        @if (tab == "clientes")
+        @if (tab == "clientes" && PuedeGestionarClientes)
         {
             <button type="button" class="btn-new recep-only" style="margin-left:auto;" @onclick="NuevoCliente">
                 <span class="btn-plus" aria-hidden="true">+</span>
                 <span>Nuevo cliente</span>
             </button>
         }
-        else
+        else if (PuedeGestionarClientes)
         {
             <button type="button" class="btn-new recep-only" style="margin-left:auto;" @onclick="NuevaMascota">
                 <span class="btn-plus" aria-hidden="true">+</span>
@@ -422,6 +426,15 @@
     private List<Mascota> mascotas = new();
     private bool cargando = true;
     private string? errorMensaje;
+    private int usuarioActualId;
+    private bool usuarioEsVeterinario;
+    private bool usuarioEsRecepcionista;
+    private bool usuarioEsAdministrador;
+    private HashSet<int> clienteIdsPermitidos = new();
+    private HashSet<int> mascotaIdsPermitidas = new();
+
+    private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
+    private bool PuedeGestionarClientes => usuarioEsRecepcionista || usuarioEsAdministrador;
 
     private string tab = "mascotas";
 
@@ -482,8 +495,14 @@
         errorMensaje = null;
         try
         {
+            await CargarContextoUsuario();
             clientes = await Task.Run(() => ClienteService.ListarTodos());
             mascotas = await Task.Run(() => MascotaService.ListarTodos());
+
+            if (EsVeterinarioPuro)
+            {
+                await CargarAlcanceVeterinario();
+            }
         }
         catch (Exception ex)
         {
@@ -492,6 +511,68 @@
         finally
         {
             cargando = false;
+        }
+    }
+
+    private async Task CargarContextoUsuario()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        usuarioEsVeterinario = user.IsInRole("VETERINARIO");
+        usuarioEsRecepcionista = user.IsInRole("RECEPCIONISTA");
+        usuarioEsAdministrador = user.IsInRole("ADMINISTRADOR");
+
+        var claim = user.FindFirst("IdUsuario")?.Value
+            ?? user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        usuarioActualId = int.TryParse(claim, out var id) ? id : 0;
+    }
+
+    private async Task CargarAlcanceVeterinario()
+    {
+        clienteIdsPermitidos = new();
+        mascotaIdsPermitidas = new();
+
+        if (usuarioActualId <= 0)
+        {
+            return;
+        }
+
+        var citasVet = await Task.Run(() => CitaService.ListarFiltradas(usuarioActualId, null, null, "", ""));
+        foreach (var cita in citasVet.Where(c => c.Veterinario?.Id == usuarioActualId))
+        {
+            RegistrarMascotaPermitida(cita.Mascota);
+        }
+
+        try
+        {
+            var atencionesVet = await Task.Run(() => AtencionService.ListarFiltradas(usuarioActualId, "", null, ""));
+            foreach (var atencion in atencionesVet.Where(a => a.Cita?.Veterinario?.Id == usuarioActualId))
+            {
+                RegistrarMascotaPermitida(atencion.Cita?.Mascota);
+            }
+        }
+        catch
+        {
+            // Las citas asignadas siguen delimitando el alcance si el historial no responde.
+        }
+    }
+
+    private void RegistrarMascotaPermitida(Mascota? mascotaPermitida)
+    {
+        if (mascotaPermitida is null || mascotaPermitida.Id <= 0) return;
+
+        mascotaIdsPermitidas.Add(mascotaPermitida.Id);
+
+        var idCliente = mascotaPermitida.Cliente?.Id ?? 0;
+        if (idCliente <= 0)
+        {
+            idCliente = mascotas.FirstOrDefault(m => m.Id == mascotaPermitida.Id)?.Cliente?.Id ?? 0;
+        }
+
+        if (idCliente > 0)
+        {
+            clienteIdsPermitidos.Add(idCliente);
         }
     }
 
@@ -538,11 +619,12 @@
     {
         get
         {
-            IEnumerable<Cliente> q = filtroEstado switch
+            IEnumerable<Cliente> q = ClientesBase;
+            q = filtroEstado switch
             {
-                "activos" => clientes.Where(c => c.Activo),
-                "inactivos" => clientes.Where(c => !c.Activo),
-                _ => clientes
+                "activos" => q.Where(c => c.Activo),
+                "inactivos" => q.Where(c => !c.Activo),
+                _ => q
             };
             if (!string.IsNullOrWhiteSpace(textoAplicado))
             {
@@ -559,11 +641,12 @@
     {
         get
         {
-            IEnumerable<Mascota> q = filtroEstado switch
+            IEnumerable<Mascota> q = MascotasBase;
+            q = filtroEstado switch
             {
-                "activos" => mascotas.Where(m => m.Activo),
-                "inactivos" => mascotas.Where(m => !m.Activo),
-                _ => mascotas
+                "activos" => q.Where(m => m.Activo),
+                "inactivos" => q.Where(m => !m.Activo),
+                _ => q
             };
             if (!string.IsNullOrWhiteSpace(textoAplicado))
             {
@@ -575,6 +658,16 @@
             return q;
         }
     }
+
+    private IEnumerable<Cliente> ClientesBase
+        => EsVeterinarioPuro
+            ? clientes.Where(c => clienteIdsPermitidos.Contains(c.Id))
+            : clientes;
+
+    private IEnumerable<Mascota> MascotasBase
+        => EsVeterinarioPuro
+            ? mascotas.Where(m => mascotaIdsPermitidas.Contains(m.Id))
+            : mascotas;
 
     private void OnFiltroEstadoSel(string nuevoEstado)
     {
@@ -623,7 +716,7 @@
 
     // ===== Helpers de presentación =====
     private List<Mascota> MascotasDeCliente(int idCliente)
-        => mascotas.Where(m => m.Cliente != null && m.Cliente.Id == idCliente && m.Activo).ToList();
+        => MascotasBase.Where(m => m.Cliente != null && m.Cliente.Id == idCliente && m.Activo).ToList();
 
     private string NombreDueno(Mascota m)
     {
@@ -654,6 +747,8 @@
     // ===== CRUD Cliente =====
     private void NuevoCliente()
     {
+        if (!PuedeGestionarClientes) return;
+
         clienteEsEdicion = false;
         clienteEdit = new Cliente { Activo = true };
         ReiniciarMascotasNuevas();
@@ -663,6 +758,8 @@
 
     private void EditarCliente(Cliente c)
     {
+        if (!PuedeGestionarClientes) return;
+
         clienteEsEdicion = true;
         // Copia para no mutar la fila si se cancela
         clienteEdit = new Cliente
@@ -680,6 +777,8 @@
     // Abre el modal de mascota desde el modal de cliente (oculta el de cliente temporalmente)
     private async Task AbrirMascotaDesdeCliente()
     {
+        if (!PuedeGestionarClientes) return;
+
         await LeerTelefono(); // preserva el teléfono escrito antes de ocultar el modal
         mascotaDesdeCliente = true;
         mascotaEsEdicion = false;
@@ -743,6 +842,7 @@
 
     private async Task GuardarCliente()
     {
+        if (!PuedeGestionarClientes) return;
         if (guardando) return;
         await LeerTelefono(); // toma el número internacional del campo con banderas
 
@@ -803,6 +903,8 @@
     // ===== CRUD Mascota =====
     private void NuevaMascota()
     {
+        if (!PuedeGestionarClientes) return;
+
         mascotaDesdeCliente = false;
         mascotaEsEdicion = false;
         mascotaEdit = new Mascota { Especie = TipoEspecie.PERRO, Activo = true };
@@ -815,6 +917,8 @@
 
     private void EditarMascota(Mascota m)
     {
+        if (!PuedeGestionarClientes) return;
+
         mascotaDesdeCliente = false;
         mascotaEsEdicion = true;
         mascotaEdit = new Mascota
@@ -893,6 +997,7 @@
 
     private async Task GuardarMascota()
     {
+        if (!PuedeGestionarClientes) return;
         if (guardando) return;
 
         var errorMascota = ValidarMascota();
@@ -958,6 +1063,7 @@
 
     private async Task ConfirmarEliminacion()
     {
+        if (!PuedeGestionarClientes) return;
         if (eliminando) return;
         eliminando = true;
         try
