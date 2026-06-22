@@ -1,6 +1,6 @@
 @page "/clientes-mascotas"
 @rendermode InteractiveServer
-@attribute [Authorize(Roles = "VETERINARIO,RECEPCIONISTA")]
+@attribute [Authorize(Roles = "VETERINARIO,RECEPCIONISTA,ADMINISTRADOR")]
 @using System.Text.RegularExpressions
 @using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Cliente
@@ -51,14 +51,14 @@
         }
         @if (tab == "clientes" && PuedeGestionarClientes)
         {
-            <button type="button" class="btn-new recep-only" style="margin-left:auto;" @onclick="NuevoCliente">
+            <button type="button" class="btn-new recep-only admin-only" style="margin-left:auto;" @onclick="NuevoCliente">
                 <span class="btn-plus" aria-hidden="true">+</span>
                 <span>Nuevo cliente</span>
             </button>
         }
         else if (PuedeGestionarClientes)
         {
-            <button type="button" class="btn-new recep-only" style="margin-left:auto;" @onclick="NuevaMascota">
+            <button type="button" class="btn-new recep-only admin-only" style="margin-left:auto;" @onclick="NuevaMascota">
                 <span class="btn-plus" aria-hidden="true">+</span>
                 <span>Nueva mascota</span>
             </button>
@@ -131,11 +131,17 @@
                                             </a>
                                             @if (c.Activo)
                                             {
-                                                <button type="button" class="btn-pencil btn-edit recep-only" aria-label="Editar cliente" @onclick="() => EditarCliente(c)">
+                                                <button type="button" class="btn-pencil btn-edit recep-only admin-only" aria-label="Editar cliente" @onclick="() => EditarCliente(c)">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
                                                 </button>
-                                                <button type="button" class="btn-pencil btn-del recep-only" aria-label="Eliminar cliente" @onclick="() => clienteAEliminar = c">
+                                                <button type="button" class="btn-pencil btn-del recep-only admin-only" aria-label="Eliminar cliente" @onclick="() => clienteAEliminar = c">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn-pencil btn-reactivate recep-only admin-only" aria-label="Reactivar cliente" title="Reactivar cliente" disabled="@guardando" @onclick="() => ReactivarCliente(c)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z" /><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466" /></svg>
                                                 </button>
                                             }
                                         </div>
@@ -199,11 +205,17 @@
                                             </a>
                                             @if (m.Activo)
                                             {
-                                                <button type="button" class="btn-pencil btn-edit recep-only" aria-label="Editar mascota" @onclick="() => EditarMascota(m)">
+                                                <button type="button" class="btn-pencil btn-edit recep-only admin-only" aria-label="Editar mascota" @onclick="() => EditarMascota(m)">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" /></svg>
                                                 </button>
-                                                <button type="button" class="btn-pencil btn-del recep-only" aria-label="Eliminar mascota" @onclick="() => mascotaAEliminar = m">
+                                                <button type="button" class="btn-pencil btn-del recep-only admin-only" aria-label="Eliminar mascota" @onclick="() => mascotaAEliminar = m">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" /><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" /></svg>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn-pencil btn-reactivate recep-only admin-only" aria-label="Reactivar mascota" title="Reactivar mascota" disabled="@guardando" @onclick="() => ReactivarMascota(m)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z" /><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466" /></svg>
                                                 </button>
                                             }
                                         </div>
@@ -402,28 +414,28 @@
     </div>
 }
 
-@* ===================== CONFIRMACIÓN DE ELIMINACIÓN ===================== *@
+@* ===================== CONFIRMACIÓN DE DESACTIVACIÓN ===================== *@
 @if (clienteAEliminar is not null || mascotaAEliminar is not null)
 {
     <div class="vc-modal-backdrop" role="presentation">
         <div class="vc-modal-card" role="dialog" aria-modal="true">
             <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="CancelarEliminacion">×</button>
-            <h3 class="vc-modal-title">¿Confirmar eliminación?</h3>
+            <h3 class="vc-modal-title">¿Confirmar desactivación?</h3>
             <p class="vc-modal-message">
                 @if (clienteAEliminar is not null)
                 {
-                    <text>¿Eliminar al cliente <strong>@clienteAEliminar.Nombres @clienteAEliminar.Apellidos</strong>? Esta acción no se puede deshacer.</text>
+                    <text>¿Desactivar al cliente <strong>@clienteAEliminar.Nombres @clienteAEliminar.Apellidos</strong>? Podrás reactivarlo desde el filtro de inactivos.</text>
                 }
                 else
                 {
-                    <text>¿Eliminar la mascota <strong>@mascotaAEliminar!.Nombre</strong>? Esta acción no se puede deshacer.</text>
+                    <text>¿Desactivar la mascota <strong>@mascotaAEliminar!.Nombre</strong>? Podrás reactivarla desde el filtro de inactivos.</text>
                 }
             </p>
             <div class="vc-modal-actions">
                 <button type="button" class="vc-btn vc-btn-secondary" @onclick="CancelarEliminacion" disabled="@eliminando">Cancelar</button>
                 <button type="button" class="vc-btn vc-btn-danger" @onclick="ConfirmarEliminacion" disabled="@eliminando">
-                    @if (eliminando) { <span class="vc-spinner" aria-hidden="true"></span><span>Eliminando...</span> }
-                    else { <span>Sí, eliminar</span> }
+                    @if (eliminando) { <span class="vc-spinner" aria-hidden="true"></span><span>Desactivando...</span> }
+                    else { <span>Sí, desactivar</span> }
                 </button>
             </div>
         </div>
@@ -1078,7 +1090,93 @@
         }
     }
 
-    // ===== Eliminación =====
+    private async Task ReactivarCliente(Cliente c)
+    {
+        if (!PuedeGestionarClientes || guardando || c.Activo) return;
+
+        guardando = true;
+        try
+        {
+            var cliente = new Cliente
+            {
+                Id = c.Id,
+                Dni = c.Dni,
+                Nombres = c.Nombres,
+                Apellidos = c.Apellidos,
+                Telefono = c.Telefono,
+                Email = c.Email,
+                Observaciones = c.Observaciones,
+                Activo = true
+            };
+
+            var resultado = await Task.Run(() => ClienteService.Modificar(cliente));
+            if (resultado <= 0)
+            {
+                Toasts.Error("No se pudo reactivar el cliente.");
+                return;
+            }
+
+            Toasts.Exito("Cliente reactivado correctamente.");
+            await CargarDatos();
+        }
+        catch
+        {
+            Toasts.Error("No se pudo reactivar el cliente. Inténtalo nuevamente.");
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private async Task ReactivarMascota(Mascota m)
+    {
+        if (!PuedeGestionarClientes || guardando || m.Activo) return;
+
+        var idCliente = m.Cliente?.Id ?? 0;
+        if (idCliente <= 0)
+        {
+            Toasts.Error("No se pudo identificar al dueño de la mascota.");
+            return;
+        }
+
+        guardando = true;
+        try
+        {
+            var mascota = new Mascota
+            {
+                Id = m.Id,
+                Nombre = m.Nombre,
+                Especie = m.Especie,
+                Raza = m.Raza,
+                FechaNacimiento = m.FechaNacimiento,
+                Esterilizado = m.Esterilizado,
+                Peso = m.Peso,
+                Activo = true,
+                Cliente = new Cliente { Id = idCliente }
+            };
+
+            var resultado = await Task.Run(() => MascotaService.Modificar(mascota));
+            if (resultado <= 0)
+            {
+                Toasts.Error("No se pudo reactivar la mascota.");
+                return;
+            }
+
+            Toasts.Exito("Mascota reactivada correctamente.");
+            await CargarDatos();
+        }
+        catch
+        {
+            Toasts.Error("No se pudo reactivar la mascota. Inténtalo nuevamente.");
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    // ===== Desactivación =====
     private void CancelarEliminacion()
     {
         clienteAEliminar = null;
@@ -1106,21 +1204,21 @@
                 }
                 else
                 {
-                    Toasts.Exito("Cliente eliminado. Se cancelaron sus citas pendientes.");
+                    Toasts.Exito("Cliente desactivado. Se cancelaron sus citas pendientes.");
                 }
             }
             else if (mascotaAEliminar is not null)
             {
                 int id = mascotaAEliminar.Id;
                 await Task.Run(() => MascotaService.Eliminar(id));
-                Toasts.Exito("Mascota eliminada.");
+                Toasts.Exito("Mascota desactivada.");
             }
             CancelarEliminacion();
             await CargarDatos();
         }
         catch (Exception ex)
         {
-            Toasts.Error("No se pudo eliminar. Inténtalo nuevamente.");
+            Toasts.Error("No se pudo desactivar. Inténtalo nuevamente.");
         }
         finally
         {

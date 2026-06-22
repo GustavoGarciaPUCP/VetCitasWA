@@ -1,13 +1,14 @@
 @page "/citas-hoy/atender"
 @page "/atenciones-medicas/registro"
 @rendermode InteractiveServer
-@attribute [Authorize(Roles = "VETERINARIO,RECEPCIONISTA")]
+@attribute [Authorize(Roles = "VETERINARIO,RECEPCIONISTA,ADMINISTRADOR")]
 @using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Cliente
 @using VetCitasWA.Servicios.Modelo.Servicio
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
+@inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 @inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
 @inject NavigationManager Nav
@@ -61,8 +62,8 @@ else if (cita is null)
                         <div class="pet-data">
                             <div class="pet-name">@(mascota?.Nombre)</div>
                             <div class="pet-row"><span class="pet-key">Especie:</span> @EspecieTexto(mascota)</div>
-                            <div class="pet-row"><span class="pet-key">Raza:</span> @(mascota?.Raza)</div>
-                            <div class="pet-row"><span class="pet-key">Peso:</span> @(mascota?.Peso) kg</div>
+                            <div class="pet-row"><span class="pet-key">Raza:</span> @(string.IsNullOrWhiteSpace(mascota?.Raza) ? "—" : mascota.Raza)</div>
+                            <div class="pet-row"><span class="pet-key">Peso:</span> @(mascota?.Peso > 0 ? $"{mascota.Peso:0.#} kg" : "—")</div>
                             <div class="pet-row"><span class="pet-key">Edad:</span> @EdadTexto(mascota)</div>
                         </div>
                     </div>
@@ -227,6 +228,7 @@ else if (cita is null)
 
                 mascota = cita.Mascota;
                 cliente = mascota?.Cliente;
+                await HidratarMascotaAsync();
 
                 // ¿Ya existe una atención para esta cita? La cargamos; si no, partimos de una nueva.
                 var existente = await Task.Run(() => AtencionService.BuscarPorCita(CitaId));
@@ -274,6 +276,35 @@ else if (cita is null)
     }
 
     private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
+
+    private async Task HidratarMascotaAsync()
+    {
+        var idMascota = mascota?.Id ?? cita?.Mascota?.Id ?? atencion.Cita?.Mascota?.Id ?? 0;
+        if (idMascota <= 0) return;
+
+        try
+        {
+            var mascotaCompleta = await Task.Run(() => MascotaService.BuscarPorId(idMascota));
+            if (mascotaCompleta is null || mascotaCompleta.Id <= 0) return;
+
+            mascota = mascotaCompleta;
+            cliente = mascotaCompleta.Cliente ?? cliente;
+
+            if (cita is not null)
+            {
+                cita.Mascota = mascotaCompleta;
+            }
+
+            if (atencion.Cita is not null)
+            {
+                atencion.Cita.Mascota = mascotaCompleta;
+            }
+        }
+        catch
+        {
+            // Si el detalle completo no responde, mantenemos la mascota mínima de la cita.
+        }
+    }
 
     // Al elegir un servicio, el monto referencial toma su precio
     private void OnServicioChanged()
@@ -374,7 +405,12 @@ else if (cita is null)
     }
 
     private string EspecieTexto(Mascota? m)
-        => m is null ? "" : (m.Especie == TipoEspecie.PERRO ? "Perro" : "Gato");
+        => m?.Especie switch
+        {
+            TipoEspecie.PERRO => "Perro",
+            TipoEspecie.GATO => "Gato",
+            _ => "—"
+        };
 
     private string EdadTexto(Mascota? m)
     {
