@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using VetCitasWA.Servicios.REST;
 using VetCitasWA.Servicios.Modelo.Usuario;
 
 namespace VetCitasWA.Servicios.REST.UsuarioRS
@@ -18,21 +19,21 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         public int Insertar(Veterinario veterinario)
         {
             var response = http.PostAsJsonAsync("VeterinarioRS/insertar", veterinario).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Modificar(Veterinario veterinario)
         {
             var response = http.PutAsJsonAsync("VeterinarioRS/modificar", veterinario).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Eliminar(int id)
         {
             var response = http.DeleteAsync($"VeterinarioRS/eliminar/{id}").GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 

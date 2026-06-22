@@ -99,10 +99,29 @@ app.MapPost("/auth/login", async (HttpContext context, UsuarioRestService usuari
         new Claim("Username", usuario.Username ?? ""),
         new Claim("IdUsuario", usuario.Id.ToString())
     };
+    bool esSuperAdmin = usuario.Id == 1
+        || string.Equals(usuario.Username, "superadmin", StringComparison.OrdinalIgnoreCase);
+
+    if (esSuperAdmin)
+    {
+        claims.Add(new Claim("EsSuperAdmin", "true"));
+    }
+
     // Un claim de rol por cada rol del usuario (permite [Authorize(Roles = "ADMINISTRADOR")])
     foreach (var rol in usuario.Roles)
     {
         claims.Add(new Claim(ClaimTypes.Role, rol.Codigo.ToString()));
+    }
+
+    if (esSuperAdmin)
+    {
+        foreach (var rolExtra in new[] { "ADMINISTRADOR", "VETERINARIO", "RECEPCIONISTA" })
+        {
+            if (!claims.Any(c => c.Type == ClaimTypes.Role && c.Value == rolExtra))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, rolExtra));
+            }
+        }
     }
 
     var identidad = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

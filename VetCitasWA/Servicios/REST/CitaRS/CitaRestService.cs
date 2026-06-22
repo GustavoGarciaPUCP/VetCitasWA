@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using VetCitasWA.Servicios.Modelo.Cita;
+using VetCitasWA.Servicios.REST;
 
 namespace VetCitasWA.Servicios.REST.CitaRS
 {
@@ -18,15 +19,28 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int InsertarCita(Cita cita)
         {
             var response = http.PostAsJsonAsync("CitaRS/insertar", cita).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+        }
+
+        public (bool Ok, int Resultado, string Mensaje) InsertarCitaSeguro(Cita cita)
+        {
+            var response = http.PostAsJsonAsync("CitaRS/insertar", cita).GetAwaiter().GetResult();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, 0, response.ReadVetCitasMessage());
+            }
+
+            var resultado = response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+            return (resultado > 0, resultado, resultado > 0 ? "" : "No se pudo agendar la cita.");
         }
 
         // 2. MODIFICAR CITA
         public int ModificarCita(Cita cita)
         {
             var response = http.PutAsJsonAsync("CitaRS/modificar", cita).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -34,7 +48,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int EliminarCita(int idCita)
         {
             var response = http.DeleteAsync($"CitaRS/eliminar/{idCita}").GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -60,15 +74,32 @@ namespace VetCitasWA.Servicios.REST.CitaRS
             string mot = string.IsNullOrWhiteSpace(motivo) ? "null" : Uri.EscapeDataString(motivo.Trim());
 
             var response = http.PutAsync($"CitaRS/reprogramar/{idCita}/{inicioStr}/{finStr}/{mot}/{modifiedBy}", null).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+        }
+
+        public (bool Ok, int Resultado, string Mensaje) ReprogramarSeguro(int idCita, DateTime fechaInicio, DateTime fechaFin, string motivo, int modifiedBy)
+        {
+            string inicioStr = fechaInicio.ToString("yyyy-MM-ddTHH:mm:ss");
+            string finStr = fechaFin.ToString("yyyy-MM-ddTHH:mm:ss");
+            string mot = string.IsNullOrWhiteSpace(motivo) ? "null" : Uri.EscapeDataString(motivo.Trim());
+
+            var response = http.PutAsync($"CitaRS/reprogramar/{idCita}/{inicioStr}/{finStr}/{mot}/{modifiedBy}", null).GetAwaiter().GetResult();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, 0, response.ReadVetCitasMessage());
+            }
+
+            var resultado = response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+            return (resultado == 1, resultado, resultado == 1 ? "" : "No se pudo reprogramar la cita.");
         }
 
         // 7. CAMBIAR VETERINARIO
         public int CambiarVeterinario(int idCita, int idNuevoVeterinario, int modifiedBy)
         {
             var response = http.PutAsync($"CitaRS/cambiarVeterinario/{idCita}/{idNuevoVeterinario}/{modifiedBy}", null).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -108,7 +139,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         {
             string mot = string.IsNullOrWhiteSpace(motivo) ? "null" : Uri.EscapeDataString(motivo.Trim());
             var response = http.PutAsync($"CitaRS/cancelar/{idCita}/{mot}/{modifiedBy}", null).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -116,7 +147,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int ConfirmarCita(int idCita, int modifiedBy)
         {
             var response = http.PutAsync($"CitaRS/confirmar/{idCita}/{modifiedBy}", null).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -124,7 +155,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int MarcarEnConsulta(int idCita, int idUsuario)
         {
             var response = http.PutAsync($"CitaRS/marcarEnConsulta/{idCita}/{idUsuario}", null).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -132,7 +163,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int MarcarAtendida(int idCita, int modifiedBy)
         {
             var response = http.PutAsync($"CitaRS/marcarAtendida/{idCita}/{modifiedBy}", null).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -140,7 +171,7 @@ namespace VetCitasWA.Servicios.REST.CitaRS
         public int MarcarNoAsistio(int idCita, int modifiedBy)
         {
             var response = http.PutAsync($"CitaRS/marcarNoAsistio/{idCita}/{modifiedBy}", null).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 

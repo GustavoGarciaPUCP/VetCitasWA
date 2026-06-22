@@ -96,6 +96,17 @@
     box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.15);
 }
 
+.vc-ms-item-all {
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 0.2rem;
+    padding-bottom: 0.45rem;
+    font-weight: 700;
+}
+
+:root.dark .vc-ms-item-all {
+    border-bottom-color: #334155;
+}
+
 /* ================== Tabla ================== */
 .table-wrapper {
     /* visible para que el menú de acciones (3 puntos) no se recorte */

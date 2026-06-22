@@ -150,7 +150,7 @@
                                                     class="btn-act btn-act-toggle"
                                                     title="Inactivar"
                                                     aria-label="Inactivar"
-                                                    disabled="@(procesando || usuario.Id == usuarioActualId)"
+                                                    disabled="@(procesando || usuario.Id == usuarioActualId || EsSuperAdminUsuario(usuario))"
                                                     @onclick="() => PedirCambioEstado(usuario, false)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                                                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
@@ -591,6 +591,12 @@
             return;
         }
 
+        if (EsSuperAdminUsuario(usuarioEditando) && !usuarioEditando.Activo)
+        {
+            Toasts.Error("No se puede inactivar al SuperAdmin.");
+            return;
+        }
+
         await EjecutarOperacionAsync(() =>
         {
             AdminService.ModificarUsuarioBasico(usuarioEditando, usuarioActualId);
@@ -606,6 +612,12 @@
         if (!activo && usuario.Id == usuarioActualId)
         {
             Toasts.Error("No puedes inactivar tu propio usuario.");
+            return;
+        }
+
+        if (!activo && EsSuperAdminUsuario(usuario))
+        {
+            Toasts.Error("No se puede inactivar al SuperAdmin.");
             return;
         }
 
@@ -645,7 +657,7 @@
         var asignado = TieneRol(usuario, codigoRol);
         if (asignado && NoPuedeModificarRol(usuario, codigoRol))
         {
-            Toasts.Error("No puedes quitar tu propio rol administrativo.");
+            Toasts.Error("No se puede quitar este rol administrativo.");
             return;
         }
 
@@ -719,9 +731,13 @@
         => usuario.Roles?.Any(r => r.Codigo == codigoRol) == true;
 
     private bool NoPuedeModificarRol(Usuario usuario, CodigoRol codigoRol)
-        => usuario.Id == usuarioActualId
-            && codigoRol == CodigoRol.ADMINISTRADOR
-            && TieneRol(usuario, CodigoRol.ADMINISTRADOR);
+        => codigoRol == CodigoRol.ADMINISTRADOR
+            && TieneRol(usuario, CodigoRol.ADMINISTRADOR)
+            && (usuario.Id == usuarioActualId || EsSuperAdminUsuario(usuario));
+
+    private static bool EsSuperAdminUsuario(Usuario usuario)
+        => usuario.Id == 1
+            || string.Equals(usuario.Username, "superadmin", StringComparison.OrdinalIgnoreCase);
 
     private static string NombreRol(RolSistema rol)
         => string.IsNullOrWhiteSpace(rol.Descripcion) ? rol.Codigo.ToString() : rol.Descripcion;
@@ -736,7 +752,7 @@
 
     private string TituloRol(Usuario usuario, CodigoRol codigoRol, string label)
         => NoPuedeModificarRol(usuario, codigoRol)
-            ? "No puedes quitar tu propio rol administrativo"
+            ? "No se puede quitar este rol administrativo"
             : $"{(TieneRol(usuario, codigoRol) ? "Quitar" : "Asignar")} {label}";
 
     private void PaginaAnterior()

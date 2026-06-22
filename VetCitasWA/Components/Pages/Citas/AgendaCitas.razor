@@ -106,8 +106,12 @@
                     <div class="cal-cell cal-time">@($"{h:00}:00")</div>
                     @foreach (var d in DiasSemana)
                     {
-                        var lista = CitasEn(d, h);
-                        @if (EsRefrigerio(d, h) && !lista.Any())
+                        var lista = CitasEn(d, h).ToList();
+                        @if (EsFueraHorario(d, h) && !lista.Any())
+                        {
+                            <div class="cal-cell cal-closed">Sin horario</div>
+                        }
+                        else if (EsRefrigerio(d, h) && !lista.Any())
                         {
                             <div class="cal-cell cal-break">Refrigerio</div>
                         }
@@ -116,13 +120,24 @@
                             <div class="cal-cell cal-slot">
                                 @if (lista.Any())
                                 {
-                                    @foreach (var c in lista)
+                                    @if (lista.Count >= 3)
                                     {
-                                        <div class="cita @CitaClase(c.Estado)" role="button" @onclick="() => AbrirDetalle(c)">
-                                            <div class="cita-title">@c.Mascota?.Nombre</div>
-                                            <div class="cita-sub">@NombreCliente(c) · @(c.Servicio?.Nombre)</div>
-                                            <div class="cita-foot">@c.FechaHoraInicio.ToString("HH:mm") · @EstadoLabel(c.Estado)</div>
-                                        </div>
+                                        <button type="button" class="cita cita-group" @onclick="() => AbrirGrupo(d, h, lista)">
+                                            <div class="cita-title">@lista.Count citas</div>
+                                            <div class="cita-sub">Bloque con alta ocupacion</div>
+                                            <div class="cita-foot">Ver detalle</div>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var c in lista)
+                                        {
+                                            <div class="cita @CitaClase(c.Estado)" role="button" @onclick="() => AbrirDetalle(c)">
+                                                <div class="cita-title">@c.Mascota?.Nombre</div>
+                                                <div class="cita-sub">@NombreCliente(c) · @(c.Servicio?.Nombre)</div>
+                                                <div class="cita-foot">@c.FechaHoraInicio.ToString("HH:mm") · @EstadoLabel(c.Estado)</div>
+                                            </div>
+                                        }
                                     }
                                     @if (!EsPasado(d, h) && !EsRefrigerio(d, h))
                                     {
@@ -198,8 +213,13 @@
 
             <div class="vc-form-field">
                 <label class="vc-form-label">Mascota *</label>
-                <VcSelect TValue="int" @bind-Value="mascotaSel" Options="MascotaOptions"
-                          Placeholder="@(clienteSel == 0 ? "Primero selecciona un cliente…" : "Selecciona una mascota…")" />
+                <VcSelect TValue="int" Value="mascotaSel" ValueChanged="OnMascotaNuevaSel" Options="MascotaOptionsAgenda"
+                          Placeholder="@(clienteSel == 0 ? "Primero selecciona un cliente…" : "Selecciona una mascota…")"
+                          EmptyText="@(clienteSel == 0 ? "Selecciona un cliente para ver sus mascotas." : "No hay mascotas activas disponibles.")" />
+                @if (!string.IsNullOrWhiteSpace(MascotaCrearHint))
+                {
+                    <span class="vc-form-hint agenda-hint-warning">@MascotaCrearHint</span>
+                }
             </div>
 
             <div class="vc-form-field">
@@ -222,8 +242,16 @@
             <div class="vc-form-field">
                 <label class="vc-form-label">Veterinario *</label>
                 <VcSelect TValue="int" @bind-Value="vetSel" Options="VeterinarioCrearOptions"
-                          Placeholder="Selecciona un veterinario…" />
-                <span class="vc-form-hint">Se valida la disponibilidad del horario.</span>
+                          Placeholder="@VeterinarioCrearPlaceholder"
+                          EmptyText="@VeterinarioCrearEmptyText"
+                          Disabled="@cargandoVeterinariosCrear" />
+                <span class="vc-form-hint">@VeterinarioCrearHint</span>
+                @if (MostrarAvisoSinVeterinariosCrear)
+                {
+                    <div class="agenda-inline-alert">
+                        No hay veterinarios disponibles para ese servicio, fecha y hora. Cambia el horario, la fecha o el servicio para volver a consultar.
+                    </div>
+                }
             </div>
 
             @if (errorCrear is not null)
@@ -311,6 +339,30 @@
     </div>
 }
 
+@* ===================== MODAL GRUPO DE CITAS ===================== *@
+@if (citasGrupo.Any())
+{
+    <div class="vc-modal-backdrop" role="presentation">
+        <div class="vc-modal-card" role="dialog" aria-modal="true">
+            <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="CerrarGrupo">×</button>
+            <h3 class="vc-modal-title">@citasGrupo.Count citas en @GrupoTitulo</h3>
+            <div class="grupo-citas-list">
+                @foreach (var c in citasGrupo)
+                {
+                    <button type="button" class="grupo-cita-item @CitaClase(c.Estado)" @onclick="() => AbrirDetalleDesdeGrupo(c)">
+                        <span class="grupo-cita-hora">@c.FechaHoraInicio.ToString("HH:mm")</span>
+                        <span class="grupo-cita-main">
+                            <strong>@(c.Mascota?.Nombre ?? "Mascota")</strong>
+                            <small>@NombreCliente(c) · @(c.Servicio?.Nombre ?? "Servicio")</small>
+                        </span>
+                        <span class="grupo-cita-estado">@EstadoLabel(c.Estado)</span>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
 @* ===================== MODAL REPROGRAMAR ===================== *@
 @if (mostrarReprogramar && citaAccion is not null)
 {
@@ -321,20 +373,52 @@
             <div class="vc-form-row">
                 <div class="vc-form-field">
                     <label class="vc-form-label">Nueva fecha</label>
-                    <input type="date" class="vc-form-input" min="@HoyIso" @bind="reprogFecha" />
+                    <input type="date" class="vc-form-input" min="@HoyIso" value="@reprogFecha.ToString("yyyy-MM-dd")" @onchange="OnReprogFechaChanged" />
                 </div>
-                <div class="vc-form-field">
-                    <label class="vc-form-label">Nueva hora</label>
-                    <input type="time" step="900" class="vc-form-input" @bind="reprogHora" />
-                </div>
+            </div>
+            <div class="vc-form-field">
+                <label class="vc-form-label">Horario disponible</label>
+                @if (cargandoSlotsReprogramacion)
+                {
+                    <div class="rp-slots-block">
+                        <span class="vc-form-hint">Buscando horarios disponibles...</span>
+                    </div>
+                }
+                else if (!slotsReprogramacion.Any())
+                {
+                    <div class="rp-slots-block">
+                        <span class="vc-form-hint">No hay horarios disponibles para ese veterinario en la fecha seleccionada.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="rp-slots-block">
+                        <div class="rp-slots-title">Elige una hora</div>
+                        <div class="rp-slots-grid">
+                            @foreach (var slot in slotsReprogramacion)
+                            {
+                                <button type="button"
+                                        class="rp-slot @(reprogInicioSeleccionado == slot ? "rp-slot-selected" : "")"
+                                        @onclick="() => SeleccionarSlotReprogramacion(slot)">
+                                    @slot.ToString("HH:mm")
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+                <span class="vc-form-hint">@ReprogramarHint</span>
             </div>
             <div class="vc-form-field">
                 <label class="vc-form-label">Motivo</label>
                 <textarea class="vc-form-textarea" rows="2" @bind="reprogMotivo"></textarea>
             </div>
+            @if (!string.IsNullOrWhiteSpace(errorReprogramar))
+            {
+                <p class="vc-form-error">@errorReprogramar</p>
+            }
             <div class="vc-modal-actions" style="justify-content:flex-end;">
                 <button class="vc-btn vc-btn-secondary" @onclick="() => mostrarReprogramar = false" disabled="@procesando">Volver</button>
-                <button class="vc-btn vc-btn-primary" @onclick="ConfirmarReprogramar" disabled="@procesando">
+                <button class="vc-btn vc-btn-primary" @onclick="ConfirmarReprogramar" disabled="@(procesando || reprogInicioSeleccionado is null)">
                     @if (procesando) { <span class="vc-spinner" aria-hidden="true"></span><span>Guardando…</span> }
                     else { <span>Reprogramar</span> }
                 </button>
@@ -415,8 +499,16 @@
     private IEnumerable<VcSelectOption<int>> ServicioOptions =>
         servicios.Select(s => new VcSelectOption<int>(s.Id, $"{s.Nombre} — {s.DuracionMinutos} min · S/ {s.Precio:0.00}"));
 
-    private IEnumerable<VcSelectOption<int>> MascotaOptions =>
-        mascotasCliente.Select(m => new VcSelectOption<int>(m.Id, m.Nombre + (string.IsNullOrWhiteSpace(m.Raza) ? "" : $" — {m.Raza}")));
+    private IEnumerable<VcSelectOption<int>> MascotaOptionsAgenda =>
+        mascotasCliente.Select(m =>
+        {
+            var bloqueada = MascotaBloqueadaPorClienteCrear(m);
+            var label = m.Nombre + (string.IsNullOrWhiteSpace(m.Raza) ? "" : $" - {m.Raza}");
+            return new VcSelectOption<int>(
+                m.Id,
+                bloqueada ? $"{label} (cliente con cita en ese horario)" : label,
+                bloqueada);
+        });
 
     private async Task OnVetFiltroSel(int v) { vetFiltro = v; await OnVetFiltroChanged(); }
 
@@ -438,12 +530,15 @@
 
     // Horario del veterinario filtrado (para pintar su refrigerio real)
     private List<HorarioVeterinario> horariosVet = new();
+    private List<HorarioVeterinario> horariosAgenda = new();
 
     // Crear
     private bool mostrarCrear;
     private int clienteSel, mascotaSel, servicioSel, vetSel;
     private List<Mascota> mascotasCliente = new();
     private List<Veterinario> veterinariosDisponiblesCrear = new();
+    private List<Cita> citasDiaCrear = new();
+    private DateTime? fechaCitasDiaCrear;
     private bool cargandoVeterinariosCrear;
 
     // Buscador de cliente (autocompletado con búsqueda en servidor)
@@ -455,18 +550,48 @@
     private DateTime fechaNueva = DateTime.Today;
     private TimeOnly horaNueva = new(8, 0);
     private string? errorCrear;
+    private bool PuedeConsultarDisponibilidadCrear =>
+        mostrarCrear && servicioSel > 0 && fechaNueva.Date >= DateTime.Today;
+
+    private bool MostrarAvisoSinVeterinariosCrear =>
+        PuedeConsultarDisponibilidadCrear && !cargandoVeterinariosCrear && !veterinariosDisponiblesCrear.Any();
+
+    private string VeterinarioCrearEmptyText =>
+        cargandoVeterinariosCrear ? "Buscando veterinarios disponibles..." :
+        PuedeConsultarDisponibilidadCrear ? "No hay veterinarios disponibles para este horario." :
+        "Completa servicio, fecha y hora para consultar disponibilidad.";
+
     private string VeterinarioCrearPlaceholder =>
-        servicioSel == 0 ? "Selecciona un servicio primero" :
+        !PuedeConsultarDisponibilidadCrear ? "Completa servicio, fecha y hora" :
         cargandoVeterinariosCrear ? "Buscando disponibles..." :
         !veterinariosDisponiblesCrear.Any() ? "Sin veterinarios disponibles" :
         "Selecciona un veterinario";
 
     private string VeterinarioCrearHint =>
         servicioSel == 0 ? "Elige servicio, fecha y hora para ver disponibilidad." :
+        fechaNueva.Date < DateTime.Today ? "La fecha no puede ser anterior a hoy." :
         cargandoVeterinariosCrear ? "Consultando horarios y cruces..." :
         veterinariosDisponiblesCrear.Any()
             ? "Solo se muestran veterinarios activos y disponibles para ese horario."
             : "No hay veterinarios activos disponibles para ese servicio y horario.";
+
+    private string MascotaCrearHint
+    {
+        get
+        {
+            if (clienteSel == 0) return "";
+            if (!mascotasCliente.Any()) return "Este cliente no tiene mascotas activas para agendar.";
+            if (!PuedeConsultarDisponibilidadCrear) return "";
+
+            if (ClienteTieneCruceCrear(clienteSel))
+            {
+                return "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de seleccionar mascota.";
+            }
+
+            var bloqueadas = mascotasCliente.Count(m => MascotaTieneCruceCrear(m.Id));
+            return bloqueadas == 0 ? "" : "Las mascotas que ya tienen una cita cruzada aparecen deshabilitadas.";
+        }
+    }
 
     private string VeterinarioCambioPlaceholder =>
         cargandoVeterinariosCambio ? "Buscando disponibles..." :
@@ -482,9 +607,17 @@
     // Detalle / acciones
     private Cita? citaDetalle;
     private Cita? citaAccion;
+    private List<Cita> citasGrupo = new();
+    private DateTime? grupoDia;
+    private int grupoHora;
     private bool mostrarReprogramar, mostrarCambiarVet, mostrarCancelar;
     private DateTime reprogFecha = DateTime.Today;
     private TimeOnly reprogHora = new(8, 0);
+    private DateTime? reprogInicioSeleccionado;
+    private List<DateTime> slotsReprogramacion = new();
+    private List<Cita> citasDiaReprogramacion = new();
+    private bool cargandoSlotsReprogramacion;
+    private string? errorReprogramar;
     private string reprogMotivo = "";
     private int cambiarVetSel;
     private string cancelarMotivo = "";
@@ -493,7 +626,10 @@
 
     private static readonly string[] DiasNombre = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
     private static readonly string[] MesCorto = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
-    private static readonly int[] Horas = { 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+    private const int HoraAperturaFallback = 8;
+    private const int HoraCierreMaxima = 23;
+    private const int MinutosPasoAgenda = 15;
+    private IEnumerable<int> Horas => CalcularHorasAgenda();
 
     private DateTime[] DiasSemana => Enumerable.Range(0, 7).Select(i => semanaInicio.AddDays(i)).ToArray();
     private DateTime SemanaFin => semanaInicio.AddDays(6);
@@ -531,12 +667,60 @@
         return t >= hor.HoraDescansoInicio.Value && t < hor.HoraDescansoFin.Value;
     }
 
+    private List<HorarioVeterinario> HorariosBaseAgenda()
+        => horariosAgenda
+            .Where(h => h.Activo && (vetFiltro == 0 || h.Veterinario?.Id == vetFiltro))
+            .ToList();
+
+    private List<int> CalcularHorasAgenda()
+    {
+        var horarios = HorariosBaseAgenda();
+        var citasVisibles = citas.Where(PasaFiltros).ToList();
+
+        if (!horarios.Any() && !citasVisibles.Any())
+        {
+            return Enumerable.Range(HoraAperturaFallback, HoraCierreMaxima - HoraAperturaFallback).ToList();
+        }
+
+        var inicio = horarios.Any()
+            ? horarios.Min(h => Math.Clamp(h.HoraInicio.Hour, 0, HoraCierreMaxima - 1))
+            : HoraAperturaFallback;
+
+        var cierre = horarios.Any()
+            ? horarios.Max(h => Math.Min(HoraCierreMaxima, h.HoraFin.Hour + (h.HoraFin.Minute > 0 ? 1 : 0)))
+            : HoraCierreMaxima;
+
+        var ultimaHora = Math.Max(inicio, cierre - 1);
+
+        if (citasVisibles.Any())
+        {
+            inicio = Math.Min(inicio, citasVisibles.Min(c => Math.Clamp(c.FechaHoraInicio.Hour, 0, HoraCierreMaxima - 1)));
+            ultimaHora = Math.Max(ultimaHora, citasVisibles.Max(c => Math.Clamp(c.FechaHoraInicio.Hour, 0, HoraCierreMaxima - 1)));
+        }
+
+        ultimaHora = Math.Min(ultimaHora, HoraCierreMaxima - 1);
+        return Enumerable.Range(inicio, ultimaHora - inicio + 1).ToList();
+    }
+
+    private bool EsFueraHorario(DateTime dia, int hora)
+    {
+        var horarios = HorariosBaseAgenda()
+            .Where(h => h.DiaSemana == DiaSemanaNum(dia))
+            .ToList();
+
+        if (!horarios.Any()) return false;
+
+        var inicio = new TimeOnly(hora, 0);
+        return !horarios.Any(h => inicio >= h.HoraInicio && inicio < h.HoraFin);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             veterinarios = await Task.Run(() => VeterinarioService.ListarTodos());
             servicios = await Task.Run(() => ServicioService.ListarPorEstado(true));
+            horariosAgenda = await Task.Run(() => HorarioService.ListarTodos());
         }
         catch (Exception ex)
         {
@@ -603,6 +787,31 @@
         => citas.Where(c => c.FechaHoraInicio.Date == dia.Date && c.FechaHoraInicio.Hour == hora && PasaFiltros(c))
                 .OrderBy(c => c.FechaHoraInicio);
 
+    private string GrupoTitulo =>
+        grupoDia is null
+            ? ""
+            : $"{FechaCorta(grupoDia.Value)} · {grupoHora:00}:00";
+
+    private void AbrirGrupo(DateTime dia, int hora, List<Cita> lista)
+    {
+        grupoDia = dia;
+        grupoHora = hora;
+        citasGrupo = lista;
+    }
+
+    private void CerrarGrupo()
+    {
+        citasGrupo = new();
+        grupoDia = null;
+        grupoHora = 0;
+    }
+
+    private void AbrirDetalleDesdeGrupo(Cita c)
+    {
+        CerrarGrupo();
+        AbrirDetalle(c);
+    }
+
     private string NombreCliente(Cita c)
     {
         var cl = c.Mascota?.Cliente;
@@ -658,9 +867,32 @@
         fechaNueva = DateTime.Today;
         horaNueva = new TimeOnly(8, 0);
         veterinariosDisponiblesCrear = new();
+        citasDiaCrear = new();
+        fechaCitasDiaCrear = null;
         cargandoVeterinariosCrear = false;
         errorCrear = null;
         mostrarCrear = true;
+    }
+
+    private Task OnMascotaNuevaSel(int value)
+    {
+        if (ClienteTieneCruceCrear(clienteSel))
+        {
+            mascotaSel = 0;
+            errorCrear = "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
+        }
+        else if (MascotaTieneCruceCrear(value))
+        {
+            mascotaSel = 0;
+            errorCrear = "La mascota ya tiene una cita que se cruza con ese horario. Elige otra hora o revisa su agenda.";
+        }
+        else
+        {
+            mascotaSel = value;
+            errorCrear = null;
+        }
+
+        return Task.CompletedTask;
     }
 
     private async Task OnServicioNuevaSel(int value)
@@ -673,9 +905,12 @@
     {
         vetSel = 0;
         veterinariosDisponiblesCrear = new();
+        errorCrear = null;
 
         if (!mostrarCrear || servicioSel <= 0 || fechaNueva.Date < DateTime.Today)
         {
+            citasDiaCrear = new();
+            fechaCitasDiaCrear = null;
             return;
         }
 
@@ -683,7 +918,18 @@
         try
         {
             var inicio = fechaNueva.Date.Add(horaNueva.ToTimeSpan());
+            await RefrescarCitasDiaCrear(forzar: true);
             veterinariosDisponiblesCrear = await Task.Run(() => VeterinarioService.ListarDisponibles(inicio, servicioSel));
+            if (mascotaSel > 0 && ClienteTieneCruceCrear(clienteSel))
+            {
+                mascotaSel = 0;
+                errorCrear = "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
+            }
+            else if (mascotaSel > 0 && MascotaTieneCruceCrear(mascotaSel))
+            {
+                mascotaSel = 0;
+                errorCrear = "La mascota seleccionada ya tiene una cita que se cruza con ese horario.";
+            }
         }
         catch
         {
@@ -698,6 +944,76 @@
 
     // Busca clientes en el servidor al escribir (mínimo 2 caracteres, con debounce).
     // Los resultados se muestran con scroll incremental (<Virtualize>), así no se precarga toda la lista.
+    private async Task<bool> RefrescarCitasDiaCrear(bool forzar = false)
+    {
+        if (fechaNueva.Date < DateTime.Today)
+        {
+            citasDiaCrear = new();
+            fechaCitasDiaCrear = null;
+            return true;
+        }
+
+        if (!forzar && fechaCitasDiaCrear == fechaNueva.Date)
+        {
+            return true;
+        }
+
+        try
+        {
+            citasDiaCrear = await Task.Run(() => CitaService.ListarFiltradas(0, fechaNueva.Date, fechaNueva.Date, "", ""));
+            fechaCitasDiaCrear = fechaNueva.Date;
+            return true;
+        }
+        catch
+        {
+            citasDiaCrear = new();
+            fechaCitasDiaCrear = null;
+            return false;
+        }
+    }
+
+    private (DateTime Inicio, DateTime Fin) RangoNuevaCita()
+    {
+        var inicio = fechaNueva.Date.Add(horaNueva.ToTimeSpan());
+        var servicio = servicios.FirstOrDefault(s => s.Id == servicioSel);
+        var duracion = servicio?.DuracionMinutos ?? 30;
+        return (inicio, inicio.AddMinutes(duracion));
+    }
+
+    private bool MascotaTieneCruceCrear(int idMascota)
+    {
+        if (idMascota <= 0 || !PuedeConsultarDisponibilidadCrear || !citasDiaCrear.Any())
+        {
+            return false;
+        }
+
+        var (inicio, fin) = RangoNuevaCita();
+        return citasDiaCrear.Any(c =>
+            c.Mascota?.Id == idMascota
+            && EsEstadoBloqueante(c.Estado)
+            && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
+    }
+
+    private bool MascotaBloqueadaPorClienteCrear(Mascota mascota)
+    {
+        var idCliente = mascota.Cliente?.Id ?? clienteSel;
+        return ClienteTieneCruceCrear(idCliente) || MascotaTieneCruceCrear(mascota.Id);
+    }
+
+    private bool ClienteTieneCruceCrear(int idCliente)
+    {
+        if (idCliente <= 0 || !PuedeConsultarDisponibilidadCrear || !citasDiaCrear.Any())
+        {
+            return false;
+        }
+
+        var (inicio, fin) = RangoNuevaCita();
+        return citasDiaCrear.Any(c =>
+            c.Mascota?.Cliente?.Id == idCliente
+            && EsEstadoBloqueante(c.Estado)
+            && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
+    }
+
     private async Task OnClienteBuscar()
     {
         clienteDropdownAbierto = true;
@@ -753,6 +1069,10 @@
         mascotaSel = 0;
         var mascotasDelCliente = await Task.Run(() => MascotaService.ListarPorCliente(clienteSel));
         mascotasCliente = mascotasDelCliente.Where(m => m.Activo).ToList(); // solo mascotas activas para agendar
+        if (PuedeConsultarDisponibilidadCrear)
+        {
+            await RefrescarCitasDiaCrear();
+        }
     }
 
     public void Dispose() => clienteCts?.Cancel();
@@ -787,6 +1107,30 @@
         errorCrear = null;
         try
         {
+            var citasDiaOk = await RefrescarCitasDiaCrear(forzar: true);
+            if (!citasDiaOk)
+            {
+                errorCrear = "No se pudo validar si el cliente ya tiene una cita en ese horario. Intenta nuevamente.";
+                procesando = false;
+                return;
+            }
+
+            if (ClienteTieneCruceCrear(clienteSel))
+            {
+                mascotaSel = 0;
+                errorCrear = "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
+                procesando = false;
+                return;
+            }
+
+            if (MascotaTieneCruceCrear(mascotaSel))
+            {
+                mascotaSel = 0;
+                errorCrear = "La mascota ya tiene una cita que se cruza con ese horario. Elige otra hora o revisa su agenda.";
+                procesando = false;
+                return;
+            }
+
             // Pre-chequeo opcional; si falla (p. ej. el endpoint no responde JSON),
             // continuamos: el backend vuelve a validar horario y cruces al insertar.
             bool disponible = true;
@@ -824,8 +1168,8 @@
                 Servicio = new Servicio { Id = servicioSel }
             };
 
-            int r = await Task.Run(() => CitaService.InsertarCita(cita));
-            if (r > 0)
+            var resultado = await Task.Run(() => CitaService.InsertarCitaSeguro(cita));
+            if (resultado.Ok)
             {
                 Toasts.Exito("Cita agendada correctamente.");
                 mostrarCrear = false;
@@ -833,12 +1177,14 @@
             }
             else
             {
-                errorCrear = "No se pudo agendar la cita. Verifica que el veterinario tenga horario ese día y que no se cruce con otra cita.";
+                errorCrear = MensajeCrearAmigable(resultado.Mensaje);
             }
         }
         catch (Exception ex)
         {
-            errorCrear = "No se pudo agendar la cita. Inténtalo nuevamente.";
+            errorCrear = string.IsNullOrWhiteSpace(ex.Message)
+                ? "No se pudo agendar la cita. Intentalo nuevamente."
+                : MensajeCrearAmigable(ex.Message);
         }
         finally
         {
@@ -846,17 +1192,51 @@
         }
     }
 
+    private static string MensajeCrearAmigable(string mensaje)
+    {
+        if (string.IsNullOrWhiteSpace(mensaje))
+        {
+            return "No se pudo agendar la cita. Intentalo nuevamente.";
+        }
+
+        var limpio = mensaje.Replace("ERROR insertando cita:", "", StringComparison.OrdinalIgnoreCase).Trim();
+        if (limpio.Contains("cliente", StringComparison.OrdinalIgnoreCase)
+            && limpio.Contains("cita", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
+        }
+
+        if (limpio.Contains("mascota", StringComparison.OrdinalIgnoreCase)
+            && limpio.Contains("cita", StringComparison.OrdinalIgnoreCase))
+        {
+            return "La mascota ya tiene una cita que se cruza con ese horario. Elige otra hora o revisa su agenda.";
+        }
+
+        if (limpio.Contains("veterinario", StringComparison.OrdinalIgnoreCase)
+            && limpio.Contains("disponible", StringComparison.OrdinalIgnoreCase))
+        {
+            return "El veterinario ya no esta disponible para ese horario. Elige otro veterinario u otra hora.";
+        }
+
+        return limpio;
+    }
+
     // ===== Detalle =====
     private void AbrirDetalle(Cita c) => citaDetalle = c;
 
-    private void AbrirReprogramar(Cita c)
+    private async Task AbrirReprogramar(Cita c)
     {
         citaAccion = c;
         reprogFecha = c.FechaHoraInicio.Date;
         reprogHora = TimeOnly.FromDateTime(c.FechaHoraInicio);
+        reprogInicioSeleccionado = c.FechaHoraInicio;
+        slotsReprogramacion = new();
+        citasDiaReprogramacion = new();
+        errorReprogramar = null;
         reprogMotivo = "";
         citaDetalle = null;
         mostrarReprogramar = true;
+        await CargarSlotsReprogramacion();
     }
 
     private async Task AbrirCambiarVet(Cita c)
@@ -882,16 +1262,174 @@
         await Ejecutar(() => CitaService.ConfirmarCita(c.Id, ModBy(c)), "Cita confirmada correctamente.", cerrarDetalle: true);
     }
 
+    private async Task OnReprogFechaChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var fecha))
+        {
+            reprogFecha = fecha.Date;
+            await CargarSlotsReprogramacion();
+        }
+    }
+
+    private void SeleccionarSlotReprogramacion(DateTime slot)
+    {
+        reprogInicioSeleccionado = slot;
+        reprogHora = TimeOnly.FromDateTime(slot);
+        errorReprogramar = null;
+    }
+
+    private string ReprogramarHint
+    {
+        get
+        {
+            if (citaAccion is null) return "";
+            var dur = DuracionCita(citaAccion);
+            var vet = citaAccion.Veterinario is null ? "el veterinario" : NombreVet(citaAccion.Veterinario);
+            return $"Se muestran bloques de {MinutosPasoAgenda} min dentro del horario de {vet}, respetando la duracion del servicio ({dur} min), descansos y citas existentes.";
+        }
+    }
+
+    private async Task CargarSlotsReprogramacion()
+    {
+        reprogInicioSeleccionado = null;
+        slotsReprogramacion = new();
+        citasDiaReprogramacion = new();
+        errorReprogramar = null;
+
+        if (citaAccion?.Veterinario is null || citaAccion.Servicio is null || citaAccion.Mascota is null)
+        {
+            errorReprogramar = "No se pudo cargar la informacion de la cita.";
+            return;
+        }
+
+        if (reprogFecha.Date < DateTime.Today)
+        {
+            errorReprogramar = "No se puede reprogramar a una fecha anterior a hoy.";
+            return;
+        }
+
+        cargandoSlotsReprogramacion = true;
+        try
+        {
+            var dia = reprogFecha.Date;
+            citasDiaReprogramacion = await Task.Run(() => CitaService.ListarFiltradas(0, dia, dia, "", ""));
+            slotsReprogramacion = CalcularSlotsReprogramacion();
+
+            var actual = citaAccion.FechaHoraInicio;
+            if (actual.Date == dia && slotsReprogramacion.Contains(actual))
+            {
+                SeleccionarSlotReprogramacion(actual);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorReprogramar = string.IsNullOrWhiteSpace(ex.Message)
+                ? "No se pudieron consultar los horarios disponibles."
+                : ex.Message;
+        }
+        finally
+        {
+            cargandoSlotsReprogramacion = false;
+        }
+    }
+
+    private List<DateTime> CalcularSlotsReprogramacion()
+    {
+        if (citaAccion?.Veterinario is null || citaAccion.Servicio is null || citaAccion.Mascota is null)
+        {
+            return new();
+        }
+
+        var idVeterinario = citaAccion.Veterinario.Id;
+        var idMascota = citaAccion.Mascota.Id;
+        var idCliente = citaAccion.Mascota.Cliente?.Id ?? 0;
+        var duracion = DuracionCita(citaAccion);
+        var diaSemana = DiaSemanaNum(reprogFecha);
+        var maxHora = new TimeOnly(HoraCierreMaxima, 0);
+
+        var horarios = horariosAgenda
+            .Where(h => h.Activo && h.Veterinario?.Id == idVeterinario && h.DiaSemana == diaSemana)
+            .OrderBy(h => h.HoraInicio)
+            .ToList();
+
+        var slots = new List<DateTime>();
+
+        foreach (var horario in horarios)
+        {
+            var inicioHorario = horario.HoraInicio;
+            var finHorario = horario.HoraFin > maxHora ? maxHora : horario.HoraFin;
+
+            for (var hora = inicioHorario; hora.AddMinutes(duracion) <= finHorario; hora = hora.AddMinutes(MinutosPasoAgenda))
+            {
+                var inicio = reprogFecha.Date.Add(hora.ToTimeSpan());
+                var fin = inicio.AddMinutes(duracion);
+
+                if (inicio < DateTime.Now) continue;
+                if (CruzaDescanso(inicio, fin, horario)) continue;
+                if (CruzaConCitasExistentes(inicio, fin, idVeterinario, idMascota, idCliente, citaAccion.Id)) continue;
+
+                slots.Add(inicio);
+            }
+        }
+
+        return slots.Distinct().OrderBy(x => x).ToList();
+    }
+
+    private int DuracionCita(Cita c)
+    {
+        var servicioId = c.Servicio?.Id ?? 0;
+        return servicios.FirstOrDefault(s => s.Id == servicioId)?.DuracionMinutos
+            ?? c.Servicio?.DuracionMinutos
+            ?? Math.Max(15, (int)Math.Round((c.FechaHoraFin - c.FechaHoraInicio).TotalMinutes));
+    }
+
+    private static bool CruzaDescanso(DateTime inicio, DateTime fin, HorarioVeterinario horario)
+    {
+        if (horario.HoraDescansoInicio is null || horario.HoraDescansoFin is null) return false;
+
+        var descansoInicio = inicio.Date.Add(horario.HoraDescansoInicio.Value.ToTimeSpan());
+        var descansoFin = inicio.Date.Add(horario.HoraDescansoFin.Value.ToTimeSpan());
+        return RangosSeCruzan(inicio, fin, descansoInicio, descansoFin);
+    }
+
+    private bool CruzaConCitasExistentes(DateTime inicio, DateTime fin, int idVeterinario, int idMascota, int idCliente, int idCitaActual)
+    {
+        return citasDiaReprogramacion.Any(c =>
+            c.Id != idCitaActual
+            && EsEstadoBloqueante(c.Estado)
+            && (
+                c.Veterinario?.Id == idVeterinario
+                || c.Mascota?.Id == idMascota
+                || (idCliente > 0 && c.Mascota?.Cliente?.Id == idCliente)
+            )
+            && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
+    }
+
+    private static bool EsEstadoBloqueante(EstadoCita estado)
+        => estado == EstadoCita.PENDIENTE
+        || estado == EstadoCita.CONFIRMADA
+        || estado == EstadoCita.EN_CONSULTA;
+
+    private static bool RangosSeCruzan(DateTime inicioA, DateTime finA, DateTime inicioB, DateTime finB)
+        => inicioA < finB && finA > inicioB;
+
     private async Task ConfirmarReprogramar()
     {
         if (procesando || citaAccion is null) return;
+        errorReprogramar = null;
         if (reprogFecha.Date < DateTime.Today)
         {
-            Toasts.Error("No se puede reprogramar la cita a una fecha anterior a hoy.");
+            errorReprogramar = "No se puede reprogramar la cita a una fecha anterior a hoy.";
             return;
         }
-        var inicio = reprogFecha.Date.Add(reprogHora.ToTimeSpan());
-        int dur = servicios.FirstOrDefault(s => s.Id == (citaAccion.Servicio?.Id ?? 0))?.DuracionMinutos ?? 30;
+        if (reprogInicioSeleccionado is null)
+        {
+            errorReprogramar = "Selecciona un horario disponible.";
+            return;
+        }
+
+        var inicio = reprogInicioSeleccionado.Value;
+        int dur = DuracionCita(citaAccion);
         var fin = inicio.AddMinutes(dur);
         string motivo = string.IsNullOrWhiteSpace(reprogMotivo) ? "Reprogramación" : reprogMotivo.Trim();
 
@@ -899,29 +1437,32 @@
 
         if (idVeterinario <= 0)
         {
-            Toasts.Error("No se pudo identificar el veterinario actual de la cita.");
+            errorReprogramar = "No se pudo identificar el veterinario actual de la cita.";
             return;
         }
 
-        bool disponible;
+        procesando = true;
         try
         {
-            disponible = await Task.Run(() => CitaService.ValidarDisponibilidadSlot(idVeterinario, inicio, fin));
+            var resultado = await Task.Run(() => CitaService.ReprogramarSeguro(citaAccion.Id, inicio, fin, motivo, ModBy(citaAccion)));
+            if (resultado.Ok)
+            {
+                Toasts.Exito("Cita reprogramada correctamente.");
+                mostrarReprogramar = false;
+                await CargarCitas();
+            }
+            else
+            {
+                await CargarSlotsReprogramacion();
+                errorReprogramar = string.IsNullOrWhiteSpace(resultado.Mensaje)
+                    ? "No se pudo reprogramar la cita."
+                    : resultado.Mensaje;
+            }
         }
-        catch
+        finally
         {
-            Toasts.Error("No se pudo validar la disponibilidad para la nueva fecha y hora.");
-            return;
+            procesando = false;
         }
-
-        if (!disponible)
-        {
-            Toasts.Error("El veterinario no esta disponible en la nueva fecha u hora. Elige otro horario.");
-            return;
-        }
-
-        await Ejecutar(() => CitaService.Reprogramar(citaAccion.Id, inicio, fin, motivo, ModBy(citaAccion)),
-                       "Cita reprogramada correctamente.", () => mostrarReprogramar = false);
     }
 
     private async Task ConfirmarCambiarVet()
@@ -1005,7 +1546,9 @@
         }
         catch (Exception ex)
         {
-            Toasts.Error("Ocurrió un error. Inténtalo nuevamente.");
+            Toasts.Error(string.IsNullOrWhiteSpace(ex.Message)
+                ? "Ocurrio un error. Intentalo nuevamente."
+                : ex.Message);
         }
         finally
         {

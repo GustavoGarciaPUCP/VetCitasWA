@@ -188,6 +188,25 @@
     box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.15);
 }
 
+.input:disabled,
+.textarea:disabled,
+.select:disabled {
+    background: #f8fafc;
+    color: #111827;
+    -webkit-text-fill-color: #111827;
+    cursor: default;
+    opacity: 1;
+}
+
+:root.dark .input:disabled,
+:root.dark .textarea:disabled,
+:root.dark .select:disabled {
+    background: #111827;
+    color: #f1f5f9;
+    -webkit-text-fill-color: #f1f5f9;
+    border-color: #334155;
+}
+
 .textarea {
     resize: vertical;
     min-height: 70px;
@@ -284,6 +303,7 @@
     min-height: 38px;
     display: flex;
     align-items: center;
+    white-space: nowrap;
 }
 
 .closing-action {

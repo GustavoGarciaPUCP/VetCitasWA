@@ -1,13 +1,14 @@
 @page "/citas-hoy/atender"
 @page "/atenciones-medicas/registro"
 @rendermode InteractiveServer
-@attribute [Authorize(Roles = "VETERINARIO")]
+@attribute [Authorize(Roles = "VETERINARIO,RECEPCIONISTA,ADMINISTRADOR")]
 @using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Cliente
 @using VetCitasWA.Servicios.Modelo.Servicio
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
+@inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 @inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
 @inject NavigationManager Nav
@@ -61,46 +62,11 @@ else if (cita is null)
                         <div class="pet-data">
                             <div class="pet-name">@(mascota?.Nombre)</div>
                             <div class="pet-row"><span class="pet-key">Especie:</span> @EspecieTexto(mascota)</div>
-                            <div class="pet-row"><span class="pet-key">Raza:</span> @(mascota?.Raza)</div>
-                            <div class="pet-row"><span class="pet-key">Peso:</span> @(mascota?.Peso) kg</div>
+                            <div class="pet-row"><span class="pet-key">Raza:</span> @(string.IsNullOrWhiteSpace(mascota?.Raza) ? "—" : mascota.Raza)</div>
+                            <div class="pet-row"><span class="pet-key">Peso:</span> @(mascota?.Peso > 0 ? $"{mascota.Peso:0.#} kg" : "—")</div>
                             <div class="pet-row"><span class="pet-key">Edad:</span> @EdadTexto(mascota)</div>
                         </div>
                     </div>
-                </section>
-
-                @* --- Historial Clínico Reciente (colapsable) --- *@
-                <section class="card">
-                    <details class="collapse" open>
-                        <summary class="collapse-summary">
-                            <span class="card-title collapse-title">Historial clínico reciente</span>
-                            <span class="collapse-chevron" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1.646 6.646a.5.5 0 0 1 .708 0L8 12.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
-                                </svg>
-                            </span>
-                        </summary>
-
-                        <div class="collapse-body">
-                            @if (historial == null || !historial.Any())
-                            {
-                                <span class="history-item"><em>Aún no hay atenciones registradas.</em></span>
-                            }
-                            else
-                            {
-                                @foreach (var h in historial)
-                                {
-                                    <span class="history-item">
-                                        <span class="history-arrow" aria-hidden="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
-                                            </svg>
-                                        </span>
-                                        @h.FechaHora.ToString("dd/MM/yy"): @(string.IsNullOrWhiteSpace(h.Diagnostico) ? "Sin diagnóstico registrado" : h.Diagnostico)
-                                    </span>
-                                }
-                            }
-                        </div>
-                    </details>
                 </section>
 
             </div>
@@ -193,6 +159,9 @@ else if (cita is null)
 
 @code {
     private int usuarioActualId;
+    private bool usuarioEsVeterinario;
+    private bool usuarioEsRecepcionista;
+    private bool usuarioEsAdministrador;
 
     [SupplyParameterFromQuery(Name = "id")]
     public int CitaId { get; set; }
@@ -206,7 +175,6 @@ else if (cita is null)
     private Cita? cita;
     private Atencion atencion = new() { FechaHora = DateTime.Now };
     private List<Servicio> listaServicios = new();
-    private List<Atencion> historial = new();
 
     private Mascota? mascota;
     private Cliente? cliente;
@@ -233,9 +201,9 @@ else if (cita is null)
         try
         {
             usuarioActualId = await ObtenerUsuarioActualId();
-            if (usuarioActualId <= 0)
+            if (!SoloLectura && (usuarioActualId <= 0 || !usuarioEsVeterinario))
             {
-                errorMensaje = "No se pudo identificar al veterinario autenticado. Vuelve a iniciar sesion.";
+                errorMensaje = "No se pudo identificar al veterinario autenticado. Vuelve a iniciar sesión.";
                 return;
             }
 
@@ -244,15 +212,23 @@ else if (cita is null)
 
             if (cita is not null)
             {
-                if (cita.Veterinario?.Id != usuarioActualId)
+                if (!SoloLectura && (!usuarioEsVeterinario || cita.Veterinario?.Id != usuarioActualId))
                 {
                     cita = null;
                     errorMensaje = "No tienes acceso a esta cita.";
                     return;
                 }
 
+                if (SoloLectura && EsVeterinarioPuro && cita.Veterinario?.Id != usuarioActualId)
+                {
+                    cita = null;
+                    errorMensaje = "No tienes acceso a esta atención médica.";
+                    return;
+                }
+
                 mascota = cita.Mascota;
                 cliente = mascota?.Cliente;
+                await HidratarMascotaAsync();
 
                 // ¿Ya existe una atención para esta cita? La cargamos; si no, partimos de una nueva.
                 var existente = await Task.Run(() => AtencionService.BuscarPorCita(CitaId));
@@ -262,6 +238,13 @@ else if (cita is null)
                 }
                 else
                 {
+                    if (SoloLectura)
+                    {
+                        cita = null;
+                        errorMensaje = "Esta cita todavía no tiene una atención médica registrada.";
+                        return;
+                    }
+
                     atencion = new Atencion { FechaHora = DateTime.Now };
                 }
 
@@ -269,10 +252,6 @@ else if (cita is null)
                 idServicioSeleccionado = cita.Servicio?.Id ?? listaServicios.FirstOrDefault()?.Id ?? 0;
                 if (atencion.Id <= 0) OnServicioChanged();
 
-                if (mascota is not null)
-                {
-                    historial = await Task.Run(() => AtencionService.ListarHistorialPorMascota(mascota.Id));
-                }
             }
         }
         catch (Exception ex)
@@ -288,9 +267,43 @@ else if (cita is null)
     private async Task<int> ObtenerUsuarioActualId()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        usuarioEsVeterinario = authState.User.IsInRole("VETERINARIO");
+        usuarioEsRecepcionista = authState.User.IsInRole("RECEPCIONISTA");
+        usuarioEsAdministrador = authState.User.IsInRole("ADMINISTRADOR");
         var claim = authState.User.FindFirst("IdUsuario")?.Value
             ?? authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         return int.TryParse(claim, out var id) ? id : 0;
+    }
+
+    private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
+
+    private async Task HidratarMascotaAsync()
+    {
+        var idMascota = mascota?.Id ?? cita?.Mascota?.Id ?? atencion.Cita?.Mascota?.Id ?? 0;
+        if (idMascota <= 0) return;
+
+        try
+        {
+            var mascotaCompleta = await Task.Run(() => MascotaService.BuscarPorId(idMascota));
+            if (mascotaCompleta is null || mascotaCompleta.Id <= 0) return;
+
+            mascota = mascotaCompleta;
+            cliente = mascotaCompleta.Cliente ?? cliente;
+
+            if (cita is not null)
+            {
+                cita.Mascota = mascotaCompleta;
+            }
+
+            if (atencion.Cita is not null)
+            {
+                atencion.Cita.Mascota = mascotaCompleta;
+            }
+        }
+        catch
+        {
+            // Si el detalle completo no responde, mantenemos la mascota mínima de la cita.
+        }
     }
 
     // Al elegir un servicio, el monto referencial toma su precio
@@ -336,7 +349,7 @@ else if (cita is null)
     private async Task Guardar()
     {
         if (guardando || cita is null) return;
-        if (usuarioActualId <= 0 || cita.Veterinario?.Id != usuarioActualId)
+        if (usuarioActualId <= 0 || !usuarioEsVeterinario || cita.Veterinario?.Id != usuarioActualId)
         {
             errorMensaje = "No tienes acceso para registrar la atencion de esta cita.";
             return;
@@ -392,7 +405,12 @@ else if (cita is null)
     }
 
     private string EspecieTexto(Mascota? m)
-        => m is null ? "" : (m.Especie == TipoEspecie.PERRO ? "Perro" : "Gato");
+        => m?.Especie switch
+        {
+            TipoEspecie.PERRO => "Perro",
+            TipoEspecie.GATO => "Gato",
+            _ => "—"
+        };
 
     private string EdadTexto(Mascota? m)
     {
