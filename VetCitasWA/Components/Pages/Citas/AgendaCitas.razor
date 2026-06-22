@@ -213,8 +213,13 @@
 
             <div class="vc-form-field">
                 <label class="vc-form-label">Mascota *</label>
-                <VcSelect TValue="int" @bind-Value="mascotaSel" Options="MascotaOptions"
-                          Placeholder="@(clienteSel == 0 ? "Primero selecciona un cliente…" : "Selecciona una mascota…")" />
+                <VcSelect TValue="int" Value="mascotaSel" ValueChanged="OnMascotaNuevaSel" Options="MascotaOptionsAgenda"
+                          Placeholder="@(clienteSel == 0 ? "Primero selecciona un cliente…" : "Selecciona una mascota…")"
+                          EmptyText="@(clienteSel == 0 ? "Selecciona un cliente para ver sus mascotas." : "No hay mascotas activas disponibles.")" />
+                @if (!string.IsNullOrWhiteSpace(MascotaCrearHint))
+                {
+                    <span class="vc-form-hint agenda-hint-warning">@MascotaCrearHint</span>
+                }
             </div>
 
             <div class="vc-form-field">
@@ -237,8 +242,16 @@
             <div class="vc-form-field">
                 <label class="vc-form-label">Veterinario *</label>
                 <VcSelect TValue="int" @bind-Value="vetSel" Options="VeterinarioCrearOptions"
-                          Placeholder="Selecciona un veterinario…" />
-                <span class="vc-form-hint">Se valida la disponibilidad del horario.</span>
+                          Placeholder="@VeterinarioCrearPlaceholder"
+                          EmptyText="@VeterinarioCrearEmptyText"
+                          Disabled="@cargandoVeterinariosCrear" />
+                <span class="vc-form-hint">@VeterinarioCrearHint</span>
+                @if (MostrarAvisoSinVeterinariosCrear)
+                {
+                    <div class="agenda-inline-alert">
+                        No hay veterinarios disponibles para ese servicio, fecha y hora. Cambia el horario, la fecha o el servicio para volver a consultar.
+                    </div>
+                }
             </div>
 
             @if (errorCrear is not null)
@@ -486,8 +499,16 @@
     private IEnumerable<VcSelectOption<int>> ServicioOptions =>
         servicios.Select(s => new VcSelectOption<int>(s.Id, $"{s.Nombre} — {s.DuracionMinutos} min · S/ {s.Precio:0.00}"));
 
-    private IEnumerable<VcSelectOption<int>> MascotaOptions =>
-        mascotasCliente.Select(m => new VcSelectOption<int>(m.Id, m.Nombre + (string.IsNullOrWhiteSpace(m.Raza) ? "" : $" — {m.Raza}")));
+    private IEnumerable<VcSelectOption<int>> MascotaOptionsAgenda =>
+        mascotasCliente.Select(m =>
+        {
+            var bloqueada = MascotaTieneCruceCrear(m.Id);
+            var label = m.Nombre + (string.IsNullOrWhiteSpace(m.Raza) ? "" : $" - {m.Raza}");
+            return new VcSelectOption<int>(
+                m.Id,
+                bloqueada ? $"{label} (ya tiene cita en ese horario)" : label,
+                bloqueada);
+        });
 
     private async Task OnVetFiltroSel(int v) { vetFiltro = v; await OnVetFiltroChanged(); }
 
@@ -516,6 +537,8 @@
     private int clienteSel, mascotaSel, servicioSel, vetSel;
     private List<Mascota> mascotasCliente = new();
     private List<Veterinario> veterinariosDisponiblesCrear = new();
+    private List<Cita> citasDiaCrear = new();
+    private DateTime? fechaCitasDiaCrear;
     private bool cargandoVeterinariosCrear;
 
     // Buscador de cliente (autocompletado con búsqueda en servidor)
@@ -527,18 +550,47 @@
     private DateTime fechaNueva = DateTime.Today;
     private TimeOnly horaNueva = new(8, 0);
     private string? errorCrear;
+    private bool PuedeConsultarDisponibilidadCrear =>
+        mostrarCrear && servicioSel > 0 && fechaNueva.Date >= DateTime.Today;
+
+    private bool MostrarAvisoSinVeterinariosCrear =>
+        PuedeConsultarDisponibilidadCrear && !cargandoVeterinariosCrear && !veterinariosDisponiblesCrear.Any();
+
+    private string VeterinarioCrearEmptyText =>
+        cargandoVeterinariosCrear ? "Buscando veterinarios disponibles..." :
+        PuedeConsultarDisponibilidadCrear ? "No hay veterinarios disponibles para este horario." :
+        "Completa servicio, fecha y hora para consultar disponibilidad.";
+
     private string VeterinarioCrearPlaceholder =>
-        servicioSel == 0 ? "Selecciona un servicio primero" :
+        !PuedeConsultarDisponibilidadCrear ? "Completa servicio, fecha y hora" :
         cargandoVeterinariosCrear ? "Buscando disponibles..." :
         !veterinariosDisponiblesCrear.Any() ? "Sin veterinarios disponibles" :
         "Selecciona un veterinario";
 
     private string VeterinarioCrearHint =>
         servicioSel == 0 ? "Elige servicio, fecha y hora para ver disponibilidad." :
+        fechaNueva.Date < DateTime.Today ? "La fecha no puede ser anterior a hoy." :
         cargandoVeterinariosCrear ? "Consultando horarios y cruces..." :
         veterinariosDisponiblesCrear.Any()
             ? "Solo se muestran veterinarios activos y disponibles para ese horario."
             : "No hay veterinarios activos disponibles para ese servicio y horario.";
+
+    private string MascotaCrearHint
+    {
+        get
+        {
+            if (clienteSel == 0) return "";
+            if (!mascotasCliente.Any()) return "Este cliente no tiene mascotas activas para agendar.";
+            if (!PuedeConsultarDisponibilidadCrear) return "";
+
+            var bloqueadas = mascotasCliente.Count(m => MascotaTieneCruceCrear(m.Id));
+            if (bloqueadas == 0) return "";
+
+            return bloqueadas == mascotasCliente.Count
+                ? "Todas las mascotas activas de este cliente ya tienen una cita que se cruza con ese horario."
+                : "Las mascotas que ya tienen una cita cruzada aparecen deshabilitadas.";
+        }
+    }
 
     private string VeterinarioCambioPlaceholder =>
         cargandoVeterinariosCambio ? "Buscando disponibles..." :
@@ -814,9 +866,27 @@
         fechaNueva = DateTime.Today;
         horaNueva = new TimeOnly(8, 0);
         veterinariosDisponiblesCrear = new();
+        citasDiaCrear = new();
+        fechaCitasDiaCrear = null;
         cargandoVeterinariosCrear = false;
         errorCrear = null;
         mostrarCrear = true;
+    }
+
+    private Task OnMascotaNuevaSel(int value)
+    {
+        if (MascotaTieneCruceCrear(value))
+        {
+            mascotaSel = 0;
+            errorCrear = "La mascota ya tiene una cita que se cruza con ese horario. Elige otra hora o revisa su agenda.";
+        }
+        else
+        {
+            mascotaSel = value;
+            errorCrear = null;
+        }
+
+        return Task.CompletedTask;
     }
 
     private async Task OnServicioNuevaSel(int value)
@@ -829,9 +899,12 @@
     {
         vetSel = 0;
         veterinariosDisponiblesCrear = new();
+        errorCrear = null;
 
         if (!mostrarCrear || servicioSel <= 0 || fechaNueva.Date < DateTime.Today)
         {
+            citasDiaCrear = new();
+            fechaCitasDiaCrear = null;
             return;
         }
 
@@ -839,7 +912,13 @@
         try
         {
             var inicio = fechaNueva.Date.Add(horaNueva.ToTimeSpan());
+            await RefrescarCitasDiaCrear(forzar: true);
             veterinariosDisponiblesCrear = await Task.Run(() => VeterinarioService.ListarDisponibles(inicio, servicioSel));
+            if (mascotaSel > 0 && MascotaTieneCruceCrear(mascotaSel))
+            {
+                mascotaSel = 0;
+                errorCrear = "La mascota seleccionada ya tiene una cita que se cruza con ese horario.";
+            }
         }
         catch
         {
@@ -854,6 +933,56 @@
 
     // Busca clientes en el servidor al escribir (mínimo 2 caracteres, con debounce).
     // Los resultados se muestran con scroll incremental (<Virtualize>), así no se precarga toda la lista.
+    private async Task<bool> RefrescarCitasDiaCrear(bool forzar = false)
+    {
+        if (fechaNueva.Date < DateTime.Today)
+        {
+            citasDiaCrear = new();
+            fechaCitasDiaCrear = null;
+            return true;
+        }
+
+        if (!forzar && fechaCitasDiaCrear == fechaNueva.Date)
+        {
+            return true;
+        }
+
+        try
+        {
+            citasDiaCrear = await Task.Run(() => CitaService.ListarFiltradas(0, fechaNueva.Date, fechaNueva.Date, "", ""));
+            fechaCitasDiaCrear = fechaNueva.Date;
+            return true;
+        }
+        catch
+        {
+            citasDiaCrear = new();
+            fechaCitasDiaCrear = null;
+            return false;
+        }
+    }
+
+    private (DateTime Inicio, DateTime Fin) RangoNuevaCita()
+    {
+        var inicio = fechaNueva.Date.Add(horaNueva.ToTimeSpan());
+        var servicio = servicios.FirstOrDefault(s => s.Id == servicioSel);
+        var duracion = servicio?.DuracionMinutos ?? 30;
+        return (inicio, inicio.AddMinutes(duracion));
+    }
+
+    private bool MascotaTieneCruceCrear(int idMascota)
+    {
+        if (idMascota <= 0 || !PuedeConsultarDisponibilidadCrear || !citasDiaCrear.Any())
+        {
+            return false;
+        }
+
+        var (inicio, fin) = RangoNuevaCita();
+        return citasDiaCrear.Any(c =>
+            c.Mascota?.Id == idMascota
+            && EsEstadoBloqueante(c.Estado)
+            && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
+    }
+
     private async Task OnClienteBuscar()
     {
         clienteDropdownAbierto = true;
@@ -909,6 +1038,10 @@
         mascotaSel = 0;
         var mascotasDelCliente = await Task.Run(() => MascotaService.ListarPorCliente(clienteSel));
         mascotasCliente = mascotasDelCliente.Where(m => m.Activo).ToList(); // solo mascotas activas para agendar
+        if (PuedeConsultarDisponibilidadCrear)
+        {
+            await RefrescarCitasDiaCrear();
+        }
     }
 
     public void Dispose() => clienteCts?.Cancel();
@@ -943,6 +1076,22 @@
         errorCrear = null;
         try
         {
+            var citasDiaOk = await RefrescarCitasDiaCrear(forzar: true);
+            if (!citasDiaOk)
+            {
+                errorCrear = "No se pudo validar si la mascota ya tiene una cita en ese horario. Intenta nuevamente.";
+                procesando = false;
+                return;
+            }
+
+            if (MascotaTieneCruceCrear(mascotaSel))
+            {
+                mascotaSel = 0;
+                errorCrear = "La mascota ya tiene una cita que se cruza con ese horario. Elige otra hora o revisa su agenda.";
+                procesando = false;
+                return;
+            }
+
             // Pre-chequeo opcional; si falla (p. ej. el endpoint no responde JSON),
             // continuamos: el backend vuelve a validar horario y cruces al insertar.
             bool disponible = true;
@@ -980,8 +1129,8 @@
                 Servicio = new Servicio { Id = servicioSel }
             };
 
-            int r = await Task.Run(() => CitaService.InsertarCita(cita));
-            if (r > 0)
+            var resultado = await Task.Run(() => CitaService.InsertarCitaSeguro(cita));
+            if (resultado.Ok)
             {
                 Toasts.Exito("Cita agendada correctamente.");
                 mostrarCrear = false;
@@ -989,19 +1138,42 @@
             }
             else
             {
-                errorCrear = "No se pudo agendar la cita. Verifica que el veterinario tenga horario ese día y que no se cruce con otra cita.";
+                errorCrear = MensajeCrearAmigable(resultado.Mensaje);
             }
         }
         catch (Exception ex)
         {
             errorCrear = string.IsNullOrWhiteSpace(ex.Message)
                 ? "No se pudo agendar la cita. Intentalo nuevamente."
-                : ex.Message;
+                : MensajeCrearAmigable(ex.Message);
         }
         finally
         {
             procesando = false;
         }
+    }
+
+    private static string MensajeCrearAmigable(string mensaje)
+    {
+        if (string.IsNullOrWhiteSpace(mensaje))
+        {
+            return "No se pudo agendar la cita. Intentalo nuevamente.";
+        }
+
+        var limpio = mensaje.Replace("ERROR insertando cita:", "", StringComparison.OrdinalIgnoreCase).Trim();
+        if (limpio.Contains("mascota", StringComparison.OrdinalIgnoreCase)
+            && limpio.Contains("cita", StringComparison.OrdinalIgnoreCase))
+        {
+            return "La mascota ya tiene una cita que se cruza con ese horario. Elige otra hora o revisa su agenda.";
+        }
+
+        if (limpio.Contains("veterinario", StringComparison.OrdinalIgnoreCase)
+            && limpio.Contains("disponible", StringComparison.OrdinalIgnoreCase))
+        {
+            return "El veterinario ya no esta disponible para ese horario. Elige otro veterinario u otra hora.";
+        }
+
+        return limpio;
     }
 
     // ===== Detalle =====

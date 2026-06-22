@@ -121,6 +121,13 @@
     cursor: default;
 }
 
+.vc-cs-empty {
+    padding: 0.65rem 0.7rem;
+    color: #6b7280;
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
 /* ===== Modo oscuro ===== */
 :root.dark .vc-cs-toggle {
     background-color: #1e293b;
@@ -148,4 +155,8 @@
 :root.dark .vc-cs-item.vc-cs-active {
     background: #334155;
     color: #93c5fd;
+}
+
+:root.dark .vc-cs-empty {
+    color: #94a3b8;
 }

@@ -227,6 +227,21 @@ button.slot-trigger {
     background: rgba(25, 118, 239, 0.07);
 }
 
+.agenda-inline-alert {
+    margin-top: 0.55rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    background: #fff7ed;
+    color: #9a3412;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.agenda-hint-warning {
+    color: #b45309;
+}
+
 :root.dark .slot-add-mini {
     border-color: #334155;
     color: #64748b;
@@ -236,6 +251,16 @@ button.slot-trigger {
     border-color: #3b82f6;
     color: #93c5fd;
     background: rgba(59, 130, 246, 0.12);
+}
+
+:root.dark .agenda-inline-alert {
+    border-color: rgba(251, 146, 60, 0.45);
+    background: rgba(124, 45, 18, 0.32);
+    color: #fdba74;
+}
+
+:root.dark .agenda-hint-warning {
+    color: #fbbf24;
 }
 
 .slot-trigger:hover {

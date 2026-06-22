@@ -23,6 +23,19 @@ namespace VetCitasWA.Servicios.REST.CitaRS
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
+        public (bool Ok, int Resultado, string Mensaje) InsertarCitaSeguro(Cita cita)
+        {
+            var response = http.PostAsJsonAsync("CitaRS/insertar", cita).GetAwaiter().GetResult();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, 0, response.ReadVetCitasMessage());
+            }
+
+            var resultado = response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+            return (resultado > 0, resultado, resultado > 0 ? "" : "No se pudo agendar la cita.");
+        }
+
         // 2. MODIFICAR CITA
         public int ModificarCita(Cita cita)
         {
