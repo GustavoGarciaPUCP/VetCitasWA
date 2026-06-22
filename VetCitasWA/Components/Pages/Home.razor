@@ -254,7 +254,7 @@
                 <div class="kpi-text">
                     <div class="kpi-title">Cancelaciones</div>
                     <div class="kpi-value">@CancelacionesRecepHoy</div>
-                    <div class="kpi-sub">Hoy · ver motivos</div>
+                    <div class="kpi-sub">Hoy</div>
                 </div>
             </article>
 
@@ -320,7 +320,7 @@
                             @foreach (var item in CargaVeterinariosRecep)
                             {
                                 <div class="bar-row">
-                                    <span class="bar-label">@item.Nombre · @item.Especialidad</span>
+                                    <span class="bar-label">@CargaVeterinarioLabel(item)</span>
                                     <div class="bar-track">
                                         <div class="bar-fill bar-purple" style="width: @PorcentajeCargaRecepcion(item.Total)%"></div>
                                     </div>
@@ -493,17 +493,20 @@
     @* ================================================================ *@
     @* === Fallback: si NO hay ningún rol activo ====================== *@
     @* ================================================================ *@
-    <div class="dash-empty">
-        <div class="dash-empty-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" stroke-linecap="round" />
-                <line x1="12" y1="16" x2="12.01" y2="16" stroke-linecap="round" />
-            </svg>
+    @if (!tieneRolActivo)
+    {
+        <div class="dash-empty">
+            <div class="dash-empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" stroke-linecap="round" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" stroke-linecap="round" />
+                </svg>
+            </div>
+            <h2 class="dash-empty-title">No tienes roles activos para este tablero</h2>
+            <p class="dash-empty-text">El tablero y el menu se construyen con los roles asignados a tu usuario. Solicita a un administrador que revise tus permisos si necesitas acceso.</p>
         </div>
-        <h2 class="dash-empty-title">No tienes roles activos para este tablero</h2>
-        <p class="dash-empty-text">El tablero y el menu se construyen con los roles asignados a tu usuario. Solicita a un administrador que revise tus permisos si necesitas acceso.</p>
-    </div>
+    }
 
 </div>
 
@@ -530,6 +533,7 @@
     private int VeterinariosActivosAdmin;
     private int ClientesActivosAdmin;
     private int MascotasActivasAdmin;
+    private bool tieneRolActivo;
 
     private DateTime SemanaInicio => InicioSemana(Hoy);
     private DateTime SemanaFin => SemanaInicio.AddDays(6);
@@ -595,6 +599,9 @@
 
         NombreUsuarioCorto = ObtenerNombreCorto(user);
         usuarioActualId = ObtenerUsuarioId(user);
+        tieneRolActivo = user.IsInRole("VETERINARIO")
+            || user.IsInRole("RECEPCIONISTA")
+            || user.IsInRole("ADMINISTRADOR");
 
         if (user.IsInRole("VETERINARIO") && usuarioActualId > 0)
         {
@@ -768,7 +775,7 @@
                     var vet = g.First().Veterinario;
                     return new CargaVeterinarioResumen(
                         Nombre: $"{vet.Nombres} {vet.Apellidos}".Trim(),
-                        Especialidad: string.IsNullOrWhiteSpace(vet.Especialidad) ? "Sin especialidad" : vet.Especialidad,
+                        Especialidad: vet.Especialidad ?? "",
                         Total: g.Count());
                 })
                 .OrderByDescending(v => v.Total)
@@ -800,6 +807,11 @@
 
         return Math.Clamp((int)Math.Round(total * 100.0 / maximo), 8, 100);
     }
+
+    private static string CargaVeterinarioLabel(CargaVeterinarioResumen item)
+        => string.IsNullOrWhiteSpace(item.Especialidad)
+            ? item.Nombre
+            : $"{item.Nombre} · {item.Especialidad}";
 
     private async Task CargarDashboardAdminAsync()
     {
@@ -876,12 +888,13 @@
     {
         if (vet is null)
         {
-            return "Sin especialidad";
+            return "Veterinario sin datos";
         }
 
-        var especialidad = string.IsNullOrWhiteSpace(vet.Especialidad) ? "Sin especialidad" : vet.Especialidad;
         var cmp = string.IsNullOrWhiteSpace(vet.Cmp) ? "CMPV sin registrar" : vet.Cmp;
-        return $"{especialidad} · {cmp}";
+        return string.IsNullOrWhiteSpace(vet.Especialidad)
+            ? cmp
+            : $"{vet.Especialidad} · {cmp}";
     }
 
     private sealed record CargaVeterinarioResumen(string Nombre, string Especialidad, int Total);

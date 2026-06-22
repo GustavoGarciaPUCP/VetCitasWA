@@ -284,6 +284,7 @@
     min-height: 38px;
     display: flex;
     align-items: center;
+    white-space: nowrap;
 }
 
 .closing-action {

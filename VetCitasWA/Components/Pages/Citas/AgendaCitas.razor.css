@@ -267,6 +267,24 @@ button.slot-trigger {
     border-right-color: #e5e7eb;
 }
 
+.cal-closed {
+    background: #f8fafc;
+    color: #94a3b8;
+    font-size: 0.76rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: not-allowed;
+    border-right-color: #e5e7eb;
+}
+
+:root.dark .cal-closed {
+    background: rgba(15, 23, 42, 0.45);
+    color: #64748b;
+    border-color: #1f2937;
+}
+
 .cal-break-start {
     justify-content: center;
     font-weight: 600;
@@ -288,6 +306,15 @@ button.slot-trigger {
     border-left: 3px solid currentColor;
     transition: transform 0.1s ease, box-shadow 0.15s ease;
     user-select: none;
+}
+
+button.cita {
+    width: 100%;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
+    text-align: left;
+    font: inherit;
 }
 
 .cita:last-child {
@@ -359,6 +386,101 @@ button.slot-trigger {
     background: #e5e7eb;
     color: #4b5563;
     border-left-color: #6b7280;
+}
+
+.cita-group {
+    background: #eef2ff;
+    color: #3730a3;
+    border-left-color: #6366f1;
+}
+
+.grupo-citas-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-top: 1rem;
+}
+
+.grupo-cita-item {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.7rem;
+    border: 1px solid transparent;
+    border-left-width: 3px;
+    border-radius: 8px;
+    padding: 0.65rem 0.75rem;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+
+.grupo-cita-item:hover,
+.grupo-cita-item:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    outline: none;
+}
+
+.grupo-cita-hora {
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.grupo-cita-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.grupo-cita-main strong,
+.grupo-cita-main small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.grupo-cita-main strong {
+    font-size: 0.88rem;
+}
+
+.grupo-cita-main small {
+    font-size: 0.74rem;
+    opacity: 0.82;
+}
+
+.grupo-cita-estado {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.vc-ac-list,
+.vc-ac-item,
+.vc-ms-panel,
+.vc-ms-item {
+    font-family: inherit;
+}
+
+.vc-ac-name,
+.vc-ac-meta,
+.vc-ms-item span {
+    font-weight: 600;
+}
+
+:root.dark .cita-group {
+    background: rgba(99, 102, 241, 0.18);
+    color: #c7d2fe;
+    border-left-color: #818cf8;
+}
+
+:root.dark .grupo-cita-item:hover,
+:root.dark .grupo-cita-item:focus-visible {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
 }
 
 /* ================== Leyenda ================== */

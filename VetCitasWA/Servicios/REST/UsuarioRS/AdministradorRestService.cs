@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using VetCitasWA.Servicios.REST;
 using VetCitasWA.Servicios.Modelo.Usuario;
 
 namespace VetCitasWA.Servicios.REST.UsuarioRS
@@ -18,21 +19,21 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         public int Insertar(Administrador administrador)
         {
             var response = http.PostAsJsonAsync("AdministradorRS/insertar", administrador).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Modificar(Administrador administrador)
         {
             var response = http.PutAsJsonAsync("AdministradorRS/modificar", administrador).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
         public int Eliminar(int id)
         {
             var response = http.DeleteAsync($"AdministradorRS/eliminar/{id}").GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -68,7 +69,7 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         {
             var response = http.PutAsJsonAsync($"AdministradorRS/modificarUsuarioBasico/{modifiedBy}", usuario)
                 .GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
@@ -77,7 +78,7 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
             string rol = Uri.EscapeDataString(codigoRol ?? "");
             var response = http.PostAsync($"AdministradorRS/asignarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
                 .GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
         }
 
         public void RevocarRol(int idUsuario, string codigoRol)
@@ -85,7 +86,7 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
             string rol = Uri.EscapeDataString(codigoRol ?? "");
             var response = http.PostAsync($"AdministradorRS/revocarRol?idUsuario={idUsuario}&codigoRol={rol}", null)
                 .GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            response.EnsureVetCitasSuccess();
         }
     }
 }

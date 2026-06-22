@@ -22,20 +22,35 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.3rem 0.7rem;
-    border: 1px solid #c7d2fe;
+    padding: 0.42rem 0.8rem;
+    border: 1px solid #bfdbfe;
     border-radius: 8px;
-    background: #eef2ff;
-    color: #4338ca;
+    background: #eff6ff;
+    color: #1d4ed8 !important;
     font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    font-weight: 700;
+    text-decoration: none !important;
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .ver-detalle:hover {
-    background: #e0e7ff;
-    border-color: #a5b4fc;
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1e40af !important;
+}
+
+:root.dark .ver-detalle {
+    background: rgba(37, 99, 235, 0.16);
+    color: #bfdbfe !important;
+    border-color: rgba(59, 130, 246, 0.36);
+}
+
+:root.dark .ver-detalle:hover,
+:root.dark .ver-detalle:focus-visible {
+    background: rgba(37, 99, 235, 0.26);
+    border-color: rgba(147, 197, 253, 0.6);
+    color: #dbeafe !important;
 }
 
 /* ================== Back link ================== */
@@ -264,6 +279,7 @@
 .cost {
     color: #1976ef;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 /* ================== Responsive ================== */

@@ -43,6 +43,10 @@
                     {
                         <div class="vc-ms-overlay" @onclick="() => estadoDropdownAbierto = false"></div>
                         <div class="vc-ms-panel">
+                            <label class="vc-ms-item vc-ms-item-all">
+                                <input type="checkbox" checked="@TodosEstadosSeleccionados" @onchange="ToggleTodosEstados" />
+                                <span>Todos</span>
+                            </label>
                             @foreach (var e in EstadosTodos)
                             {
                                 <label class="vc-ms-item">
@@ -52,18 +56,6 @@
                             }
                         </div>
                     }
-                </div>
-            </div>
-
-            <div class="filter-field filter-field-fecha">
-                <label class="filter-label">Fecha</label>
-                <div class="filter-control">
-                    <span class="filter-icon" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
-                        </svg>
-                    </span>
-                    <VcSelect TValue="string" Value="filtroFecha" ValueChanged="OnFechaSel" Options="FechaOptions" />
                 </div>
             </div>
         </div>
@@ -218,23 +210,6 @@
     private HashSet<EstadoCita> estadosSel = new() { EstadoCita.PENDIENTE, EstadoCita.EN_CONSULTA };
     private bool estadoDropdownAbierto;
 
-    private string filtroFecha = "hoy";
-
-    // Opciones del filtro de estado (VcSelect)
-    private static readonly IEnumerable<VcSelectOption<string>> FechaOptions = new[]
-    {
-        new VcSelectOption<string>("hoy", "Hoy"),
-        new VcSelectOption<string>("ayer", "Ayer"),
-        new VcSelectOption<string>("semana", "Esta semana"),
-        new VcSelectOption<string>("mes", "Este mes"),
-    };
-
-    private async Task OnFechaSel(string value)
-    {
-        filtroFecha = value;
-        await OnFechaChanged();
-    }
-
     // Paginación (cliente)
     private const int PageSize = 4;
     private int paginaActual = 1;
@@ -283,19 +258,7 @@
     private (DateTime, DateTime) RangoFechas()
     {
         var hoy = DateTime.Today;
-        return filtroFecha switch
-        {
-            "ayer" => (hoy.AddDays(-1), hoy.AddDays(-1)),
-            "semana" => (InicioSemana(hoy), InicioSemana(hoy).AddDays(6)),
-            "mes" => (new DateTime(hoy.Year, hoy.Month, 1), new DateTime(hoy.Year, hoy.Month, 1).AddMonths(1).AddDays(-1)),
-            _ => (hoy, hoy)
-        };
-    }
-
-    private static DateTime InicioSemana(DateTime d)
-    {
-        int diff = (7 + (int)d.DayOfWeek - (int)DayOfWeek.Monday) % 7;
-        return d.AddDays(-diff);
+        return (hoy, hoy);
     }
 
     private IEnumerable<Cita> CitasFiltradas
@@ -307,6 +270,16 @@
     private void ToggleEstado(EstadoCita e)
     {
         if (!estadosSel.Remove(e)) estadosSel.Add(e);
+        paginaActual = 1;
+    }
+
+    private bool TodosEstadosSeleccionados => estadosSel.Count == EstadosTodos.Length;
+
+    private void ToggleTodosEstados()
+    {
+        estadosSel = TodosEstadosSeleccionados
+            ? new HashSet<EstadoCita>()
+            : EstadosTodos.ToHashSet();
         paginaActual = 1;
     }
 
@@ -337,7 +310,6 @@
     }
 
     private void IrAPagina(int p) => paginaActual = p;
-    private async Task OnFechaChanged() { paginaActual = 1; await CargarCitas(); }
 
     private string NombreCliente(Cita c)
     {
@@ -354,6 +326,7 @@
         EstadoCita.CONFIRMADA => "badge-confirmada",
         EstadoCita.EN_CONSULTA => "badge-enconsulta",
         EstadoCita.ATENDIDA => "badge-atendida",
+        EstadoCita.NO_ASISTIO => "badge-noshow",
         _ => "badge-cancelled"
     };
 
@@ -406,7 +379,9 @@
         }
         catch (Exception ex)
         {
-            Toasts.Error("Ocurrió un error. Inténtalo nuevamente.");
+            Toasts.Error(string.IsNullOrWhiteSpace(ex.Message)
+                ? "Ocurrio un error. Intentalo nuevamente."
+                : ex.Message);
         }
         finally
         {
@@ -447,7 +422,9 @@
         }
         catch (Exception ex)
         {
-            Toasts.Error("Ocurrió un error. Inténtalo nuevamente.");
+            Toasts.Error(string.IsNullOrWhiteSpace(ex.Message)
+                ? "Ocurrio un error. Intentalo nuevamente."
+                : ex.Message);
         }
         finally
         {

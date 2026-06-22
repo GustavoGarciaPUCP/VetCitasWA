@@ -106,8 +106,12 @@
                     <div class="cal-cell cal-time">@($"{h:00}:00")</div>
                     @foreach (var d in DiasSemana)
                     {
-                        var lista = CitasEn(d, h);
-                        @if (EsRefrigerio(d, h) && !lista.Any())
+                        var lista = CitasEn(d, h).ToList();
+                        @if (EsFueraHorario(d, h) && !lista.Any())
+                        {
+                            <div class="cal-cell cal-closed">Sin horario</div>
+                        }
+                        else if (EsRefrigerio(d, h) && !lista.Any())
                         {
                             <div class="cal-cell cal-break">Refrigerio</div>
                         }
@@ -116,13 +120,24 @@
                             <div class="cal-cell cal-slot">
                                 @if (lista.Any())
                                 {
-                                    @foreach (var c in lista)
+                                    @if (lista.Count >= 3)
                                     {
-                                        <div class="cita @CitaClase(c.Estado)" role="button" @onclick="() => AbrirDetalle(c)">
-                                            <div class="cita-title">@c.Mascota?.Nombre</div>
-                                            <div class="cita-sub">@NombreCliente(c) · @(c.Servicio?.Nombre)</div>
-                                            <div class="cita-foot">@c.FechaHoraInicio.ToString("HH:mm") · @EstadoLabel(c.Estado)</div>
-                                        </div>
+                                        <button type="button" class="cita cita-group" @onclick="() => AbrirGrupo(d, h, lista)">
+                                            <div class="cita-title">@lista.Count citas</div>
+                                            <div class="cita-sub">Bloque con alta ocupacion</div>
+                                            <div class="cita-foot">Ver detalle</div>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var c in lista)
+                                        {
+                                            <div class="cita @CitaClase(c.Estado)" role="button" @onclick="() => AbrirDetalle(c)">
+                                                <div class="cita-title">@c.Mascota?.Nombre</div>
+                                                <div class="cita-sub">@NombreCliente(c) · @(c.Servicio?.Nombre)</div>
+                                                <div class="cita-foot">@c.FechaHoraInicio.ToString("HH:mm") · @EstadoLabel(c.Estado)</div>
+                                            </div>
+                                        }
                                     }
                                     @if (!EsPasado(d, h) && !EsRefrigerio(d, h))
                                     {
@@ -311,6 +326,30 @@
     </div>
 }
 
+@* ===================== MODAL GRUPO DE CITAS ===================== *@
+@if (citasGrupo.Any())
+{
+    <div class="vc-modal-backdrop" role="presentation">
+        <div class="vc-modal-card" role="dialog" aria-modal="true">
+            <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="CerrarGrupo">×</button>
+            <h3 class="vc-modal-title">@citasGrupo.Count citas en @GrupoTitulo</h3>
+            <div class="grupo-citas-list">
+                @foreach (var c in citasGrupo)
+                {
+                    <button type="button" class="grupo-cita-item @CitaClase(c.Estado)" @onclick="() => AbrirDetalleDesdeGrupo(c)">
+                        <span class="grupo-cita-hora">@c.FechaHoraInicio.ToString("HH:mm")</span>
+                        <span class="grupo-cita-main">
+                            <strong>@(c.Mascota?.Nombre ?? "Mascota")</strong>
+                            <small>@NombreCliente(c) · @(c.Servicio?.Nombre ?? "Servicio")</small>
+                        </span>
+                        <span class="grupo-cita-estado">@EstadoLabel(c.Estado)</span>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
 @* ===================== MODAL REPROGRAMAR ===================== *@
 @if (mostrarReprogramar && citaAccion is not null)
 {
@@ -438,6 +477,7 @@
 
     // Horario del veterinario filtrado (para pintar su refrigerio real)
     private List<HorarioVeterinario> horariosVet = new();
+    private List<HorarioVeterinario> horariosAgenda = new();
 
     // Crear
     private bool mostrarCrear;
@@ -482,6 +522,9 @@
     // Detalle / acciones
     private Cita? citaDetalle;
     private Cita? citaAccion;
+    private List<Cita> citasGrupo = new();
+    private DateTime? grupoDia;
+    private int grupoHora;
     private bool mostrarReprogramar, mostrarCambiarVet, mostrarCancelar;
     private DateTime reprogFecha = DateTime.Today;
     private TimeOnly reprogHora = new(8, 0);
@@ -493,7 +536,9 @@
 
     private static readonly string[] DiasNombre = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
     private static readonly string[] MesCorto = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
-    private static readonly int[] Horas = { 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+    private const int HoraAperturaFallback = 8;
+    private const int HoraCierreMaxima = 23;
+    private IEnumerable<int> Horas => CalcularHorasAgenda();
 
     private DateTime[] DiasSemana => Enumerable.Range(0, 7).Select(i => semanaInicio.AddDays(i)).ToArray();
     private DateTime SemanaFin => semanaInicio.AddDays(6);
@@ -531,12 +576,60 @@
         return t >= hor.HoraDescansoInicio.Value && t < hor.HoraDescansoFin.Value;
     }
 
+    private List<HorarioVeterinario> HorariosBaseAgenda()
+        => horariosAgenda
+            .Where(h => h.Activo && (vetFiltro == 0 || h.Veterinario?.Id == vetFiltro))
+            .ToList();
+
+    private List<int> CalcularHorasAgenda()
+    {
+        var horarios = HorariosBaseAgenda();
+        var citasVisibles = citas.Where(PasaFiltros).ToList();
+
+        if (!horarios.Any() && !citasVisibles.Any())
+        {
+            return Enumerable.Range(HoraAperturaFallback, HoraCierreMaxima - HoraAperturaFallback).ToList();
+        }
+
+        var inicio = horarios.Any()
+            ? horarios.Min(h => Math.Clamp(h.HoraInicio.Hour, 0, HoraCierreMaxima - 1))
+            : HoraAperturaFallback;
+
+        var cierre = horarios.Any()
+            ? horarios.Max(h => Math.Min(HoraCierreMaxima, h.HoraFin.Hour + (h.HoraFin.Minute > 0 ? 1 : 0)))
+            : HoraCierreMaxima;
+
+        var ultimaHora = Math.Max(inicio, cierre - 1);
+
+        if (citasVisibles.Any())
+        {
+            inicio = Math.Min(inicio, citasVisibles.Min(c => Math.Clamp(c.FechaHoraInicio.Hour, 0, HoraCierreMaxima - 1)));
+            ultimaHora = Math.Max(ultimaHora, citasVisibles.Max(c => Math.Clamp(c.FechaHoraInicio.Hour, 0, HoraCierreMaxima - 1)));
+        }
+
+        ultimaHora = Math.Min(ultimaHora, HoraCierreMaxima - 1);
+        return Enumerable.Range(inicio, ultimaHora - inicio + 1).ToList();
+    }
+
+    private bool EsFueraHorario(DateTime dia, int hora)
+    {
+        var horarios = HorariosBaseAgenda()
+            .Where(h => h.DiaSemana == DiaSemanaNum(dia))
+            .ToList();
+
+        if (!horarios.Any()) return false;
+
+        var inicio = new TimeOnly(hora, 0);
+        return !horarios.Any(h => inicio >= h.HoraInicio && inicio < h.HoraFin);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             veterinarios = await Task.Run(() => VeterinarioService.ListarTodos());
             servicios = await Task.Run(() => ServicioService.ListarPorEstado(true));
+            horariosAgenda = await Task.Run(() => HorarioService.ListarTodos());
         }
         catch (Exception ex)
         {
@@ -602,6 +695,31 @@
     private IEnumerable<Cita> CitasEn(DateTime dia, int hora)
         => citas.Where(c => c.FechaHoraInicio.Date == dia.Date && c.FechaHoraInicio.Hour == hora && PasaFiltros(c))
                 .OrderBy(c => c.FechaHoraInicio);
+
+    private string GrupoTitulo =>
+        grupoDia is null
+            ? ""
+            : $"{FechaCorta(grupoDia.Value)} · {grupoHora:00}:00";
+
+    private void AbrirGrupo(DateTime dia, int hora, List<Cita> lista)
+    {
+        grupoDia = dia;
+        grupoHora = hora;
+        citasGrupo = lista;
+    }
+
+    private void CerrarGrupo()
+    {
+        citasGrupo = new();
+        grupoDia = null;
+        grupoHora = 0;
+    }
+
+    private void AbrirDetalleDesdeGrupo(Cita c)
+    {
+        CerrarGrupo();
+        AbrirDetalle(c);
+    }
 
     private string NombreCliente(Cita c)
     {
@@ -838,7 +956,9 @@
         }
         catch (Exception ex)
         {
-            errorCrear = "No se pudo agendar la cita. Inténtalo nuevamente.";
+            errorCrear = string.IsNullOrWhiteSpace(ex.Message)
+                ? "No se pudo agendar la cita. Intentalo nuevamente."
+                : ex.Message;
         }
         finally
         {
@@ -900,23 +1020,6 @@
         if (idVeterinario <= 0)
         {
             Toasts.Error("No se pudo identificar el veterinario actual de la cita.");
-            return;
-        }
-
-        bool disponible;
-        try
-        {
-            disponible = await Task.Run(() => CitaService.ValidarDisponibilidadSlot(idVeterinario, inicio, fin));
-        }
-        catch
-        {
-            Toasts.Error("No se pudo validar la disponibilidad para la nueva fecha y hora.");
-            return;
-        }
-
-        if (!disponible)
-        {
-            Toasts.Error("El veterinario no esta disponible en la nueva fecha u hora. Elige otro horario.");
             return;
         }
 
@@ -1005,7 +1108,9 @@
         }
         catch (Exception ex)
         {
-            Toasts.Error("Ocurrió un error. Inténtalo nuevamente.");
+            Toasts.Error(string.IsNullOrWhiteSpace(ex.Message)
+                ? "Ocurrio un error. Intentalo nuevamente."
+                : ex.Message);
         }
         finally
         {
