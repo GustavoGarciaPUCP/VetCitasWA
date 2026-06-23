@@ -36,6 +36,12 @@ namespace VetCitasWA.Servicios.REST.ServicioRS
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
+        public int Eliminar(int id, int modifiedBy)
+        {
+            var response = http.DeleteAsync($"ServicioRS/eliminar/{id}/{modifiedBy}").GetAwaiter().GetResult();
+            return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+        }
+
         // 4. LISTAR TODOS LOS SERVICIOS
         public List<Servicio> ListarTodos()
         {
@@ -54,6 +60,12 @@ namespace VetCitasWA.Servicios.REST.ServicioRS
         public int Deshabilitar(int id)
         {
             var response = http.PutAsync($"ServicioRS/deshabilitar/{id}", null).GetAwaiter().GetResult();
+            return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+        }
+
+        public int Deshabilitar(int id, int modifiedBy)
+        {
+            var response = http.PutAsync($"ServicioRS/deshabilitar/{id}/{modifiedBy}", null).GetAwaiter().GetResult();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 

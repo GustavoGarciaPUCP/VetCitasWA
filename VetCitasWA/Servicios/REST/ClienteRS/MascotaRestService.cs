@@ -35,6 +35,12 @@ namespace VetCitasWA.Servicios.REST.ClienteRS
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
+        public int Eliminar(int id, int modifiedBy)
+        {
+            var response = http.DeleteAsync($"MascotaRS/eliminar/{id}/{modifiedBy}").GetAwaiter().GetResult();
+            return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+        }
+
         // 4. LISTAR TODAS LAS MASCOTAS
         public List<Mascota> ListarTodos()
         {

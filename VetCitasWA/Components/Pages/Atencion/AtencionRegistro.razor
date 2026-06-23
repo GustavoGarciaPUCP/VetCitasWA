@@ -6,6 +6,7 @@
 @using VetCitasWA.Servicios.Modelo.Cliente
 @using VetCitasWA.Servicios.Modelo.Servicio
 @using VetCitasWA.Servicios.Modelo.Common.Enums
+@using VetCitasWA.Servicios.Modelo.Usuario
 @inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
@@ -368,6 +369,7 @@ else if (cita is null)
         {
             atencion.FechaHora = atencion.FechaHora == default ? DateTime.Now : atencion.FechaHora;
             atencion.Cita = new Cita { Id = cita.Id };
+            atencion.ModifiedBy = new Usuario { Id = usuarioActualId };
 
             int r;
             if (atencion.Id > 0)

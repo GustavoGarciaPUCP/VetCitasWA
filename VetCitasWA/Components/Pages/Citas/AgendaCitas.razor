@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "RECEPCIONISTA")]
 @implements IDisposable
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Cliente
@@ -15,6 +16,7 @@
 @inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
 @inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Agenda de citas - VetCitas</PageTitle>
 
@@ -621,6 +623,7 @@
     private string reprogMotivo = "";
     private int cambiarVetSel;
     private string cancelarMotivo = "";
+    private int usuarioActualId;
     private List<Veterinario> veterinariosDisponiblesCambio = new();
     private bool cargandoVeterinariosCambio;
 
@@ -718,6 +721,7 @@
     {
         try
         {
+            usuarioActualId = await ObtenerUsuarioActualId();
             veterinarios = await Task.Run(() => VeterinarioService.ListarTodos());
             servicios = await Task.Run(() => ServicioService.ListarPorEstado(true));
             horariosAgenda = await Task.Run(() => HorarioService.ListarTodos());
@@ -821,7 +825,17 @@
     private string NombreVet(Veterinario v)
         => $"{v.Nombres} {v.Apellidos}" + (string.IsNullOrWhiteSpace(v.Especialidad) ? "" : $" — {v.Especialidad}");
 
-    private int ModBy(Cita c) => c.Veterinario?.Id ?? (veterinarios.FirstOrDefault()?.Id ?? 0);
+    private int ModBy(Cita c) => usuarioActualId;
+
+    private async Task<int> ObtenerUsuarioActualId()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var raw = authState.User.FindFirst("IdUsuario")?.Value
+            ?? authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? authState.User.FindFirst("nameid")?.Value;
+
+        return int.TryParse(raw, out var id) ? id : 0;
+    }
 
     private string CitaClase(EstadoCita e) => "cita-" + e switch
     {
@@ -1092,6 +1106,11 @@
             errorCrear = "Completa cliente, mascota, servicio y veterinario.";
             return;
         }
+        if (usuarioActualId <= 0)
+        {
+            errorCrear = "No se pudo identificar al usuario autenticado. Vuelve a iniciar sesion.";
+            return;
+        }
         if (fechaNueva.Date < DateTime.Today)
         {
             errorCrear = "No se puede agendar una cita en una fecha anterior a hoy.";
@@ -1165,7 +1184,8 @@
                 Estado = EstadoCita.PENDIENTE,
                 Mascota = new Mascota { Id = mascotaSel },
                 Veterinario = new Veterinario { Id = vetSel },
-                Servicio = new Servicio { Id = servicioSel }
+                Servicio = new Servicio { Id = servicioSel },
+                ModifiedBy = new Usuario { Id = usuarioActualId }
             };
 
             var resultado = await Task.Run(() => CitaService.InsertarCitaSeguro(cita));

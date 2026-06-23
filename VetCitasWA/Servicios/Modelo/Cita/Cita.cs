@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using VetCitasWA.Servicios.Modelo.Common.Enums;
+using VetCitasWA.Servicios.Modelo.Common.Model;
 using VetCitasWA.Servicios.Modelo.Cliente; // Para Mascota
 using VetCitasWA.Servicios.Modelo.Usuario; // Para Veterinario
 using VetCitasWA.Servicios.UI; // FechaHoraJsonConverter
 
 namespace VetCitasWA.Servicios.Modelo.Cita
 {
-    public class Cita
+    public class Cita : EntidadAuditable
     {
         public int Id { get; set; }
         [JsonConverter(typeof(FechaHoraJsonConverter))]

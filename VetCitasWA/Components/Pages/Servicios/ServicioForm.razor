@@ -2,11 +2,14 @@
 @page "/servicios/editar"
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "ADMINISTRADOR")]
+@using System.Security.Claims
 @using VetCitasWA.Servicios.Modelo.Servicio
 @using VetCitasWA.Servicios.Modelo.Common.Enums
+@using VetCitasWA.Servicios.Modelo.Usuario
 @inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Servicio - VetCitas</PageTitle>
 
@@ -137,10 +140,12 @@
     private bool EsEdicion => Id > 0;
     private bool cargando = true;
     private bool procesando = false;
+    private int usuarioActualId;
     private string? errorMensaje;
 
     protected override async Task OnInitializedAsync()
     {
+        usuarioActualId = await ObtenerUsuarioActualId();
         if (EsEdicion)
         {
             try
@@ -161,6 +166,15 @@
             }
         }
         cargando = false;
+    }
+
+    private async Task<int> ObtenerUsuarioActualId()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var raw = authState.User.FindFirst("IdUsuario")?.Value
+            ?? authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? authState.User.FindFirst("nameid")?.Value;
+        return int.TryParse(raw, out var id) ? id : 0;
     }
 
     // Valida y normaliza el servicio. Devuelve el mensaje de error o null si todo es correcto.
@@ -196,11 +210,17 @@
             errorMensaje = error;
             return;
         }
+        if (usuarioActualId <= 0)
+        {
+            errorMensaje = "No se pudo identificar al usuario autenticado. Vuelve a iniciar sesion.";
+            return;
+        }
 
         procesando = true;
         errorMensaje = null;
         try
         {
+            modelo.ModifiedBy = new Usuario { Id = usuarioActualId };
             if (EsEdicion)
             {
                 await Task.Run(() => ServicioService.Modificar(modelo));

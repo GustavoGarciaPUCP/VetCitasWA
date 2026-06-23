@@ -1,8 +1,9 @@
-﻿using VetCitasWA.Servicios.Modelo.Common.Enums;
+using VetCitasWA.Servicios.Modelo.Common.Enums;
+using VetCitasWA.Servicios.Modelo.Common.Model;
 
 namespace VetCitasWA.Servicios.Modelo.Cita
 {
-    public class Recordatorio
+    public class Recordatorio : EntidadAuditable
     {
         public int Id { get; set; }
         public DateTime FechaProgramada { get; set; }

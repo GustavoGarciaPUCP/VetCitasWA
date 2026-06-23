@@ -355,7 +355,7 @@
 
         try
         {
-            var resultado = HorarioService.Eliminar(horario.Id);
+            var resultado = HorarioService.Eliminar(horario.Id, usuarioActualId);
             if (resultado <= 0)
             {
                 mensajeError = "No se pudo inactivar el horario.";

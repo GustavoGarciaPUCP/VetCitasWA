@@ -35,6 +35,13 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
+        public int Eliminar(int id, int modifiedBy)
+        {
+            var response = http.DeleteAsync($"HorarioVeterinarioRS/eliminar/{id}/{modifiedBy}").GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+        }
+
         public List<HorarioVeterinario> ListarTodos()
         {
             return http.GetFromJsonAsync<List<HorarioVeterinario>>("HorarioVeterinarioRS/listar")

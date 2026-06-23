@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using VetCitasWA.Servicios.Modelo.Common.Model;
 using VetCitasWA.Servicios.UI;
 
 namespace VetCitasWA.Servicios.Modelo.Cita
 {
-    public class Atencion
+    public class Atencion : EntidadAuditable
     {
         public int Id { get; set; }
         [JsonConverter(typeof(FechaHoraJsonConverter))]
