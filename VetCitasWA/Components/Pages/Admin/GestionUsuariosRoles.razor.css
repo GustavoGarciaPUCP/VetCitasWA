@@ -1,3 +1,16 @@
+/* ================== Restablecer contraseña ================== */
+.reset-pass-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.reset-pass-row .search-input {
+    flex: 1;
+    min-width: 180px;
+}
+
 /* ================== Contenedor ================== */
 .page-section {
     display: flex;

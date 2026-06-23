@@ -1,3 +1,12 @@
+/* Contenedor del sidebar: columna flex que rellena toda la altura,
+   así .nav-scroll (flex:1) empuja el pie (.nav-footer) hacia abajo. */
+.nav-shell {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 /* ================== Encabezado de marca ================== */
 .brand-row {
     height: 56px;

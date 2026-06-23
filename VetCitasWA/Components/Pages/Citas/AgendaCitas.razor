@@ -228,6 +228,10 @@
                 <label class="vc-form-label">Servicio *</label>
                 <VcSelect TValue="int" Value="servicioSel" ValueChanged="OnServicioNuevaSel" Options="ServicioOptions"
                           Placeholder="Selecciona un servicio…" />
+                @if (ServicioSeleccionadoInactivo)
+                {
+                    <span class="vc-form-hint agenda-hint-warning">Advertencia: este servicio está inactivo. Te recomendamos elegir un servicio activo.</span>
+                }
             </div>
 
             <div class="vc-form-row">
@@ -272,6 +276,25 @@
     </div>
 }
 
+@* ===================== ADVERTENCIA: CLIENTE CON OTRA MASCOTA A LA MISMA HORA ===================== *@
+@if (mostrarAdvertenciaCliente)
+{
+    <div class="vc-modal-backdrop" role="presentation">
+        <div class="vc-modal-card" role="dialog" aria-modal="true">
+            <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="() => mostrarAdvertenciaCliente = false" disabled="@procesando">×</button>
+            <h3 class="vc-modal-title">Cliente con otra cita a esa hora</h3>
+            <p class="vc-modal-message">
+                Este cliente ya tiene una cita con una <strong>mascota diferente</strong> a esa misma hora (con otro veterinario).
+                Si consideras que el cliente puede estar presente en ambas citas, presiona <strong>Continuar</strong>.
+            </p>
+            <div class="vc-modal-actions">
+                <button type="button" class="vc-btn vc-btn-secondary" @onclick="() => mostrarAdvertenciaCliente = false" disabled="@procesando">Volver</button>
+                <button type="button" class="vc-btn vc-btn-primary" @onclick="ContinuarConCruceCliente" disabled="@procesando">Continuar</button>
+            </div>
+        </div>
+    </div>
+}
+
 @* ===================== MODAL DETALLE DE CITA ===================== *@
 @if (citaDetalle is not null)
 {
@@ -308,6 +331,21 @@
                 <div class="vc-form-field">
                     <span class="vc-form-label">Hora</span>
                     <div>@citaDetalle.FechaHoraInicio.ToString("HH:mm") — @citaDetalle.FechaHoraFin.ToString("HH:mm")</div>
+                </div>
+            </div>
+            <div class="vc-form-row">
+                <div class="vc-form-field">
+                    <span class="vc-form-label">Teléfono del cliente</span>
+                    <div>
+                        @if (string.IsNullOrWhiteSpace(telefonoCliente))
+                        {
+                            <text>—</text>
+                        }
+                        else
+                        {
+                            <a href="@($"https://wa.me/{telefonoCliente}")" target="_blank" rel="noopener">@telefonoCliente</a>
+                        }
+                    </div>
                 </div>
             </div>
 
@@ -499,16 +537,21 @@
         veterinariosDisponiblesCambio.Select(v => new VcSelectOption<int>(v.Id, NombreVet(v)));
 
     private IEnumerable<VcSelectOption<int>> ServicioOptions =>
-        servicios.Select(s => new VcSelectOption<int>(s.Id, $"{s.Nombre} — {s.DuracionMinutos} min · S/ {s.Precio:0.00}"));
+        servicios.Select(s => new VcSelectOption<int>(
+            s.Id,
+            $"{s.Nombre} — {s.DuracionMinutos} min · S/ {s.Precio:0.00}" + (s.Activo ? "" : " (inactivo)")));
+
+    private bool ServicioSeleccionadoInactivo =>
+        servicioSel > 0 && servicios.FirstOrDefault(s => s.Id == servicioSel) is { Activo: false };
 
     private IEnumerable<VcSelectOption<int>> MascotaOptionsAgenda =>
         mascotasCliente.Select(m =>
         {
-            var bloqueada = MascotaBloqueadaPorClienteCrear(m);
+            var bloqueada = MascotaTieneCruceCrear(m.Id);
             var label = m.Nombre + (string.IsNullOrWhiteSpace(m.Raza) ? "" : $" - {m.Raza}");
             return new VcSelectOption<int>(
                 m.Id,
-                bloqueada ? $"{label} (cliente con cita en ese horario)" : label,
+                bloqueada ? $"{label} (esta mascota ya tiene cita en ese horario)" : label,
                 bloqueada);
         });
 
@@ -536,6 +579,8 @@
 
     // Crear
     private bool mostrarCrear;
+    private bool mostrarAdvertenciaCliente;   // cliente con otra mascota a la misma hora
+    private bool cruceClienteConfirmado;      // el usuario aceptó continuar pese al cruce de cliente
     private int clienteSel, mascotaSel, servicioSel, vetSel;
     private List<Mascota> mascotasCliente = new();
     private List<Veterinario> veterinariosDisponiblesCrear = new();
@@ -587,7 +632,7 @@
 
             if (ClienteTieneCruceCrear(clienteSel))
             {
-                return "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de seleccionar mascota.";
+                return "Nota: este cliente ya tiene una cita a esa hora con otra mascota. Podrás agendar igualmente confirmando la advertencia.";
             }
 
             var bloqueadas = mascotasCliente.Count(m => MascotaTieneCruceCrear(m.Id));
@@ -723,7 +768,7 @@
         {
             usuarioActualId = await ObtenerUsuarioActualId();
             veterinarios = await Task.Run(() => VeterinarioService.ListarTodos());
-            servicios = await Task.Run(() => ServicioService.ListarPorEstado(true));
+            servicios = await Task.Run(() => ServicioService.ListarTodos());
             horariosAgenda = await Task.Run(() => HorarioService.ListarTodos());
         }
         catch (Exception ex)
@@ -810,10 +855,10 @@
         grupoHora = 0;
     }
 
-    private void AbrirDetalleDesdeGrupo(Cita c)
+    private async Task AbrirDetalleDesdeGrupo(Cita c)
     {
         CerrarGrupo();
-        AbrirDetalle(c);
+        await AbrirDetalle(c);
     }
 
     private string NombreCliente(Cita c)
@@ -885,17 +930,23 @@
         fechaCitasDiaCrear = null;
         cargandoVeterinariosCrear = false;
         errorCrear = null;
+        mostrarAdvertenciaCliente = false;
+        cruceClienteConfirmado = false;
         mostrarCrear = true;
+    }
+
+    // El usuario acepta agendar pese a que el cliente ya tiene cita con otra mascota a esa hora
+    private async Task ContinuarConCruceCliente()
+    {
+        cruceClienteConfirmado = true;
+        mostrarAdvertenciaCliente = false;
+        await GuardarCita();
     }
 
     private Task OnMascotaNuevaSel(int value)
     {
-        if (ClienteTieneCruceCrear(clienteSel))
-        {
-            mascotaSel = 0;
-            errorCrear = "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
-        }
-        else if (MascotaTieneCruceCrear(value))
+        cruceClienteConfirmado = false;
+        if (MascotaTieneCruceCrear(value))
         {
             mascotaSel = 0;
             errorCrear = "La mascota ya tiene una cita que se cruza con ese horario. Elige otra hora o revisa su agenda.";
@@ -934,12 +985,8 @@
             var inicio = fechaNueva.Date.Add(horaNueva.ToTimeSpan());
             await RefrescarCitasDiaCrear(forzar: true);
             veterinariosDisponiblesCrear = await Task.Run(() => VeterinarioService.ListarDisponibles(inicio, servicioSel));
-            if (mascotaSel > 0 && ClienteTieneCruceCrear(clienteSel))
-            {
-                mascotaSel = 0;
-                errorCrear = "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
-            }
-            else if (mascotaSel > 0 && MascotaTieneCruceCrear(mascotaSel))
+            cruceClienteConfirmado = false;
+            if (mascotaSel > 0 && MascotaTieneCruceCrear(mascotaSel))
             {
                 mascotaSel = 0;
                 errorCrear = "La mascota seleccionada ya tiene una cita que se cruza con ese horario.";
@@ -1008,12 +1055,6 @@
             && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
     }
 
-    private bool MascotaBloqueadaPorClienteCrear(Mascota mascota)
-    {
-        var idCliente = mascota.Cliente?.Id ?? clienteSel;
-        return ClienteTieneCruceCrear(idCliente) || MascotaTieneCruceCrear(mascota.Id);
-    }
-
     private bool ClienteTieneCruceCrear(int idCliente)
     {
         if (idCliente <= 0 || !PuedeConsultarDisponibilidadCrear || !citasDiaCrear.Any())
@@ -1024,6 +1065,22 @@
         var (inicio, fin) = RangoNuevaCita();
         return citasDiaCrear.Any(c =>
             c.Mascota?.Cliente?.Id == idCliente
+            && EsEstadoBloqueante(c.Estado)
+            && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
+    }
+
+    // Cruce del cliente con OTRA mascota (no la seleccionada): se permite, pero se avisa.
+    private bool ClienteTieneCruceConOtraMascota(int idCliente, int idMascota)
+    {
+        if (idCliente <= 0 || !PuedeConsultarDisponibilidadCrear || !citasDiaCrear.Any())
+        {
+            return false;
+        }
+
+        var (inicio, fin) = RangoNuevaCita();
+        return citasDiaCrear.Any(c =>
+            c.Mascota?.Cliente?.Id == idCliente
+            && c.Mascota?.Id != idMascota
             && EsEstadoBloqueante(c.Estado)
             && RangosSeCruzan(inicio, fin, c.FechaHoraInicio, c.FechaHoraFin));
     }
@@ -1081,6 +1138,7 @@
         clienteDropdownAbierto = false;
         resultadosCliente = new();
         mascotaSel = 0;
+        cruceClienteConfirmado = false;
         var mascotasDelCliente = await Task.Run(() => MascotaService.ListarPorCliente(clienteSel));
         mascotasCliente = mascotasDelCliente.Where(m => m.Activo).ToList(); // solo mascotas activas para agendar
         if (PuedeConsultarDisponibilidadCrear)
@@ -1134,19 +1192,19 @@
                 return;
             }
 
-            if (ClienteTieneCruceCrear(clienteSel))
-            {
-                mascotaSel = 0;
-                errorCrear = "Este cliente ya tiene una cita que se cruza con ese horario. Elige otra hora antes de agendar.";
-                procesando = false;
-                return;
-            }
-
             if (MascotaTieneCruceCrear(mascotaSel))
             {
                 mascotaSel = 0;
                 errorCrear = "La mascota ya tiene una cita que se cruza con ese horario. Elige otra hora o revisa su agenda.";
                 procesando = false;
+                return;
+            }
+
+            // Cliente con OTRA mascota a la misma hora: se permite, pero se pide confirmación.
+            if (!cruceClienteConfirmado && ClienteTieneCruceConOtraMascota(clienteSel, mascotaSel))
+            {
+                procesando = false;
+                mostrarAdvertenciaCliente = true;
                 return;
             }
 
@@ -1242,7 +1300,23 @@
     }
 
     // ===== Detalle =====
-    private void AbrirDetalle(Cita c) => citaDetalle = c;
+    private string telefonoCliente = "";
+
+    private async Task AbrirDetalle(Cita c)
+    {
+        citaDetalle = c;
+        telefonoCliente = "";
+        var idCliente = c.Mascota?.Cliente?.Id ?? 0;
+        if (idCliente > 0)
+        {
+            try
+            {
+                var cl = await Task.Run(() => ClienteService.BuscarPorId(idCliente));
+                telefonoCliente = cl?.Telefono ?? "";
+            }
+            catch { telefonoCliente = ""; }
+        }
+    }
 
     private async Task AbrirReprogramar(Cita c)
     {

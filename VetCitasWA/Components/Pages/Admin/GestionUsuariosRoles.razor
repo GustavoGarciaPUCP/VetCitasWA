@@ -7,6 +7,7 @@
 @inject VetCitasWA.Servicios.REST.UsuarioRS.AdministradorRestService AdminService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VeterinarioService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.RecepcionistaRestService RecepcionistaService
+@inject VetCitasWA.Servicios.REST.UsuarioRS.UsuarioRestService UsuarioService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
 
 <PageTitle>Usuarios y roles - VetCitas</PageTitle>
@@ -319,6 +320,32 @@
             </div>
         </div>
 
+        <div class="roles-editor">
+            <h3>Restablecer contrasena</h3>
+            @if (usuarioEditando.Id == usuarioActualId)
+            {
+                <p>Para tu propia cuenta no puedes restablecerla desde aqui.</p>
+            }
+            else if (!usuarioEditando.Activo)
+            {
+                <p>Activa el usuario para poder restablecer su contrasena.</p>
+            }
+            else
+            {
+                <p>Define una nueva contrasena (minimo 8 caracteres). Reemplaza la actual de inmediato.</p>
+                <div class="reset-pass-row">
+                    <input class="search-input"
+                           type="password"
+                           placeholder="Nueva contrasena"
+                           autocomplete="new-password"
+                           @bind="nuevaPasswordReset" />
+                    <button type="button" class="btn-secondary" disabled="@procesando" @onclick="RestablecerContrasenaAsync">
+                        @(procesando ? "Procesando..." : "Restablecer")
+                    </button>
+                </div>
+            }
+        </div>
+
         <div class="modal-actions">
             <button type="button" class="btn-secondary" disabled="@procesando" @onclick="CerrarEditar">Cancelar</button>
             <button type="button" class="btn-new" disabled="@procesando" @onclick="GuardarEdicionAsync">
@@ -364,6 +391,7 @@
     private bool nuevoEstadoUsuario;
     private CodigoRol rolPrincipalNuevo = CodigoRol.VETERINARIO;
     private string passwordNuevo = "";
+    private string nuevaPasswordReset = "";
     private string areaNuevo = "";
     private string cmpvNuevo = "";
     private string especialidadNuevo = "";
@@ -459,7 +487,40 @@
     private void AbrirEditar(Usuario usuario)
     {
         usuarioEditando = CopiarUsuario(usuario);
+        nuevaPasswordReset = "";
         errorMensaje = null;
+    }
+
+    private async Task RestablecerContrasenaAsync()
+    {
+        if (usuarioEditando is null) return;
+
+        if (usuarioEditando.Id == usuarioActualId)
+        {
+            Toasts.Error("No puedes restablecer tu propia contrasena desde aqui.");
+            return;
+        }
+        if (!usuarioEditando.Activo)
+        {
+            Toasts.Error("El usuario debe estar activo para restablecer su contrasena.");
+            return;
+        }
+
+        var pass = (nuevaPasswordReset ?? "").Trim();
+        if (pass.Length < 8)
+        {
+            Toasts.Error("La nueva contrasena debe tener al menos 8 caracteres.");
+            return;
+        }
+
+        var idObjetivo = usuarioEditando.Id;
+        await EjecutarOperacionAsync(() =>
+        {
+            UsuarioService.RestablecerContrasena(idObjetivo, pass, usuarioActualId);
+            Toasts.Exito("Contrasena restablecida.");
+        });
+
+        nuevaPasswordReset = "";
     }
 
     private void AbrirNuevo()

@@ -7,6 +7,7 @@
 @inject VetCitasWA.Servicios.REST.UsuarioRS.HorarioVeterinarioRestService HorarioService
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
+@inject NavigationManager Nav
 
 <PageTitle>Mis horarios - VetCitas</PageTitle>
 
@@ -106,6 +107,13 @@
                 <div class="vc-form-field"><span class="vc-form-label">Fecha</span><div>@citaDetalle.FechaHoraInicio.ToString("dd/MM/yyyy")</div></div>
                 <div class="vc-form-field"><span class="vc-form-label">Hora</span><div>@citaDetalle.FechaHoraInicio.ToString("HH:mm") — @citaDetalle.FechaHoraFin.ToString("HH:mm")</div></div>
             </div>
+
+            @if (citaDetalle.Estado == EstadoCita.CONFIRMADA)
+            {
+                <div class="vc-modal-actions" style="justify-content:flex-end;margin-top:1rem;">
+                    <button type="button" class="vc-btn vc-btn-primary" @onclick="() => IniciarAtencion(citaDetalle)">Iniciar atención</button>
+                </div>
+            }
         </div>
     </div>
 }
@@ -205,6 +213,14 @@
     private IEnumerable<Cita> CitasEn(DateTime dia, int hora)
         => citas.Where(c => c.FechaHoraInicio.Date == dia.Date && c.FechaHoraInicio.Hour == hora)
                 .OrderBy(c => c.FechaHoraInicio);
+
+    // Inicia la atención: marca la cita en consulta y va directo al registro
+    private async Task IniciarAtencion(Cita c)
+    {
+        try { await Task.Run(() => CitaService.MarcarEnConsulta(c.Id, vetSel)); }
+        catch { /* si falla el cambio de estado, igual abrimos el registro */ }
+        Nav.NavigateTo($"/citas-hoy/atender?id={c.Id}");
+    }
 
     private string CitaClase(EstadoCita e) => "cita-" + e switch
     {

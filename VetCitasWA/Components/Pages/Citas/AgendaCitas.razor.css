@@ -140,7 +140,8 @@
     box-sizing: border-box;
 }
 
-.cal-cell:nth-child(6n) {
+/* 8 celdas por fila (1 de hora + 7 días): la última de cada fila no lleva borde derecho */
+.cal-cell:nth-child(8n) {
     border-right: none;
 }
 

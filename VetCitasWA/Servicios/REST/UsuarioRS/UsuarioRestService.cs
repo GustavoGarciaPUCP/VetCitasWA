@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using VetCitasWA.Servicios.REST;
 using VetCitasWA.Servicios.Modelo.Usuario;
 
 namespace VetCitasWA.Servicios.REST.UsuarioRS
@@ -69,7 +70,8 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
                 new KeyValuePair<string, string>("idAdmin", idAdmin.ToString())
             });
 
-            http.PostAsync("UsuarioRS/restablecerContrasena", content).GetAwaiter().GetResult();
+            var response = http.PostAsync("UsuarioRS/restablecerContrasena", content).GetAwaiter().GetResult();
+            response.EnsureVetCitasSuccess();
         }
     }
 }

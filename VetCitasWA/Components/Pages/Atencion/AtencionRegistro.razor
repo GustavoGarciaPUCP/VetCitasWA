@@ -70,6 +70,35 @@ else if (cita is null)
                     </div>
                 </section>
 
+                @* --- Historial clínico (todas las atenciones de la mascota, de cualquier veterinario) --- *@
+                <section class="card">
+                    <details class="collapse" open>
+                        <summary class="collapse-summary">
+                            <span class="card-title collapse-title">Historial clínico</span>
+                            <span class="collapse-chevron" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1.646 6.646a.5.5 0 0 1 .708 0L8 12.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+                                </svg>
+                            </span>
+                        </summary>
+                        <div class="collapse-body">
+                            @if (historial.Count == 0)
+                            {
+                                <span class="history-item"><em>Aún no hay atenciones registradas para esta mascota.</em></span>
+                            }
+                            else
+                            {
+                                @foreach (var h in historial)
+                                {
+                                    <span class="history-item">
+                                        @h.FechaHora.ToString("dd/MM/yy") · @(h.Cita?.Servicio?.Nombre ?? "Atención"): @(string.IsNullOrWhiteSpace(h.Diagnostico) ? "Sin diagnóstico registrado" : h.Diagnostico)
+                                    </span>
+                                }
+                            }
+                        </div>
+                    </details>
+                </section>
+
             </div>
 
             @* ================= COLUMNA DERECHA ================= *@
@@ -180,6 +209,9 @@ else if (cita is null)
     private Mascota? mascota;
     private Cliente? cliente;
 
+    // Historial completo de la mascota (todas las atenciones, de cualquier veterinario)
+    private List<Atencion> historial = new();
+
     private int idServicioSeleccionado;
     private bool cargando = true;
 
@@ -230,6 +262,13 @@ else if (cita is null)
                 mascota = cita.Mascota;
                 cliente = mascota?.Cliente;
                 await HidratarMascotaAsync();
+
+                // Historial completo de la mascota: TODAS las atenciones previas (sin filtrar por veterinario)
+                if (mascota is not null && mascota.Id > 0)
+                {
+                    try { historial = await Task.Run(() => AtencionService.ListarHistorialPorMascota(mascota.Id)); }
+                    catch { historial = new(); }
+                }
 
                 // ¿Ya existe una atención para esta cita? La cargamos; si no, partimos de una nueva.
                 var existente = await Task.Run(() => AtencionService.BuscarPorCita(CitaId));

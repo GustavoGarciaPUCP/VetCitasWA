@@ -6,6 +6,7 @@
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
 
 <PageTitle>Citas de hoy - VetCitas</PageTitle>
 
@@ -132,12 +133,18 @@
                                                         {
                                                             case EstadoCita.PENDIENTE:
                                                                 <button type="button" class="acc-item" @onclick="() => MenuConfirmar(c)">Confirmar</button>
-                                                                <button type="button" class="acc-item acc-item-danger" @onclick="() => MenuCancelar(c)">Cancelar</button>
+                                                                @if (EsRecep)
+                                                                {
+                                                                    <button type="button" class="acc-item acc-item-danger" @onclick="() => MenuCancelar(c)">Cancelar</button>
+                                                                }
                                                                 break;
                                                             case EstadoCita.CONFIRMADA:
                                                                 <button type="button" class="acc-item" @onclick="() => MenuIniciar(c)">Iniciar atención</button>
-                                                                <button type="button" class="acc-item" @onclick="() => MenuNoAsistio(c)">No asistió</button>
-                                                                <button type="button" class="acc-item acc-item-danger" @onclick="() => MenuCancelar(c)">Cancelar</button>
+                                                                @if (EsRecep)
+                                                                {
+                                                                    <button type="button" class="acc-item" @onclick="() => MenuNoAsistio(c)">No asistió</button>
+                                                                    <button type="button" class="acc-item acc-item-danger" @onclick="() => MenuCancelar(c)">Cancelar</button>
+                                                                }
                                                                 break;
                                                             case EstadoCita.EN_CONSULTA:
                                                                 <a class="acc-item" href="@($"/citas-hoy/atender?id={c.Id}")" @onclick="() => menuCitaId = 0">Registrar atención</a>
@@ -200,6 +207,7 @@
     private bool procesando;
     private string? errorMensaje;
     private int usuarioActualId;
+    private bool EsRecep; // true si el usuario también tiene rol recepcionista
 
     // Filtro de estado (multi-selección). Por defecto: Pendiente y En consulta.
     private static readonly EstadoCita[] EstadosTodos =
@@ -207,7 +215,7 @@
         EstadoCita.PENDIENTE, EstadoCita.CONFIRMADA, EstadoCita.EN_CONSULTA,
         EstadoCita.ATENDIDA, EstadoCita.NO_ASISTIO, EstadoCita.CANCELADA
     };
-    private HashSet<EstadoCita> estadosSel = new() { EstadoCita.PENDIENTE, EstadoCita.EN_CONSULTA };
+    private HashSet<EstadoCita> estadosSel = new() { EstadoCita.CONFIRMADA, EstadoCita.EN_CONSULTA };
     private bool estadoDropdownAbierto;
 
     // Paginación (cliente)
@@ -217,7 +225,12 @@
     private Cita? citaACancelar;
     private string motivoCancelacion = "";
 
-    protected override async Task OnInitializedAsync() => await CargarCitas();
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        EsRecep = authState.User.IsInRole("RECEPCIONISTA");
+        await CargarCitas();
+    }
 
     private async Task CargarCitas()
     {
@@ -320,6 +333,14 @@
     // Sin autenticación todavía: usamos el id del veterinario de la cita como modificador (FK válida)
     private int ModBy(Cita c) => usuarioActualId;
 
+    // Veterinario (sin rol recepción): marca la cita en consulta y va directo al registro de atención.
+    private async Task IrARegistrar(Cita c)
+    {
+        try { await Task.Run(() => CitaService.MarcarEnConsulta(c.Id, ModBy(c))); }
+        catch { /* si falla el cambio de estado, igual abrimos el registro */ }
+        Nav.NavigateTo($"/citas-hoy/atender?id={c.Id}");
+    }
+
     private string EstadoBadge(EstadoCita e) => e switch
     {
         EstadoCita.PENDIENTE => "badge-pending",
@@ -343,14 +364,13 @@
 
     // Envoltorios de acciones (sin literales de texto en el markup)
     private Task Confirmar(Cita c) => Accion(() => CitaService.ConfirmarCita(c.Id, ModBy(c)), "Cita confirmada correctamente.");
-    private Task Iniciar(Cita c) => Accion(() => CitaService.MarcarEnConsulta(c.Id, ModBy(c)), "Atención iniciada.");
     private Task NoAsistio(Cita c) => Accion(() => CitaService.MarcarNoAsistio(c.Id, ModBy(c)), "Cita marcada como no asistió.");
 
     // ===== Menú de acciones (3 puntos) =====
     private int menuCitaId = 0;
     private void ToggleMenu(int id) => menuCitaId = (menuCitaId == id) ? 0 : id;
     private async Task MenuConfirmar(Cita c) { menuCitaId = 0; await Confirmar(c); }
-    private async Task MenuIniciar(Cita c) { menuCitaId = 0; await Iniciar(c); }
+    private async Task MenuIniciar(Cita c) { menuCitaId = 0; await IrARegistrar(c); }
     private async Task MenuNoAsistio(Cita c) { menuCitaId = 0; await NoAsistio(c); }
     private void MenuCancelar(Cita c) { menuCitaId = 0; PedirCancelar(c); }
 
