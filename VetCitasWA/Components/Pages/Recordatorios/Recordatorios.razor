@@ -365,6 +365,7 @@
         try
         {
             recordatorioEdit.Mensaje = mensajeEdit.Trim();
+            recordatorioEdit.ModifiedBy = new Usuario { Id = modBy };
             await Task.Run(() => RecordatorioService.Modificar(recordatorioEdit));
             Toasts.Exito("Mensaje actualizado.");
             recordatorioEdit = null;

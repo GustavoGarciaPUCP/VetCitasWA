@@ -5,6 +5,7 @@
 @using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Cliente
 @using VetCitasWA.Servicios.Modelo.Common.Enums
+@using VetCitasWA.Servicios.Modelo.Usuario
 @inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
 @inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
 @inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
@@ -556,6 +557,8 @@
         usuarioActualId = int.TryParse(claim, out var id) ? id : 0;
     }
 
+    private Usuario AuditorActual() => new() { Id = usuarioActualId };
+
     private async Task CargarAlcanceVeterinario()
     {
         clienteIdsPermitidos = new();
@@ -888,11 +891,17 @@
             errorModal = error;
             return;
         }
+        if (usuarioActualId <= 0)
+        {
+            errorModal = "No se pudo identificar al usuario autenticado. Vuelve a iniciar sesion.";
+            return;
+        }
 
         guardando = true;
         errorModal = null;
         try
         {
+            clienteEdit.ModifiedBy = AuditorActual();
             int idCliente;
             if (clienteEsEdicion)
             {
@@ -912,6 +921,7 @@
                 foreach (var nm in mascotasNuevas)
                 {
                     nm.Cliente = new Cliente { Id = idCliente };
+                    nm.ModifiedBy = AuditorActual();
                     await Task.Run(() => MascotaService.Insertar(nm));
                     creadas++;
                 }
@@ -1063,7 +1073,15 @@
 
         guardando = true;
         errorModal = null;
+        if (usuarioActualId <= 0)
+        {
+            errorModal = "No se pudo identificar al usuario autenticado. Vuelve a iniciar sesion.";
+            guardando = false;
+            return;
+        }
+
         mascotaEdit.Cliente = new Cliente { Id = mascotaClienteId };
+        mascotaEdit.ModifiedBy = AuditorActual();
         try
         {
             if (mascotaEsEdicion)
@@ -1106,7 +1124,8 @@
                 Telefono = c.Telefono,
                 Email = c.Email,
                 Observaciones = c.Observaciones,
-                Activo = true
+                Activo = true,
+                ModifiedBy = AuditorActual()
             };
 
             var resultado = await Task.Run(() => ClienteService.Modificar(cliente));
@@ -1153,7 +1172,8 @@
                 Esterilizado = m.Esterilizado,
                 Peso = m.Peso,
                 Activo = true,
-                Cliente = new Cliente { Id = idCliente }
+                Cliente = new Cliente { Id = idCliente },
+                ModifiedBy = AuditorActual()
             };
 
             var resultado = await Task.Run(() => MascotaService.Modificar(mascota));
@@ -1193,7 +1213,7 @@
             if (clienteAEliminar is not null)
             {
                 int id = clienteAEliminar.Id;
-                int r = await Task.Run(() => ClienteService.Eliminar(id));
+                int r = await Task.Run(() => ClienteService.Eliminar(id, usuarioActualId));
                 if (r == -1)
                 {
                     Toasts.Error("No se puede eliminar: el cliente tiene una cita confirmada en el futuro.");
@@ -1210,7 +1230,7 @@
             else if (mascotaAEliminar is not null)
             {
                 int id = mascotaAEliminar.Id;
-                await Task.Run(() => MascotaService.Eliminar(id));
+                await Task.Run(() => MascotaService.Eliminar(id, usuarioActualId));
                 Toasts.Exito("Mascota desactivada.");
             }
             CancelarEliminacion();

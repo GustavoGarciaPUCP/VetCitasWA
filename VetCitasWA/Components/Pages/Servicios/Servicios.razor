@@ -1,11 +1,14 @@
 @page "/servicios"
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "VETERINARIO,RECEPCIONISTA,ADMINISTRADOR")]
+@using System.Security.Claims
 @using VetCitasWA.Servicios.Modelo.Servicio
 @using VetCitasWA.Servicios.Modelo.Common.Enums
+@using VetCitasWA.Servicios.Modelo.Usuario
 @inject VetCitasWA.Servicios.REST.ServicioRS.ServicioRestService ServicioService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
 @implements IDisposable
 
 <PageTitle>Servicios - VetCitas</PageTitle>
@@ -166,6 +169,7 @@
     private List<Servicio> servicios = new();
     private bool cargando = true;
     private bool procesando = false;
+    private int usuarioActualId;
     private string? errorMensaje;
 
     // Filtros: borrador (lo que el usuario escribe en los inputs)
@@ -199,7 +203,17 @@
 
     protected override async Task OnInitializedAsync()
     {
+        usuarioActualId = await ObtenerUsuarioActualId();
         await CargarServicios();
+    }
+
+    private async Task<int> ObtenerUsuarioActualId()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var raw = authState.User.FindFirst("IdUsuario")?.Value
+            ?? authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? authState.User.FindFirst("nameid")?.Value;
+        return int.TryParse(raw, out var id) ? id : 0;
     }
 
     private async Task CargarServicios()
@@ -313,6 +327,7 @@
         try
         {
             s.Activo = true;
+            s.ModifiedBy = new Usuario { Id = usuarioActualId };
             await Task.Run(() => ServicioService.Modificar(s));
             await CargarServicios();
             Toasts.Exito($"Servicio \"{s.Nombre}\" reactivado.");
@@ -342,7 +357,7 @@
         try
         {
             int id = servicioAEliminar.Id;
-            await Task.Run(() => ServicioService.Eliminar(id));
+            await Task.Run(() => ServicioService.Eliminar(id, usuarioActualId));
             servicioAEliminar = null;
             await CargarServicios();
             Toasts.Exito($"Servicio \"{nombre}\" eliminado.");
