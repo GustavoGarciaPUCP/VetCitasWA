@@ -123,7 +123,7 @@
                                         <span class="pet-list-inline">@string.Join(", ", mascotasCliente.Select(m => m.Nombre))</span>
                                     </td>
                                     <td data-label="Estado">
-                                        <span class="status-badge @(c.Activo ? "status-active" : "status-inactive")">@(c.Activo ? "Activo" : "Inactivo")</span>
+                                        <span class="status-badge @(c.Activo ? "status-active" : "status-inactive")">@(c.Activo ? "Activo" : "Desactivado")</span>
                                     </td>
                                     <td data-label="Acciones">
                                         <div class="row-actions">
@@ -197,7 +197,7 @@
                                     <td data-label="Peso">@(m.Peso > 0 ? $"{m.Peso:0.#} kg" : "—")</td>
                                     <td data-label="Dueño">@NombreDueno(m)</td>
                                     <td data-label="Estado">
-                                        <span class="status-badge @(m.Activo ? "status-active" : "status-inactive")">@(m.Activo ? "Activo" : "Inactivo")</span>
+                                        <span class="status-badge @(m.Activo ? "status-active" : "status-inactive")">@(m.Activo ? "Activo" : "Desactivado")</span>
                                     </td>
                                     <td data-label="Acciones">
                                         <div class="row-actions">
@@ -425,11 +425,11 @@
             <p class="vc-modal-message">
                 @if (clienteAEliminar is not null)
                 {
-                    <text>¿Desactivar al cliente <strong>@clienteAEliminar.Nombres @clienteAEliminar.Apellidos</strong>? Podrás reactivarlo desde el filtro de inactivos.</text>
+                    <text>¿Desactivar al cliente <strong>@clienteAEliminar.Nombres @clienteAEliminar.Apellidos</strong>? Podrás reactivarlo desde el filtro de desactivados.</text>
                 }
                 else
                 {
-                    <text>¿Desactivar la mascota <strong>@mascotaAEliminar!.Nombre</strong>? Podrás reactivarla desde el filtro de inactivos.</text>
+                    <text>¿Desactivar la mascota <strong>@mascotaAEliminar!.Nombre</strong>? Podrás reactivarla desde el filtro de desactivados.</text>
                 }
             </p>
             <div class="vc-modal-actions">
@@ -725,7 +725,7 @@
     private readonly IEnumerable<VcSelectOption<string>> filtroEstadoOptions = new[]
     {
         new VcSelectOption<string>("activos", "Activos"),
-        new VcSelectOption<string>("inactivos", "Inactivos"),
+        new VcSelectOption<string>("inactivos", "Desactivados"),
         new VcSelectOption<string>("todos", "Todos"),
     };
 

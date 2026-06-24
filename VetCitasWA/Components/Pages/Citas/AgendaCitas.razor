@@ -230,7 +230,7 @@
                           Placeholder="Selecciona un servicio…" />
                 @if (ServicioSeleccionadoInactivo)
                 {
-                    <span class="vc-form-hint agenda-hint-warning">Advertencia: este servicio está inactivo. Te recomendamos elegir un servicio activo.</span>
+                    <span class="vc-form-hint agenda-hint-warning">Advertencia: este servicio está desactivado. Te recomendamos elegir un servicio activo.</span>
                 }
             </div>
 
@@ -541,7 +541,7 @@
     private IEnumerable<VcSelectOption<int>> ServicioOptions =>
         servicios.Select(s => new VcSelectOption<int>(
             s.Id,
-            $"{s.Nombre} — {s.DuracionMinutos} min · S/ {s.Precio:0.00}" + (s.Activo ? "" : " (inactivo)")));
+            $"{s.Nombre} — {s.DuracionMinutos} min · S/ {s.Precio:0.00}" + (s.Activo ? "" : " (desactivado)")));
 
     private bool ServicioSeleccionadoInactivo =>
         servicioSel > 0 && servicios.FirstOrDefault(s => s.Id == servicioSel) is { Activo: false };
@@ -736,20 +736,19 @@
             ? horarios.Min(h => Math.Clamp(h.HoraInicio.Hour, 0, HoraCierreMaxima - 1))
             : HoraAperturaFallback;
 
-        // Se permite hasta 24 para que un horario que cierra 23:59 genere la fila de las 23.
         var cierre = horarios.Any()
-            ? horarios.Max(h => Math.Min(24, h.HoraFin.Hour + (h.HoraFin.Minute > 0 ? 1 : 0)))
+            ? horarios.Max(h => Math.Min(HoraCierreMaxima, h.HoraFin.Hour + (h.HoraFin.Minute > 0 ? 1 : 0)))
             : HoraCierreMaxima;
 
         var ultimaHora = Math.Max(inicio, cierre - 1);
 
         if (citasVisibles.Any())
         {
-            inicio = Math.Min(inicio, citasVisibles.Min(c => Math.Clamp(c.FechaHoraInicio.Hour, 0, HoraCierreMaxima)));
-            ultimaHora = Math.Max(ultimaHora, citasVisibles.Max(c => Math.Clamp(c.FechaHoraInicio.Hour, 0, HoraCierreMaxima)));
+            inicio = Math.Min(inicio, citasVisibles.Min(c => Math.Clamp(c.FechaHoraInicio.Hour, 0, HoraCierreMaxima - 1)));
+            ultimaHora = Math.Max(ultimaHora, citasVisibles.Max(c => Math.Clamp(c.FechaHoraInicio.Hour, 0, HoraCierreMaxima - 1)));
         }
 
-        ultimaHora = Math.Min(ultimaHora, HoraCierreMaxima);
+        ultimaHora = Math.Min(ultimaHora, HoraCierreMaxima - 1);
         return Enumerable.Range(inicio, ultimaHora - inicio + 1).ToList();
     }
 

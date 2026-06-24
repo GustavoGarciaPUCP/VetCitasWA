@@ -136,7 +136,26 @@
 
     private static readonly string[] DiasNombre7 = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
     private static readonly string[] MesCorto = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
-    private static readonly int[] Horas = { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+    // El rango de horas del calendario se ajusta al horario real del veterinario logueado.
+    private IEnumerable<int> Horas => CalcularHoras();
+
+    private List<int> CalcularHoras()
+    {
+        var activos = horarios.Where(h => h.Activo).ToList();
+
+        // Sin horario configurado: rango por defecto (8:00 a 18:00).
+        if (!activos.Any())
+        {
+            return Enumerable.Range(8, 11).ToList();
+        }
+
+        var inicio = activos.Min(h => Math.Clamp(h.HoraInicio.Hour, 0, 23));
+        // Hora de cierre redondeada hacia arriba si hay minutos (ej. 23:59 -> 24).
+        var cierre = activos.Max(h => Math.Min(24, h.HoraFin.Hour + (h.HoraFin.Minute > 0 ? 1 : 0)));
+        var ultima = Math.Min(23, Math.Max(inicio, cierre - 1));
+
+        return Enumerable.Range(inicio, ultima - inicio + 1).ToList();
+    }
 
     private DateTime[] DiasSemana => Enumerable.Range(0, 7).Select(i => semanaInicio.AddDays(i)).ToArray();
 

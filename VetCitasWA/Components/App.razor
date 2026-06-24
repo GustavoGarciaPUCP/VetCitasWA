@@ -116,6 +116,26 @@
                 if (iti) { try { iti.destroy(); } catch (e) { } this._map.delete(el); }
             }
         };
+
+        // Descarga un archivo desde una URL del mismo origen (usa la cookie de sesion)
+        // y dispara la descarga en el navegador con el nombre indicado.
+        window.descargarArchivo = async function (url, filename) {
+            const resp = await fetch(url, { credentials: 'same-origin' });
+            if (!resp.ok) {
+                let detalle = '';
+                try { detalle = await resp.text(); } catch (e) { }
+                throw new Error('HTTP ' + resp.status + (detalle ? (': ' + detalle) : ''));
+            }
+            const blob = await resp.blob();
+            const href = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = href;
+            a.download = filename || 'archivo';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(href);
+        };
     </script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>

@@ -143,7 +143,7 @@
                                     }
                                     else
                                     {
-                                        <span class="status-pill status-inactive">Inactivo</span>
+                                        <span class="status-pill status-inactive">Desactivado</span>
                                     }
                                 </td>
                                 <td data-label="Acciones">
@@ -359,7 +359,7 @@
 
         <div class="roles-editor">
             <h3>Roles del usuario</h3>
-            <p>Marca o desmarca los roles. Los cambios se aplican al pulsar "Guardar cambios".</p>
+            <p>Asigna o quita roles desde aqui. Los cambios se guardan al instante.</p>
             <div class="role-actions role-actions-editor" aria-label="Gestionar roles">
                 @foreach (var rolGestionable in RolesGestionables)
                 {
@@ -368,7 +368,7 @@
                             class="role-toggle @(tieneRol ? "role-toggle-on" : "")"
                             disabled="@(procesando || NoPuedeModificarRol(usuarioEditando, rolGestionable.Codigo))"
                             title="@TituloRol(usuarioEditando, rolGestionable.Codigo, rolGestionable.Label)"
-                            @onclick="() => ToggleRolLocal(rolGestionable.Codigo)">
+                            @onclick="() => CambiarRolAsync(usuarioEditando, rolGestionable.Codigo)">
                         @(tieneRol ? "Quitar" : "Asignar") @rolGestionable.Label
                     </button>
                 }
@@ -437,7 +437,7 @@
             <p class="confirm-desc">
                 @(nuevoEstadoUsuario
                     ? "El usuario volverá a estar disponible para iniciar sesión."
-                    : "El usuario se marcará como inactivo sin eliminarlo físicamente.")
+                    : "El usuario se marcará como desactivado sin eliminarlo físicamente.")
             </p>
         }
 
@@ -484,8 +484,6 @@
     private bool nuevoEstadoUsuario;
     private bool verificandoCitasVet;
     private bool vetTieneCitasActivas;
-    // Roles que tenia el usuario al abrir el modal de edicion (para calcular el diff al guardar).
-    private HashSet<CodigoRol> rolesOriginalesEditar = new();
     // Roles seleccionados para el nuevo usuario (multi-seleccion).
     private HashSet<CodigoRol> rolesSeleccionados = new();
     private bool rolesDropdownAbierto;
@@ -532,7 +530,7 @@
     private static readonly IEnumerable<VcSelectOption<string>> OpcionesEstado = new[]
     {
         new VcSelectOption<string>("activos", "Activos"),
-        new VcSelectOption<string>("inactivos", "Inactivos"),
+        new VcSelectOption<string>("inactivos", "Desactivados"),
         new VcSelectOption<string>("todos", "Todos")
     };
 
@@ -649,7 +647,6 @@
         }
 
         usuarioEditando = CopiarUsuario(usuario);
-        rolesOriginalesEditar = new HashSet<CodigoRol>((usuario.Roles ?? new List<RolSistema>()).Select(r => r.Codigo));
         nuevaPasswordReset = "";
         errorMensaje = null;
     }
@@ -962,42 +959,9 @@
             return;
         }
 
-        // ===== Validacion y diff de roles (se aplican al guardar) =====
-        var rolesActuales = (usuarioEditando.Roles ?? new List<RolSistema>())
-            .Select(r => r.Codigo).ToHashSet();
-
-        if (rolesActuales.Count == 0)
-        {
-            Toasts.Error("Un usuario debe tener al menos un rol.");
-            return;
-        }
-
-        var rolesQuitados = rolesOriginalesEditar.Where(r => !rolesActuales.Contains(r)).ToList();
-        var rolesAgregados = rolesActuales.Where(r => !rolesOriginalesEditar.Contains(r)).ToList();
-
-        // Quitar el rol Veterinario requiere que no tenga citas activas.
-        if (rolesQuitados.Contains(CodigoRol.VETERINARIO)
-            && await VeterinarioTieneCitasActivasAsync(usuarioEditando.Id))
-        {
-            Toasts.Error("No se puede quitar el rol Veterinario: este usuario tiene citas pendientes, confirmadas o en consulta. Cancélalas o reprográmalas desde recepción primero.");
-            return;
-        }
-
         await EjecutarOperacionAsync(() =>
         {
             AdminService.ModificarUsuarioBasico(usuarioEditando, usuarioActualId);
-
-            // Primero se asignan los nuevos y luego se revocan, para no dejar al
-            // usuario momentaneamente sin roles (el backend lo rechazaria).
-            foreach (var rol in rolesAgregados)
-            {
-                AdminService.AsignarRol(usuarioEditando.Id, rol.ToString());
-            }
-            foreach (var rol in rolesQuitados)
-            {
-                AdminService.RevocarRol(usuarioEditando.Id, rol.ToString());
-            }
-
             Toasts.Exito("Usuario actualizado.");
         });
 
@@ -1093,32 +1057,52 @@
         }
     }
 
-    // Cambia el rol SOLO en memoria (no toca el backend). La diferencia con los
-    // roles originales se aplica recien al pulsar "Guardar cambios".
-    private void ToggleRolLocal(CodigoRol codigoRol)
+    private async Task CambiarRolAsync(Usuario usuario, CodigoRol codigoRol)
     {
-        if (usuarioEditando is null) return;
-        usuarioEditando.Roles ??= new List<RolSistema>();
+        var asignado = TieneRol(usuario, codigoRol);
+        if (asignado && NoPuedeModificarRol(usuario, codigoRol))
+        {
+            Toasts.Error("No se puede quitar este rol administrativo.");
+            return;
+        }
 
-        var tiene = usuarioEditando.Roles.Any(r => r.Codigo == codigoRol);
-        if (tiene)
+        await EjecutarOperacionAsync(() =>
         {
-            if (NoPuedeModificarRol(usuarioEditando, codigoRol))
+            if (asignado)
             {
-                Toasts.Error("No se puede quitar este rol administrativo.");
-                return;
+                AdminService.RevocarRol(usuario.Id, codigoRol.ToString());
+                Toasts.Exito("Rol revocado.");
             }
-            if (usuarioEditando.Roles.Count <= 1)
+            else
             {
-                Toasts.Error("Un usuario debe tener al menos un rol.");
-                return;
+                AdminService.AsignarRol(usuario.Id, codigoRol.ToString());
+                Toasts.Exito("Rol asignado.");
             }
-            usuarioEditando.Roles.RemoveAll(r => r.Codigo == codigoRol);
-        }
-        else
+        });
+
+        // Refresca los roles del usuario en edicion con el metodo dedicado del backend.
+        // Es mas confiable que re-parsear la lista filtrada: si el usuario deja de
+        // coincidir con el filtro de rol al cambiarlo, ya no aparece en la lista y
+        // el panel mostraria roles desactualizados.
+        if (usuarioEditando?.Id == usuario.Id)
         {
-            usuarioEditando.Roles.Add(new RolSistema { Codigo = codigoRol });
+            try
+            {
+                var rolesActuales = await Task.Run(() => AdminService.ListarRolesDeUsuario(usuario.Id));
+                usuarioEditando.Roles = rolesActuales ?? new List<RolSistema>();
+            }
+            catch
+            {
+                // Si falla la consulta de roles, ajusta el estado localmente para no dejar el panel inconsistente.
+                usuarioEditando.Roles ??= new List<RolSistema>();
+                if (asignado)
+                    usuarioEditando.Roles.RemoveAll(r => r.Codigo == codigoRol);
+                else if (usuarioEditando.Roles.All(r => r.Codigo != codigoRol))
+                    usuarioEditando.Roles.Add(new RolSistema { Codigo = codigoRol });
+            }
         }
+
+        await CargarUsuariosAsync();
     }
 
     private async Task EjecutarOperacionAsync(Action operacion)

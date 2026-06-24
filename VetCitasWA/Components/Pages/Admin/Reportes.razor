@@ -5,6 +5,7 @@
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
+@inject IJSRuntime JS
 
 <PageTitle>Consolidados - VetCitas</PageTitle>
 
@@ -17,6 +18,11 @@
 <div class="page-section">
 
     <h1 class="page-title">Consolidados</h1>
+
+    @if (pdfError is not null)
+    {
+        <div class="admin-alert" role="alert">@pdfError</div>
+    }
 
     <div class="reports-grid">
 
@@ -110,9 +116,14 @@
                     </div>
                 }
 
-                <button type="button" class="btn-generar" @onclick="CargarCitasAsync" disabled="@cargandoCitas">
-                    Actualizar consolidado
-                </button>
+                <div class="report-actions">
+                    <button type="button" class="btn-generar" @onclick="CargarCitasAsync" disabled="@cargandoCitas">
+                        Generar consolidado
+                    </button>
+                    <button type="button" class="btn-export-pdf" @onclick="ExportarPdfCitas" disabled="@generandoPdf">
+                        @(generandoPdf ? "Generando PDF…" : "Exportar a PDF")
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -187,7 +198,7 @@
                 }
 
                 <button type="button" class="btn-generar" @onclick="CargarClientesAsync" disabled="@cargandoClientes">
-                    Actualizar consolidado
+                    Generar consolidado
                 </button>
 
                 <p class="report-note">
@@ -202,6 +213,40 @@
 </div>
 
 @code {
+    private bool generandoPdf;
+    private string? pdfError;
+
+    // Exporta el consolidado de citas con sus filtros (fechas, estado, servicio).
+    private Task ExportarPdfCitas()
+        => ExportarPdf(fechaInicioCitas, fechaFinCitas, filtroEstado, filtroServicio);
+
+    private async Task ExportarPdf(DateTime fIni, DateTime fFin, string estadoFiltro, string servicioFiltro)
+    {
+        generandoPdf = true;
+        pdfError = null;
+        try
+        {
+            var url = "/consolidados/pdf"
+                + $"?fechaInicio={fIni:yyyy-MM-dd}"
+                + $"&fechaFin={fFin:yyyy-MM-dd}"
+                + $"&estado={Uri.EscapeDataString(estadoFiltro ?? "TODOS")}"
+                + $"&servicio={Uri.EscapeDataString(servicioFiltro ?? "TODOS")}";
+
+            // El endpoint hace la exportacion en el servidor y devuelve el archivo;
+            // el helper JS dispara la descarga con la cookie de sesion.
+            await JS.InvokeVoidAsync("descargarArchivo", url, "consolidados.pdf");
+        }
+        catch (Exception ex)
+        {
+            // Se muestra el detalle real (incluye el mensaje que devuelve Power BI).
+            pdfError = $"No se pudo generar el PDF. {ex.Message}";
+        }
+        finally
+        {
+            generandoPdf = false;
+        }
+    }
+
     private readonly DateTime hoy = DateTime.Today;
     private DateTime fechaInicioCitas = new(DateTime.Today.Year, DateTime.Today.Month, 1);
     private DateTime fechaFinCitas = DateTime.Today;

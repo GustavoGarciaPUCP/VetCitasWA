@@ -114,6 +114,10 @@ builder.Services.AddScoped(sp => new HttpClient
     BaseAddress = new Uri(builder.Configuration.GetValue<string>("ApiSettings:BaseUrl")!)
 });
 
+// HttpClientFactory + servicio de exportacion de Power BI (PDF de /consolidados).
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<VetCitasWA.Servicios.PowerBI.PowerBiExportService>();
+
 // Registrar servicios REST - Usuario
 builder.Services.AddScoped<VetCitasWA.Servicios.REST.UsuarioRS.AdministradorRestService>();
 builder.Services.AddScoped<VetCitasWA.Servicios.REST.UsuarioRS.UsuarioRestService>();
@@ -229,6 +233,23 @@ app.MapGet("/auth/logout", async (HttpContext context) =>
     await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     return Results.Redirect("/login");
 });
+
+// Exporta el reporte de Power BI de /consolidados a PDF (solo administradores).
+// Acepta filtros opcionales que se pasan como parametros del reporte paginado.
+app.MapGet("/consolidados/pdf", async (
+    VetCitasWA.Servicios.PowerBI.PowerBiExportService powerBi,
+    string? fechaInicio, string? fechaFin, string? estado, string? servicio) =>
+{
+    try
+    {
+        var pdf = await powerBi.ExportarReportePdfAsync(fechaInicio, fechaFin, estado, servicio);
+        return Results.File(pdf, "application/pdf", "consolidados.pdf");
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"No se pudo generar el PDF de Power BI. {ex.Message}");
+    }
+}).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = "ADMINISTRADOR" });
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
