@@ -607,7 +607,7 @@
 
     private string VeterinarioCrearEmptyText =>
         cargandoVeterinariosCrear ? "Buscando veterinarios disponibles..." :
-        PuedeConsultarDisponibilidadCrear ? "No hay veterinarios disponibles para este horario." :
+        PuedeConsultarDisponibilidadCrear ? "No hay veterinarios disponibles para este horario. Si el veterinario es nuevo, registra primero su horario semanal." :
         "Completa servicio, fecha y hora para consultar disponibilidad.";
 
     private string VeterinarioCrearPlaceholder =>
@@ -622,7 +622,7 @@
         cargandoVeterinariosCrear ? "Consultando horarios y cruces..." :
         veterinariosDisponiblesCrear.Any()
             ? "Solo se muestran veterinarios activos y disponibles para ese horario."
-            : "No hay veterinarios activos disponibles para ese servicio y horario.";
+            : "No hay veterinarios activos con horario libre para ese servicio y hora. Revisa Gestionar horarios si acabas de crear uno.";
 
     private string MascotaCrearHint
     {
@@ -986,6 +986,7 @@
         {
             var inicio = fechaNueva.Date.Add(horaNueva.ToTimeSpan());
             await RefrescarCitasDiaCrear(forzar: true);
+            await RefrescarVeterinariosYHorarios();
             veterinariosDisponiblesCrear = await Task.Run(() => VeterinarioService.ListarDisponibles(inicio, servicioSel));
             cruceClienteConfirmado = false;
             if (mascotaSel > 0 && MascotaTieneCruceCrear(mascotaSel))
@@ -1033,6 +1034,12 @@
             fechaCitasDiaCrear = null;
             return false;
         }
+    }
+
+    private async Task RefrescarVeterinariosYHorarios()
+    {
+        veterinarios = await Task.Run(() => VeterinarioService.ListarTodos());
+        horariosAgenda = await Task.Run(() => HorarioService.ListarTodos());
     }
 
     private (DateTime Inicio, DateTime Fin) RangoNuevaCita()

@@ -412,6 +412,10 @@
     height: 42px;
 }
 
+.btn-refresh-vets {
+    min-width: 112px;
+}
+
 .btn-small {
     padding: 0.42rem 0.7rem;
     font-size: 0.76rem;

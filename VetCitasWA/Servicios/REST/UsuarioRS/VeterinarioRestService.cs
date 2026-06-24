@@ -39,7 +39,10 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
 
         public List<Veterinario> ListarTodos()
         {
-            return http.GetFromJsonAsync<List<Veterinario>>("VeterinarioRS/listar")
+            var version = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var response = http.GetAsync($"VeterinarioRS/listar?_={version}").GetAwaiter().GetResult();
+            response.EnsureVetCitasSuccess();
+            return response.Content.ReadFromJsonAsync<List<Veterinario>>()
                 .GetAwaiter().GetResult() ?? new List<Veterinario>();
         }
 
@@ -52,7 +55,11 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         public List<Veterinario> ListarDisponibles(DateTime fechaHoraInicio, int idServicio)
         {
             string fechaStr = fechaHoraInicio.ToString("yyyy-MM-ddTHH:mm:ss");
-            return http.GetFromJsonAsync<List<Veterinario>>($"VeterinarioRS/listarDisponibles?fechaHoraInicio={fechaStr}&idServicio={idServicio}")
+            var version = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var response = http.GetAsync($"VeterinarioRS/listarDisponibles?fechaHoraInicio={fechaStr}&idServicio={idServicio}&_={version}")
+                .GetAwaiter().GetResult();
+            response.EnsureVetCitasSuccess();
+            return response.Content.ReadFromJsonAsync<List<Veterinario>>()
                 .GetAwaiter().GetResult() ?? new List<Veterinario>();
         }
     }

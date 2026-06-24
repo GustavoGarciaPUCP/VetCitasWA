@@ -36,9 +36,17 @@
                               Value="idVetSeleccionado"
                               ValueChanged="OnVetChanged"
                               Options="OpcionesVeterinarios"
-                              Placeholder="Selecciona un veterinario" />
+                              Placeholder="@VeterinarioPlaceholder"
+                              EmptyText="@VeterinarioEmptyText"
+                              Disabled="@cargandoVeterinarios" />
                 </div>
             </div>
+
+            <button type="button" class="vc-btn vc-btn-secondary btn-toolbar btn-refresh-vets"
+                    disabled="@(procesando || cargandoVeterinarios)"
+                    @onclick="ActualizarVeterinariosAsync">
+                @(cargandoVeterinarios ? "Actualizando..." : "Actualizar")
+            </button>
 
             @if (PuedeCrearNuevoHorario)
             {
@@ -258,6 +266,7 @@
     private int idVetSeleccionado;
     private int usuarioActualId;
     private bool cargandoHorarios;
+    private bool cargandoVeterinarios;
     private bool procesando;
     private bool mostrarEditor;
     private bool editando;
@@ -277,6 +286,14 @@
             .OrderBy(vet => vet.Nombres)
             .ThenBy(vet => vet.Apellidos)
             .Select(vet => new VcSelectOption<int>(vet.Id, $"{vet.Nombres} {vet.Apellidos}".Trim()));
+
+    private string VeterinarioPlaceholder =>
+        cargandoVeterinarios ? "Cargando veterinarios..." : "Selecciona un veterinario";
+
+    private string VeterinarioEmptyText =>
+        cargandoVeterinarios
+            ? "Cargando veterinarios..."
+            : "No hay veterinarios activos. Crea o activa un veterinario antes de registrar horarios.";
 
     private static readonly VcSelectOption<int>[] TodasOpcionesDias = new[]
     {
@@ -305,7 +322,7 @@
     }
 
     private bool PuedeCrearNuevoHorario
-        => idVetSeleccionado > 0 && !cargandoHorarios && DiasDisponiblesNuevo.Any();
+        => idVetSeleccionado > 0 && !cargandoVeterinarios && !cargandoHorarios && DiasDisponiblesNuevo.Any();
 
     private IEnumerable<VcSelectOption<int>> OpcionesDiasEditor
     {
@@ -320,14 +337,69 @@
     protected override async Task OnInitializedAsync()
     {
         usuarioActualId = await ObtenerUsuarioActualId();
+        await CargarVeterinariosAsync(mantenerSeleccion: false);
+    }
+
+    private async Task ActualizarVeterinariosAsync()
+    {
+        await CargarVeterinariosAsync(mantenerSeleccion: true, notificar: true);
+        if (idVetSeleccionado > 0)
+        {
+            await CargarHorarios();
+        }
+    }
+
+    private async Task CargarVeterinariosAsync(bool mantenerSeleccion, bool notificar = false)
+    {
+        cargandoVeterinarios = true;
+        var seleccionAnterior = idVetSeleccionado;
+
         try
         {
-            listaVeterinarios = VetService.ListarTodos();
+            listaVeterinarios = await Task.Run(() => VetService.ListarTodos());
+
+            if (mantenerSeleccion
+                && seleccionAnterior > 0
+                && listaVeterinarios.Any(vet => vet.Activo && vet.Id == seleccionAnterior))
+            {
+                idVetSeleccionado = seleccionAnterior;
+            }
+            else if (seleccionAnterior > 0
+                     && !listaVeterinarios.Any(vet => vet.Activo && vet.Id == seleccionAnterior))
+            {
+                idVetSeleccionado = 0;
+                listaHorarios = new();
+                mostrarEditor = false;
+            }
+
+            if (!listaVeterinarios.Any(vet => vet.Activo))
+            {
+                mensajeError = "No hay veterinarios activos para gestionar horarios. Crea o activa un veterinario primero.";
+            }
+            else
+            {
+                mensajeError = null;
+                if (notificar)
+                {
+                    Toasts.Info("Lista de veterinarios actualizada.");
+                }
+            }
         }
-        catch
+        catch (Exception ex)
         {
             listaVeterinarios = new();
-            mensajeError = "No se pudieron cargar los veterinarios.";
+            idVetSeleccionado = 0;
+            listaHorarios = new();
+            mostrarEditor = false;
+            mensajeError = $"No se pudieron cargar los veterinarios. {ex.Message}";
+            if (notificar)
+            {
+                Toasts.Error("No se pudieron cargar los veterinarios.");
+            }
+        }
+        finally
+        {
+            cargandoVeterinarios = false;
         }
     }
 
