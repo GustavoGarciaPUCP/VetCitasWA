@@ -3819,3 +3819,71 @@ h1:focus {
 .vc-pet-add-row .vc-select { flex: 0 1 120px; }
 
 :root.dark .vc-pet-add-list li { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+
+/* ============================================================
+   Botones de acción de fila (estilo unificado, igual a /clientes-mascotas)
+   Disponible globalmente para todas las vistas con tablas de acciones.
+   ============================================================ */
+.row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+button.btn-pencil,
+button.btn-eye {
+    border: none;
+    padding: 0;
+    font: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.btn-pencil {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-decoration: none !important;
+}
+
+.btn-pencil:hover { background: #eff6ff; color: #2563eb; }
+.btn-pencil:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-pencil.btn-edit { color: #2563eb; }
+.btn-pencil.btn-edit:hover { background: #eff6ff; color: #1d4ed8; }
+
+.btn-pencil.btn-del { color: #dc2626; }
+.btn-pencil.btn-del:hover { background: #fef2f2; color: #b91c1c; }
+
+.btn-pencil.btn-reactivate { color: #059669; }
+.btn-pencil.btn-reactivate:hover { background: #ecfdf5; color: #047857; }
+
+.btn-eye {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    color: #1976ef !important;
+    background: transparent;
+    cursor: pointer;
+    text-decoration: none !important;
+    transition: background 0.15s ease;
+}
+
+.btn-eye:hover { background: #e8f0ff; }
+
+:root.dark .row-actions .btn-pencil.btn-edit { color: #60a5fa; }
+:root.dark .row-actions .btn-pencil.btn-edit:hover { background: rgba(37, 99, 235, 0.18); color: #93c5fd; }
+:root.dark .row-actions .btn-pencil.btn-del { color: #f87171; }
+:root.dark .row-actions .btn-pencil.btn-del:hover { background: rgba(220, 38, 38, 0.16); color: #fca5a5; }
+:root.dark .row-actions .btn-pencil.btn-reactivate { color: #34d399; }
+:root.dark .row-actions .btn-pencil.btn-reactivate:hover { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; }

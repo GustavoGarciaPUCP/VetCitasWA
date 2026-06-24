@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using VetCitasWA.Servicios.REST;
 using VetCitasWA.Servicios.Modelo.Usuario;
 
@@ -47,6 +48,21 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
 
             var detalle = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             throw new InvalidOperationException($"El backend rechazo la autenticacion con estado {(int)response.StatusCode}. {detalle}");
+        }
+
+        public async Task<bool> EstaActivoAsync(int idUsuario)
+        {
+            if (idUsuario <= 0) return false;
+            try
+            {
+                return await http.GetFromJsonAsync<bool>($"UsuarioRS/estaActivo/{idUsuario}");
+            }
+            catch
+            {
+                // Ante un fallo transitorio del backend no se cierra la sesion del
+                // usuario para evitar desconexiones por errores de red.
+                return true;
+            }
         }
 
         public void CambiarContrasena(int idUsuario, string contrasenaActual, string nuevaContrasena)

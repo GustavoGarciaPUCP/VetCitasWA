@@ -457,8 +457,10 @@
     private bool verSoloMisClientes;
 
     private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
-    private bool UsaAlcanceVeterinario => EsVeterinarioPuro || verSoloMisClientes;
-    private bool PuedeAlternarVistaVeterinaria => usuarioEsVeterinario && PuedeGestionarClientes;
+    // El veterinario ve TODOS los clientes por defecto. El alcance acotado a "mis clientes"
+    // solo se aplica si el propio usuario activa el toggle.
+    private bool UsaAlcanceVeterinario => verSoloMisClientes;
+    private bool PuedeAlternarVistaVeterinaria => usuarioEsVeterinario;
     private bool PuedeGestionarClientes => usuarioEsRecepcionista || usuarioEsAdministrador;
 
     private string tab = "mascotas";
@@ -523,11 +525,7 @@
             await CargarContextoUsuario();
             clientes = await Task.Run(() => ClienteService.ListarTodos());
             mascotas = await Task.Run(() => MascotaService.ListarTodos());
-
-            if (usuarioEsVeterinario)
-            {
-                await CargarAlcanceVeterinario();
-            }
+            // El alcance "mis clientes" se calcula de forma perezosa al activar el toggle.
         }
         catch (Exception ex)
         {
@@ -547,7 +545,7 @@
         usuarioEsVeterinario = user.IsInRole("VETERINARIO");
         usuarioEsRecepcionista = user.IsInRole("RECEPCIONISTA");
         usuarioEsAdministrador = user.IsInRole("ADMINISTRADOR");
-        if (!usuarioEsVeterinario || !PuedeGestionarClientes)
+        if (!usuarioEsVeterinario)
         {
             verSoloMisClientes = false;
         }
@@ -614,12 +612,21 @@
         LimpiarFiltros();
     }
 
-    private void AlternarVistaVeterinaria()
+    private bool alcanceVeterinarioCargado;
+
+    private async Task AlternarVistaVeterinaria()
     {
         if (!PuedeAlternarVistaVeterinaria) return;
 
         verSoloMisClientes = !verSoloMisClientes;
         paginaActual = 1;
+
+        // Carga perezosa: solo al activar "mis clientes" por primera vez.
+        if (verSoloMisClientes && !alcanceVeterinarioCargado)
+        {
+            await CargarAlcanceVeterinario();
+            alcanceVeterinarioCargado = true;
+        }
     }
 
     // ===== Filtros =====

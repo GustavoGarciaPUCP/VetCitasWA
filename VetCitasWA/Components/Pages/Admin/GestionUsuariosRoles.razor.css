@@ -28,7 +28,7 @@
 /* ================== Filtros + Nuevo Usuario ================== */
 .filters {
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto;
     gap: 0.85rem;
     align-items: flex-end;
 }
@@ -473,7 +473,8 @@
     gap: 0.8rem;
 }
 
-.edit-grid label {
+.edit-grid label,
+.edit-grid .field-block {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
@@ -734,4 +735,33 @@
     .modal-actions > * {
         width: 100%;
     }
+}
+
+/* ===== Asterisco de campo requerido ===== */
+.req {
+    color: #dc2626;
+    font-weight: 700;
+    margin-left: 0.1rem;
+}
+
+/* ===== Multi-select de roles: el toggle como input ===== */
+.vc-ms-toggle {
+    background: #ffffff;
+}
+
+/* ===== Validacion en linea del campo usuario ===== */
+.input-error {
+    border-color: #dc2626 !important;
+}
+
+.field-error {
+    color: #dc2626;
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+.field-hint {
+    color: #6b7280;
+    font-size: 0.74rem;
+    font-weight: 500;
 }

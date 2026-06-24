@@ -1,5 +1,7 @@
 @page "/usuarios-roles"
+@rendermode InteractiveServer
 @attribute [Authorize(Roles = "ADMINISTRADOR")]
+@implements IDisposable
 @using System.Security.Claims
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @using VetCitasWA.Servicios.Modelo.Usuario
@@ -29,9 +31,8 @@
                    type="text"
                    class="search-input"
                    placeholder="Buscar por nombre, usuario o telefono"
-                   @bind="textoBusqueda"
-                   @bind:event="oninput"
-                   @bind:after="BuscarUsuarios" />
+                   value="@textoBusqueda"
+                   @oninput="OnBusquedaInput" />
         </div>
         <div class="filter-field filter-rol">
             <label class="filter-label" for="filtroRol">Filtrar por rol</label>
@@ -40,6 +41,15 @@
                           Value="filtroRol"
                           ValueChanged="OnRolChanged"
                           Options="OpcionesRoles" />
+            </div>
+        </div>
+        <div class="filter-field filter-estado">
+            <label class="filter-label" for="filtroEstado">Estado</label>
+            <div class="select-wrap">
+                <VcSelect TValue="string"
+                          Value="filtroEstado"
+                          ValueChanged="OnEstadoChanged"
+                          Options="OpcionesEstado" />
             </div>
         </div>
         <div class="filter-action">
@@ -133,9 +143,9 @@
                                     }
                                 </td>
                                 <td data-label="Acciones">
-                                    <div class="actions-row">
+                                    <div class="row-actions">
                                         <button type="button"
-                                                class="btn-act btn-act-edit"
+                                                class="btn-pencil btn-edit"
                                                 title="Editar"
                                                 aria-label="Editar"
                                                 disabled="@procesando"
@@ -148,7 +158,7 @@
                                         @if (usuario.Activo)
                                         {
                                             <button type="button"
-                                                    class="btn-act btn-act-toggle"
+                                                    class="btn-pencil btn-del"
                                                     title="Inactivar"
                                                     aria-label="Inactivar"
                                                     disabled="@(procesando || usuario.Id == usuarioActualId || EsSuperAdminUsuario(usuario))"
@@ -162,7 +172,7 @@
                                         else
                                         {
                                             <button type="button"
-                                                    class="btn-act btn-act-toggle btn-act-on"
+                                                    class="btn-pencil btn-reactivate"
                                                     title="Activar usuario"
                                                     aria-label="Activar"
                                                     disabled="@procesando"
@@ -181,12 +191,7 @@
             </table>
         </div>
 
-        <nav class="pager" aria-label="Paginacion">
-            <button type="button" class="pager-btn" disabled="@(paginaActual <= 1)" @onclick="PaginaAnterior">Anterior</button>
-            <button type="button" class="pager-btn pager-active">Pagina @paginaActual de @TotalPaginas</button>
-            <button type="button" class="pager-btn" disabled="@(paginaActual >= TotalPaginas)" @onclick="PaginaSiguiente">Siguiente</button>
-            <span class="pager-summary">@((listaUsuarios?.Count ?? 0)) usuarios</span>
-        </nav>
+        <Pager CurrentPage="paginaActual" TotalPages="TotalPaginas" CurrentPageChanged="IrAPagina" />
     </section>
 
 </div>
@@ -204,52 +209,82 @@
         </div>
 
         <div class="edit-grid">
+            <div class="field-block edit-grid-wide">
+                <span>Roles <span class="req">*</span></span>
+                <div class="vc-ms">
+                    <button type="button" class="search-input vc-ms-toggle" @onclick="() => rolesDropdownAbierto = !rolesDropdownAbierto">
+                        @RolesResumen
+                    </button>
+                    @if (rolesDropdownAbierto)
+                    {
+                        <div class="vc-ms-overlay" @onclick="() => rolesDropdownAbierto = false"></div>
+                        <div class="vc-ms-panel">
+                            @foreach (var r in RolesAsignables)
+                            {
+                                <label class="vc-ms-item">
+                                    <input type="checkbox" checked="@rolesSeleccionados.Contains(r)" @onchange="() => ToggleRolSeleccion(r)" />
+                                    <span>@EtiquetaRol(r)</span>
+                                </label>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
             <label>
-                <span>Rol principal</span>
-                <VcSelect TValue="CodigoRol" @bind-Value="rolPrincipalNuevo" Options="OpcionesRolPrincipal" />
+                <span>Usuario <span class="req">*</span></span>
+                <input class="search-input @(usernameError is not null ? "input-error" : "")"
+                       required
+                       @bind="usuarioNuevo.Username"
+                       @bind:event="oninput"
+                       @bind:after="OnUsernameChanged"
+                       autocomplete="off" />
+                @if (verificandoUsername)
+                {
+                    <span class="field-hint">Verificando disponibilidad...</span>
+                }
+                else if (usernameError is not null)
+                {
+                    <span class="field-error">@usernameError</span>
+                }
             </label>
             <label>
-                <span>Usuario</span>
-                <input class="search-input" @bind="usuarioNuevo.Username" autocomplete="off" />
+                <span>Contrasena inicial <span class="req">*</span></span>
+                <input class="search-input" type="password" required @bind="passwordNuevo" autocomplete="new-password" />
             </label>
             <label>
-                <span>Contrasena inicial</span>
-                <input class="search-input" type="password" @bind="passwordNuevo" autocomplete="new-password" />
+                <span>Nombres <span class="req">*</span></span>
+                <input class="search-input" required @bind="usuarioNuevo.Nombres" />
             </label>
             <label>
-                <span>Nombres</span>
-                <input class="search-input" @bind="usuarioNuevo.Nombres" />
-            </label>
-            <label>
-                <span>Apellidos</span>
-                <input class="search-input" @bind="usuarioNuevo.Apellidos" />
+                <span>Apellidos <span class="req">*</span></span>
+                <input class="search-input" required @bind="usuarioNuevo.Apellidos" />
             </label>
             <label>
                 <span>Telefono</span>
-                <input class="search-input" @bind="usuarioNuevo.Telefono" />
+                <PhoneInput @ref="phoneInputNuevo" Initial="@usuarioNuevo.Telefono" />
             </label>
             <label class="edit-grid-wide">
-                <span>Correo</span>
-                <input class="search-input" type="email" @bind="usuarioNuevo.Email" />
+                <span>Correo <span class="req">*</span></span>
+                <input class="search-input" type="email" required @bind="usuarioNuevo.Email" />
             </label>
 
-            @if (rolPrincipalNuevo == CodigoRol.ADMINISTRADOR || rolPrincipalNuevo == CodigoRol.RECEPCIONISTA)
+            @if (RolPrincipalEfectivo == CodigoRol.ADMINISTRADOR || RolPrincipalEfectivo == CodigoRol.RECEPCIONISTA)
             {
                 <label class="edit-grid-wide">
-                    <span>Area</span>
-                    <input class="search-input" @bind="areaNuevo" placeholder="Ej. Recepcion" />
+                    <span>Area <span class="req">*</span></span>
+                    <input class="search-input" required @bind="areaNuevo" placeholder="Ej. Recepcion" />
                 </label>
             }
 
-            @if (rolPrincipalNuevo == CodigoRol.VETERINARIO)
+            @if (RolPrincipalEfectivo == CodigoRol.VETERINARIO)
             {
                 <label>
-                    <span>CMPV</span>
-                    <input class="search-input" @bind="cmpvNuevo" />
+                    <span>CMPV <span class="req">*</span></span>
+                    <input class="search-input" required @bind="cmpvNuevo" />
                 </label>
                 <label>
-                    <span>Especialidad</span>
-                    <input class="search-input" @bind="especialidadNuevo" />
+                    <span>Especialidad <span class="req">*</span></span>
+                    <input class="search-input" required @bind="especialidadNuevo" />
                 </label>
             }
         </div>
@@ -290,7 +325,7 @@
             </label>
             <label>
                 <span>Telefono</span>
-                <input class="search-input" @bind="usuarioEditando.Telefono" />
+                <PhoneInput @ref="phoneInputEditar" Initial="@usuarioEditando.Telefono" />
             </label>
             <label class="edit-grid-wide">
                 <span>Correo</span>
@@ -325,6 +360,10 @@
             @if (usuarioEditando.Id == usuarioActualId)
             {
                 <p>Para tu propia cuenta no puedes restablecerla desde aqui.</p>
+            }
+            else if (EsSuperAdminUsuario(usuarioEditando))
+            {
+                <p>No se puede restablecer la contrasena del SuperAdmin.</p>
             }
             else if (!usuarioEditando.Activo)
             {
@@ -379,6 +418,8 @@
     private List<Usuario> listaUsuarios = new();
     private string textoBusqueda = "";
     private string filtroRol = "";
+    // Por defecto se muestran solo los usuarios activos.
+    private string filtroEstado = "activos";
     private bool cargando;
     private bool procesando;
     private string? errorMensaje;
@@ -387,9 +428,32 @@
     private const int PageSize = 7;
     private Usuario? usuarioNuevo;
     private Usuario? usuarioEditando;
+    // Campos de telefono con selector de pais (mismo componente que el modal de cliente).
+    private PhoneInput? phoneInputNuevo;
+    private PhoneInput? phoneInputEditar;
     private Usuario? usuarioCambioEstado;
     private bool nuevoEstadoUsuario;
-    private CodigoRol rolPrincipalNuevo = CodigoRol.VETERINARIO;
+    // Roles seleccionados para el nuevo usuario (multi-seleccion).
+    private HashSet<CodigoRol> rolesSeleccionados = new();
+    private bool rolesDropdownAbierto;
+    private static readonly CodigoRol[] RolesAsignables =
+        { CodigoRol.ADMINISTRADOR, CodigoRol.VETERINARIO, CodigoRol.RECEPCIONISTA };
+
+    // Subtipo a crear: VETERINARIO tiene prioridad (lleva CMPV/especialidad),
+    // luego ADMINISTRADOR, luego RECEPCIONISTA. Los demas roles se asignan como vinculo.
+    private CodigoRol RolPrincipalEfectivo =>
+        rolesSeleccionados.Contains(CodigoRol.VETERINARIO) ? CodigoRol.VETERINARIO
+        : rolesSeleccionados.Contains(CodigoRol.ADMINISTRADOR) ? CodigoRol.ADMINISTRADOR
+        : CodigoRol.RECEPCIONISTA;
+
+    private string RolesResumen => rolesSeleccionados.Count == 0
+        ? "Selecciona uno o mas roles"
+        : string.Join(", ", RolesAsignables.Where(rolesSeleccionados.Contains).Select(EtiquetaRol));
+
+    private void ToggleRolSeleccion(CodigoRol rol)
+    {
+        if (!rolesSeleccionados.Remove(rol)) rolesSeleccionados.Add(rol);
+    }
     private string passwordNuevo = "";
     private string nuevaPasswordReset = "";
     private string areaNuevo = "";
@@ -410,11 +474,11 @@
         new VcSelectOption<string>(CodigoRol.RECEPCIONISTA.ToString(), "Recepcionista")
     };
 
-    private static readonly IEnumerable<VcSelectOption<CodigoRol>> OpcionesRolPrincipal = new[]
+    private static readonly IEnumerable<VcSelectOption<string>> OpcionesEstado = new[]
     {
-        new VcSelectOption<CodigoRol>(CodigoRol.ADMINISTRADOR, "Administrador"),
-        new VcSelectOption<CodigoRol>(CodigoRol.VETERINARIO, "Veterinario"),
-        new VcSelectOption<CodigoRol>(CodigoRol.RECEPCIONISTA, "Recepcionista")
+        new VcSelectOption<string>("activos", "Activos"),
+        new VcSelectOption<string>("inactivos", "Inactivos"),
+        new VcSelectOption<string>("todos", "Todos")
     };
 
     private static readonly (CodigoRol Codigo, string Label)[] RolesGestionables =
@@ -442,12 +506,48 @@
         await CargarUsuariosAsync();
     }
 
+    // Debounce de 800 ms: evita una consulta al backend por cada tecla.
+    private System.Threading.CancellationTokenSource? debounceCts;
+
+    private async Task OnBusquedaInput(ChangeEventArgs e)
+    {
+        textoBusqueda = e.Value?.ToString() ?? "";
+
+        debounceCts?.Cancel();
+        debounceCts = new System.Threading.CancellationTokenSource();
+        var token = debounceCts.Token;
+
+        try
+        {
+            await Task.Delay(800, token);
+            paginaActual = 1;
+            await CargarUsuariosAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException) { /* se presiono otra tecla antes de 800ms */ }
+    }
+
     private async Task OnRolChanged(string value)
     {
         filtroRol = value ?? "";
         paginaActual = 1;
         await CargarUsuariosAsync();
     }
+
+    private async Task OnEstadoChanged(string value)
+    {
+        filtroEstado = value ?? "activos";
+        paginaActual = 1;
+        await CargarUsuariosAsync();
+    }
+
+    // null = todos | true = solo activos | false = solo inactivos
+    private bool? ActivoFiltro => filtroEstado switch
+    {
+        "inactivos" => false,
+        "todos" => null,
+        _ => true
+    };
 
     private async Task CargarUsuariosAsync()
     {
@@ -457,7 +557,7 @@
         try
         {
             await Task.Yield();
-            listaUsuarios = AdminService.ListarUsuariosFiltrados(textoBusqueda, filtroRol, null);
+            listaUsuarios = AdminService.ListarUsuariosFiltrados(textoBusqueda, filtroRol, ActivoFiltro);
             if (paginaActual > TotalPaginas)
             {
                 paginaActual = TotalPaginas;
@@ -500,6 +600,11 @@
             Toasts.Error("No puedes restablecer tu propia contrasena desde aqui.");
             return;
         }
+        if (EsSuperAdminUsuario(usuarioEditando))
+        {
+            Toasts.Error("No se puede restablecer la contrasena del SuperAdmin.");
+            return;
+        }
         if (!usuarioEditando.Activo)
         {
             Toasts.Error("El usuario debe estar activo para restablecer su contrasena.");
@@ -523,15 +628,115 @@
         nuevaPasswordReset = "";
     }
 
+    // Validacion de username unico (en linea, dentro del modal).
+    private string? usernameError;
+    private bool verificandoUsername;
+    private System.Threading.CancellationTokenSource? usernameDebounceCts;
+
+    private async Task OnUsernameChanged()
+    {
+        usernameError = null;
+        var actual = (usuarioNuevo?.Username ?? "").Trim();
+
+        usernameDebounceCts?.Cancel();
+        if (actual.Length < 4)
+        {
+            verificandoUsername = false;
+            return;
+        }
+
+        usernameDebounceCts = new System.Threading.CancellationTokenSource();
+        var token = usernameDebounceCts.Token;
+        verificandoUsername = true;
+
+        try
+        {
+            await Task.Delay(500, token);
+            var existe = await AdminService.ExisteUsernameAsync(actual);
+            if (token.IsCancellationRequested) return;
+            usernameError = existe ? "Este nombre de usuario ya está en uso." : null;
+        }
+        catch (TaskCanceledException) { /* se siguio escribiendo */ }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                verificandoUsername = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
     private void AbrirNuevo()
     {
         usuarioNuevo = new Usuario { Activo = true };
-        rolPrincipalNuevo = CodigoRol.VETERINARIO;
+        rolesSeleccionados = new();
+        rolesDropdownAbierto = false;
         passwordNuevo = "";
         areaNuevo = "";
         cmpvNuevo = "";
         especialidadNuevo = "";
+        usernameError = null;
+        verificandoUsername = false;
         errorMensaje = null;
+    }
+
+    private static string EtiquetaRol(CodigoRol codigo) => codigo switch
+    {
+        CodigoRol.ADMINISTRADOR => "Administrador",
+        CodigoRol.VETERINARIO => "Veterinario",
+        CodigoRol.RECEPCIONISTA => "Recepcionista",
+        _ => codigo.ToString()
+    };
+
+    // Reglas de validacion del formulario de nuevo usuario.
+    private string? ValidarNuevoUsuario()
+    {
+        var u = usuarioNuevo!;
+
+        if (rolesSeleccionados.Count == 0)
+            return "Selecciona al menos un rol.";
+
+        var username = (u.Username ?? "").Trim();
+        if (username.Length < 4)
+            return "El usuario debe tener al menos 4 caracteres.";
+        if (username.Contains(' '))
+            return "El usuario no puede contener espacios.";
+
+        if (string.IsNullOrWhiteSpace(passwordNuevo) || passwordNuevo.Length < 8)
+            return "La contrasena debe tener al menos 8 caracteres.";
+
+        if (string.IsNullOrWhiteSpace(u.Nombres))
+            return "Los nombres son obligatorios.";
+        if (string.IsNullOrWhiteSpace(u.Apellidos))
+            return "Los apellidos son obligatorios.";
+
+        if (!EsCorreoValido(u.Email))
+            return "Ingresa un correo electronico valido.";
+
+        var tel = (u.Telefono ?? "").Trim();
+        if (!string.IsNullOrEmpty(tel) && (tel.Length < 6 || tel.Length > 15))
+            return "El telefono debe tener entre 6 y 15 digitos.";
+
+        if (RolPrincipalEfectivo == CodigoRol.VETERINARIO
+            && (string.IsNullOrWhiteSpace(cmpvNuevo) || string.IsNullOrWhiteSpace(especialidadNuevo)))
+            return "Para veterinario debes indicar CMPV y especialidad.";
+
+        if ((RolPrincipalEfectivo == CodigoRol.ADMINISTRADOR || RolPrincipalEfectivo == CodigoRol.RECEPCIONISTA)
+            && string.IsNullOrWhiteSpace(areaNuevo))
+            return "Indica el area del usuario.";
+
+        return null;
+    }
+
+    private static bool EsCorreoValido(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        email = email.Trim();
+        if (email.Contains(' ')) return false;
+        var at = email.IndexOf('@');
+        var dot = email.LastIndexOf('.');
+        return at > 0 && dot > at + 1 && dot < email.Length - 1;
     }
 
     private void CerrarNuevo()
@@ -549,28 +754,32 @@
             return;
         }
 
-        if (!DatosBasicosValidos(usuarioNuevo) || string.IsNullOrWhiteSpace(passwordNuevo))
+        // Toma el numero internacional (con codigo de pais) del campo con banderas.
+        if (phoneInputNuevo is not null)
         {
-            Toasts.Error("Completa usuario, contrasena, nombres, apellidos y correo.");
+            var num = await phoneInputNuevo.GetNumberAsync();
+            if (!string.IsNullOrWhiteSpace(num)) usuarioNuevo.Telefono = num;
+        }
+
+        var error = ValidarNuevoUsuario();
+        if (error is not null)
+        {
+            Toasts.Error(error);
             return;
         }
 
-        if (rolPrincipalNuevo == CodigoRol.VETERINARIO && (string.IsNullOrWhiteSpace(cmpvNuevo) || string.IsNullOrWhiteSpace(especialidadNuevo)))
+        // Verificacion final de username unico, por si no se disparo el chequeo en linea.
+        if (await AdminService.ExisteUsernameAsync(usuarioNuevo.Username ?? ""))
         {
-            Toasts.Error("Para veterinario debes indicar CMPV y especialidad.");
-            return;
-        }
-
-        if ((rolPrincipalNuevo == CodigoRol.ADMINISTRADOR || rolPrincipalNuevo == CodigoRol.RECEPCIONISTA) && string.IsNullOrWhiteSpace(areaNuevo))
-        {
-            Toasts.Error("Indica el area del usuario.");
+            usernameError = "Este nombre de usuario ya está en uso.";
+            Toasts.Error(usernameError);
             return;
         }
 
         await EjecutarOperacionAsync(() =>
         {
             var auditor = new Usuario { Id = usuarioActualId };
-            var idCreado = rolPrincipalNuevo switch
+            var idCreado = RolPrincipalEfectivo switch
             {
                 CodigoRol.ADMINISTRADOR => AdminService.Insertar(new Administrador
                 {
@@ -617,12 +826,25 @@
                 throw new InvalidOperationException("El backend no confirmo la creacion del usuario.");
             }
 
-            Toasts.Exito("Usuario creado.");
+            // Asigna los demas roles seleccionados (ademas del subtipo principal).
+            foreach (var rolExtra in rolesSeleccionados.Where(r => r != RolPrincipalEfectivo))
+            {
+                AdminService.AsignarRol(idCreado, rolExtra.ToString());
+            }
+
+            Toasts.Exito(rolesSeleccionados.Count > 1
+                ? "Usuario creado con sus roles."
+                : "Usuario creado.");
         });
 
-        usuarioNuevo = null;
-        paginaActual = 1;
-        await CargarUsuariosAsync();
+        // Solo cierra el modal si la operacion fue exitosa; ante error se mantiene
+        // abierto con los datos para que el usuario pueda corregir.
+        if (errorMensaje is null)
+        {
+            usuarioNuevo = null;
+            paginaActual = 1;
+            await CargarUsuariosAsync();
+        }
     }
 
     private void CerrarEditar()
@@ -638,6 +860,13 @@
         if (usuarioEditando is null)
         {
             return;
+        }
+
+        // Toma el numero internacional (con codigo de pais) del campo con banderas.
+        if (phoneInputEditar is not null)
+        {
+            var num = await phoneInputEditar.GetNumberAsync();
+            if (!string.IsNullOrWhiteSpace(num)) usuarioEditando.Telefono = num;
         }
 
         if (!DatosBasicosValidos(usuarioEditando))
@@ -664,8 +893,12 @@
             Toasts.Exito("Usuario actualizado.");
         });
 
-        usuarioEditando = null;
-        await CargarUsuariosAsync();
+        // Solo cierra el modal si la operacion fue exitosa.
+        if (errorMensaje is null)
+        {
+            usuarioEditando = null;
+            await CargarUsuariosAsync();
+        }
     }
 
     private void PedirCambioEstado(Usuario usuario, bool activo)
@@ -736,15 +969,29 @@
             }
         });
 
-        await CargarUsuariosAsync();
+        // Refresca los roles del usuario en edicion con el metodo dedicado del backend.
+        // Es mas confiable que re-parsear la lista filtrada: si el usuario deja de
+        // coincidir con el filtro de rol al cambiarlo, ya no aparece en la lista y
+        // el panel mostraria roles desactualizados.
         if (usuarioEditando?.Id == usuario.Id)
         {
-            var actualizado = listaUsuarios.FirstOrDefault(u => u.Id == usuario.Id);
-            if (actualizado is not null)
+            try
             {
-                usuarioEditando.Roles = actualizado.Roles?.ToList() ?? new List<RolSistema>();
+                var rolesActuales = await Task.Run(() => AdminService.ListarRolesDeUsuario(usuario.Id));
+                usuarioEditando.Roles = rolesActuales ?? new List<RolSistema>();
+            }
+            catch
+            {
+                // Si falla la consulta de roles, ajusta el estado localmente para no dejar el panel inconsistente.
+                usuarioEditando.Roles ??= new List<RolSistema>();
+                if (asignado)
+                    usuarioEditando.Roles.RemoveAll(r => r.Codigo == codigoRol);
+                else if (usuarioEditando.Roles.All(r => r.Codigo != codigoRol))
+                    usuarioEditando.Roles.Add(new RolSistema { Codigo = codigoRol });
             }
         }
+
+        await CargarUsuariosAsync();
     }
 
     private async Task EjecutarOperacionAsync(Action operacion)
@@ -800,8 +1047,16 @@
         => usuario.Id == 1
             || string.Equals(usuario.Username, "superadmin", StringComparison.OrdinalIgnoreCase);
 
+    // Etiqueta canonica por codigo: la columna de roles solo muestra
+    // Administrador, Veterinario o Recepcionista (no la descripcion de la BD).
     private static string NombreRol(RolSistema rol)
-        => string.IsNullOrWhiteSpace(rol.Descripcion) ? rol.Codigo.ToString() : rol.Descripcion;
+        => rol.Codigo switch
+        {
+            CodigoRol.ADMINISTRADOR => "Administrador",
+            CodigoRol.VETERINARIO => "Veterinario",
+            CodigoRol.RECEPCIONISTA => "Recepcionista",
+            _ => rol.Codigo.ToString()
+        };
 
     private static string CssRol(CodigoRol codigoRol)
         => codigoRol switch
@@ -816,19 +1071,11 @@
             ? "No se puede quitar este rol administrativo"
             : $"{(TieneRol(usuario, codigoRol) ? "Quitar" : "Asignar")} {label}";
 
-    private void PaginaAnterior()
-    {
-        if (paginaActual > 1)
-        {
-            paginaActual--;
-        }
-    }
+    private void IrAPagina(int p) => paginaActual = p;
 
-    private void PaginaSiguiente()
+    public void Dispose()
     {
-        if (paginaActual < TotalPaginas)
-        {
-            paginaActual++;
-        }
+        debounceCts?.Cancel();
+        usernameDebounceCts?.Cancel();
     }
 }

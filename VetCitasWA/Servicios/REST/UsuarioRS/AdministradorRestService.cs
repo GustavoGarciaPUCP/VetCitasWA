@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using VetCitasWA.Servicios.REST;
 using VetCitasWA.Servicios.Modelo.Usuario;
 
@@ -47,6 +48,27 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         {
             return http.GetFromJsonAsync<Administrador>($"AdministradorRS/buscar/{id}")
                 .GetAwaiter().GetResult();
+        }
+
+        public List<RolSistema> ListarRolesDeUsuario(int idUsuario)
+        {
+            return http.GetFromJsonAsync<List<RolSistema>>($"AdministradorRS/listarRolesDeUsuario/{idUsuario}")
+                .GetAwaiter().GetResult() ?? new List<RolSistema>();
+        }
+
+        public async Task<bool> ExisteUsernameAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username)) return false;
+            try
+            {
+                var url = $"AdministradorRS/existeUsername?username={Uri.EscapeDataString(username.Trim())}";
+                return await http.GetFromJsonAsync<bool>(url);
+            }
+            catch
+            {
+                // Ante un fallo de red no bloqueamos: la validacion final la hace el backend al guardar.
+                return false;
+            }
         }
 
         public List<Usuario> ListarUsuariosFiltrados(string texto, string codigoRol, bool? activo)

@@ -151,19 +151,26 @@
     color: #7e22ce;
 }
 
-/* ===== Badge de estado (pill verde) ===== */
+/* ===== Badge de estado (mismo estilo que /usuarios-roles) ===== */
 .status-badge {
     display: inline-block;
-    padding: 0.3rem 0.95rem;
-    border-radius: 999px;
-    font-size: 0.78rem;
+    padding: 0.22rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
     font-weight: 600;
-    line-height: 1.3;
-    color: #ffffff;
+    line-height: 1.4;
 }
 
 .status-active {
-    background: #10b981;
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.status-inactive {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
 }
 
 /* ================== Responsive ================== */

@@ -21,16 +21,12 @@
 
 <div class="page-section">
 
-    @* Cabecera: título + botón "Nuevo Servicio" (admin-only) *@
+    @* Cabecera: solo título *@
     <div class="page-head">
         <h1 class="page-title">Catálogo de servicios</h1>
-        <a href="/servicios/crear" class="btn-new admin-only">
-            <span class="btn-plus" aria-hidden="true">+</span>
-            <span>Nuevo servicio</span>
-        </a>
     </div>
 
-    @* Barra de filtros / búsqueda — se aplican al pulsar "Aplicar filtros" *@
+    @* Barra de filtros / búsqueda + botón "Nuevo servicio" en la misma fila *@
     <div class="filter-bar">
         <div class="vc-search">
             <span class="vc-search-icon" aria-hidden="true">
@@ -42,6 +38,10 @@
                    value="@textoBusqueda" @oninput="OnBusquedaInput" />
         </div>
         <VcSelect TValue="string" CssClass="vc-cs-filtro" Value="filtroEstado" ValueChanged="OnFiltroEstadoChanged" Options="EstadoOptions" />
+        <a href="/servicios/crear" class="btn-new admin-only" style="margin-left:auto;">
+            <span class="btn-plus" aria-hidden="true">+</span>
+            <span>Nuevo servicio</span>
+        </a>
     </div>
 
     <section class="panel">
