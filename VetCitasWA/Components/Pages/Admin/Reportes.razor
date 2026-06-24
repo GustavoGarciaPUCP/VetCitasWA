@@ -216,21 +216,29 @@
     private bool generandoPdf;
     private string? pdfError;
 
-    // Exporta el consolidado de citas con sus filtros (fechas, estado, servicio).
+    // Exporta el reporte de Power BI. Por ahora se exporta con los valores por
+    // defecto del reporte (sin filtros), porque los parametros de fecha del reporte
+    // estan restringidos a una lista de valores (Available Values por query) y
+    // rechazan fechas de rango arbitrarias. Para enviar los filtros de la UI, en
+    // Report Builder hay que poner Available Values = None en esos parametros.
     private Task ExportarPdfCitas()
-        => ExportarPdf(fechaInicioCitas, fechaFinCitas, filtroEstado, filtroServicio);
+        => ExportarPdf(null, null, null, null);
 
-    private async Task ExportarPdf(DateTime fIni, DateTime fFin, string estadoFiltro, string servicioFiltro)
+    private async Task ExportarPdf(DateTime? fIni, DateTime? fFin, string? estadoFiltro, string? servicioFiltro)
     {
         generandoPdf = true;
         pdfError = null;
         try
         {
-            var url = "/consolidados/pdf"
-                + $"?fechaInicio={fIni:yyyy-MM-dd}"
-                + $"&fechaFin={fFin:yyyy-MM-dd}"
-                + $"&estado={Uri.EscapeDataString(estadoFiltro ?? "TODOS")}"
-                + $"&servicio={Uri.EscapeDataString(servicioFiltro ?? "TODOS")}";
+            var partes = new List<string>();
+            if (fIni.HasValue) partes.Add($"fechaInicio={fIni:yyyy-MM-dd}");
+            if (fFin.HasValue) partes.Add($"fechaFin={fFin:yyyy-MM-dd}");
+            if (!string.IsNullOrWhiteSpace(estadoFiltro) && estadoFiltro != "TODOS")
+                partes.Add($"estado={Uri.EscapeDataString(estadoFiltro)}");
+            if (!string.IsNullOrWhiteSpace(servicioFiltro) && servicioFiltro != "TODOS")
+                partes.Add($"servicio={Uri.EscapeDataString(servicioFiltro)}");
+
+            var url = "/consolidados/pdf" + (partes.Count > 0 ? "?" + string.Join("&", partes) : "");
 
             // El endpoint hace la exportacion en el servidor y devuelve el archivo;
             // el helper JS dispara la descarga con la cookie de sesion.

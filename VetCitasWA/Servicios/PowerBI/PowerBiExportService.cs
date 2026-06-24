@@ -104,21 +104,22 @@ namespace VetCitasWA.Servicios.PowerBI
         {
             var parametros = new List<object>();
 
-            // Los parametros de fecha son de tipo Texto y el reporte hace
-            // DATEVALUE(valor) + TIMEVALUE(valor); por eso se envia el datetime con
-            // ESPACIO (no "T"): inicio a las 00:00:00 y fin a las 23:59:59 (inclusivo).
+            // El reporte espera las fechas en formato US con AM/PM (igual que su
+            // selector: "6/19/2026 4:00:00 PM"). Inicio a las 12:00:00 AM y fin a las
+            // 11:59:59 PM (inclusivo).
+            var us = System.Globalization.CultureInfo.GetCultureInfo("en-US");
             if (TryFecha(fechaInicio, out var dIni))
                 parametros.Add(new
                 {
                     name = "Fromvetcitasdbcitafechahorainicio",
-                    value = dIni.Date.ToString("yyyy-MM-dd HH:mm:ss")
+                    value = dIni.Date.ToString("M/d/yyyy h:mm:ss tt", us)
                 });
 
             if (TryFecha(fechaFin, out var dFin))
                 parametros.Add(new
                 {
                     name = "Tovetcitasdbcitafechahorainicio",
-                    value = dFin.Date.AddDays(1).AddSeconds(-1).ToString("yyyy-MM-dd HH:mm:ss")
+                    value = dFin.Date.AddDays(1).AddSeconds(-1).ToString("M/d/yyyy h:mm:ss tt", us)
                 });
 
             // Nombres reales segun el DAX del reporte (RSCustomDaxFilter).
