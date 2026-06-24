@@ -765,3 +765,111 @@
     font-size: 0.74rem;
     font-weight: 500;
 }
+
+/* =====================================================================
+   Modo oscuro del modal de crear/editar usuario y sus secciones
+   ===================================================================== */
+:root.dark .inline-modal,
+:root.dark .confirm-modal {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-color: #334155;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+:root.dark .inline-modal h2,
+:root.dark .confirm-modal h2 {
+    color: #f1f5f9;
+}
+
+:root.dark .inline-modal p,
+:root.dark .confirm-modal p {
+    color: #94a3b8;
+}
+
+:root.dark .inline-modal-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+:root.dark .modal-close {
+    background: #0f172a;
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+:root.dark .modal-close:hover,
+:root.dark .modal-close:focus-visible {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+/* Etiquetas de los campos */
+:root.dark .edit-grid label,
+:root.dark .edit-grid .field-block {
+    color: #cbd5e1;
+}
+
+/* Inputs */
+:root.dark .search-input {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+:root.dark .search-input::placeholder {
+    color: #64748b;
+}
+
+:root.dark .search-input:focus {
+    border-color: #1976ef;
+    box-shadow: 0 0 0 3px rgba(25, 118, 239, 0.25);
+}
+
+:root.dark .vc-ms-toggle {
+    background: #0f172a;
+}
+
+/* Caja "Gestionar roles" / "Restablecer contrasena" */
+:root.dark .roles-editor {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+:root.dark .roles-editor h3 {
+    color: #f1f5f9;
+}
+
+:root.dark .roles-editor p {
+    color: #94a3b8;
+}
+
+:root.dark .field-hint {
+    color: #94a3b8;
+}
+
+/* Botones de asignar/quitar rol */
+:root.dark .role-toggle {
+    background: rgba(37, 99, 235, 0.18);
+    border-color: rgba(37, 99, 235, 0.35);
+    color: #93c5fd;
+}
+
+:root.dark .role-toggle:hover:not(:disabled),
+:root.dark .role-toggle:focus-visible:not(:disabled) {
+    background: rgba(37, 99, 235, 0.3);
+    border-color: rgba(37, 99, 235, 0.5);
+    color: #bfdbfe;
+}
+
+:root.dark .role-toggle-on {
+    background: rgba(220, 38, 38, 0.16);
+    border-color: rgba(220, 38, 38, 0.35);
+    color: #fca5a5;
+}
+
+:root.dark .role-toggle-on:hover:not(:disabled),
+:root.dark .role-toggle-on:focus-visible:not(:disabled) {
+    background: rgba(220, 38, 38, 0.28);
+    border-color: rgba(220, 38, 38, 0.5);
+    color: #fecaca;
+}
