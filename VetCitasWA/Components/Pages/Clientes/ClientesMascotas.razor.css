@@ -243,6 +243,11 @@
     color: #60a5fa;
 }
 
+.filter-bar .btn-new {
+    align-self: center;
+    margin-left: auto;
+}
+
 :root.dark .row-actions .btn-pencil.btn-edit:hover,
 :root.dark .row-actions .btn-pencil.btn-edit:focus-visible {
     background: rgba(37, 99, 235, 0.18);

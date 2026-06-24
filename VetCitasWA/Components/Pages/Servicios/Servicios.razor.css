@@ -43,6 +43,11 @@
     background: #1d4ed8;
 }
 
+.filter-bar .btn-new {
+    align-self: center;
+    margin-left: auto;
+}
+
 .btn-plus {
     font-size: 1.05rem;
     line-height: 1;
