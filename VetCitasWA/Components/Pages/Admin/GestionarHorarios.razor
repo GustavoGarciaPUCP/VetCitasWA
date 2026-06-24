@@ -17,6 +17,13 @@
 </SectionContent>
 
 <div class="page-section">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Gestionar horarios</h1>
+            <p class="page-subtitle">Administra la disponibilidad semanal de cada veterinario.</p>
+        </div>
+    </div>
+
     <section class="panel">
         <div class="schedule-toolbar">
             <div class="vet-field">
@@ -30,11 +37,21 @@
                 </div>
             </div>
 
-            <button type="button" class="btn-save-h btn-toolbar"
-                    disabled="@(idVetSeleccionado <= 0 || procesando)"
-                    @onclick="NuevoHorario">
-                Nuevo horario
-            </button>
+            @if (PuedeCrearNuevoHorario)
+            {
+                <button type="button" class="vc-btn vc-btn-primary btn-toolbar"
+                        disabled="@procesando"
+                        @onclick="NuevoHorario">
+                    <span aria-hidden="true">+</span>
+                    <span>Nuevo horario</span>
+                </button>
+            }
+            else if (idVetSeleccionado > 0 && !cargandoHorarios)
+            {
+                <div class="schedule-complete" role="status">
+                    Semana completa. Edita o reactiva un dia existente.
+                </div>
+            }
         </div>
 
         @if (!string.IsNullOrWhiteSpace(mensajeError))
@@ -47,7 +64,7 @@
             <div class="editor-card">
                 <div class="editor-summary">
                     <h2 class="editor-title">@(editando ? "Editar horario" : "Registrar horario")</h2>
-                    <button type="button" class="btn-reset-h btn-small" @onclick="CancelarEdicion" disabled="@procesando">Cerrar</button>
+                    <button type="button" class="vc-btn vc-btn-secondary vc-btn-sm" @onclick="CancelarEdicion" disabled="@procesando">Cerrar</button>
                 </div>
 
                 <div class="editor-body">
@@ -56,8 +73,9 @@
                             <label class="field-label-sm">Dia</label>
                             <VcSelect TValue="int"
                                       @bind-Value="diaSemana"
-                                      Options="OpcionesDias"
-                                      Placeholder="Selecciona un dia" />
+                                      Options="OpcionesDiasEditor"
+                                      Placeholder="Selecciona un dia"
+                                      EmptyText="No hay dias libres para este veterinario." />
                         </div>
 
                         <label class="check-row active-row">
@@ -103,10 +121,10 @@
                     }
 
                     <div class="actions-stack">
-                        <button type="button" class="btn-save-h" @onclick="GuardarHorario" disabled="@procesando">
+                        <button type="button" class="vc-btn vc-btn-primary" @onclick="GuardarHorario" disabled="@procesando">
                             @(procesando ? "Guardando..." : editando ? "Guardar cambios" : "Registrar horario")
                         </button>
-                        <button type="button" class="btn-reset-h" @onclick="LimpiarFormulario" disabled="@procesando">Limpiar formulario</button>
+                        <button type="button" class="vc-btn vc-btn-secondary" @onclick="LimpiarFormulario" disabled="@procesando">Limpiar formulario</button>
                     </div>
                 </div>
             </div>
@@ -152,17 +170,21 @@
                                 <td data-label="Dia">@GetNombreDia(h.DiaSemana)</td>
                                 <td data-label="Horario">@FormatoHora(h.HoraInicio) - @FormatoHora(h.HoraFin)</td>
                                 <td data-label="Refrigerio">@FormatoDescanso(h)</td>
-                                <td data-label="Activo">@(h.Activo ? "Si" : "No")</td>
+                                <td data-label="Activo">
+                                    <span class="status-badge @(h.Activo ? "status-active" : "status-inactive")">
+                                        @(h.Activo ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
                                 <td data-label="Acciones">
                                     <div class="schedule-actions">
-                                        <button type="button" class="btn-reset-h btn-small" @onclick="() => EditarHorario(h)" disabled="@procesando">Editar</button>
+                                        <button type="button" class="vc-btn vc-btn-secondary vc-btn-sm" @onclick="() => EditarHorario(h)" disabled="@procesando">Editar</button>
                                         @if (h.Activo)
                                         {
-                                            <button type="button" class="btn-inactivar btn-small" @onclick="() => InactivarHorario(h)" disabled="@procesando">Inactivar</button>
+                                            <button type="button" class="vc-btn vc-btn-danger vc-btn-sm" @onclick="() => DesactivarHorario(h)" disabled="@procesando">Desactivar</button>
                                         }
                                         else
                                         {
-                                            <button type="button" class="btn-save-h btn-small" @onclick="() => ReactivarHorario(h)" disabled="@procesando">Reactivar</button>
+                                            <button type="button" class="btn-reactivate-h" @onclick="() => ReactivarHorario(h)" disabled="@procesando">Reactivar</button>
                                         }
                                     </div>
                                 </td>
@@ -201,7 +223,7 @@
             .ThenBy(vet => vet.Apellidos)
             .Select(vet => new VcSelectOption<int>(vet.Id, $"{vet.Nombres} {vet.Apellidos}".Trim()));
 
-    private IEnumerable<VcSelectOption<int>> OpcionesDias => new[]
+    private static readonly VcSelectOption<int>[] TodasOpcionesDias = new[]
     {
         new VcSelectOption<int>(1, "Lunes"),
         new VcSelectOption<int>(2, "Martes"),
@@ -211,6 +233,34 @@
         new VcSelectOption<int>(6, "Sabado"),
         new VcSelectOption<int>(7, "Domingo")
     };
+
+    private IEnumerable<int> DiasOcupados(int idExcluir = 0)
+        => listaHorarios
+            .Where(h => h.Id != idExcluir && h.DiaSemana >= 1 && h.DiaSemana <= 7)
+            .Select(h => h.DiaSemana)
+            .Distinct();
+
+    private List<int> DiasDisponiblesNuevo
+    {
+        get
+        {
+            var ocupados = DiasOcupados().ToHashSet();
+            return Enumerable.Range(1, 7).Where(d => !ocupados.Contains(d)).ToList();
+        }
+    }
+
+    private bool PuedeCrearNuevoHorario
+        => idVetSeleccionado > 0 && !cargandoHorarios && DiasDisponiblesNuevo.Any();
+
+    private IEnumerable<VcSelectOption<int>> OpcionesDiasEditor
+    {
+        get
+        {
+            var idExcluir = editando ? horarioEditandoId : 0;
+            var ocupados = DiasOcupados(idExcluir).ToHashSet();
+            return TodasOpcionesDias.Where(o => !ocupados.Contains(o.Value));
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -264,10 +314,19 @@
 
     private void NuevoHorario()
     {
+        var primerDiaLibre = DiasDisponiblesNuevo.FirstOrDefault();
+        if (primerDiaLibre == 0)
+        {
+            mensajeError = "Este veterinario ya tiene horarios registrados para toda la semana.";
+            Toasts.Info("La semana de este veterinario ya esta completa.");
+            return;
+        }
+
         editando = false;
         horarioEditandoId = 0;
         activoModelo = true;
         LimpiarFormulario();
+        diaSemana = primerDiaLibre;
         mostrarEditor = true;
     }
 
@@ -303,7 +362,11 @@
             activoModelo = true;
         }
 
-        diaSemana = 1;
+        if (!editando)
+        {
+            var primerDiaLibre = DiasDisponiblesNuevo.FirstOrDefault();
+            diaSemana = primerDiaLibre == 0 ? 1 : primerDiaLibre;
+        }
         horaInicioTexto = "08:00";
         horaFinTexto = "17:00";
         usarDescanso = false;
@@ -347,7 +410,7 @@
         }
     }
 
-    private async Task InactivarHorario(HorarioVeterinario horario)
+    private async Task DesactivarHorario(HorarioVeterinario horario)
     {
         if (horario is null || procesando) return;
 
@@ -359,17 +422,17 @@
             var resultado = HorarioService.Eliminar(horario.Id, usuarioActualId);
             if (resultado <= 0)
             {
-                mensajeError = "No se pudo inactivar el horario.";
+                mensajeError = "No se pudo desactivar el horario.";
                 return;
             }
 
-            Toasts.Exito("Horario inactivado.");
+            Toasts.Exito("Horario desactivado.");
             await CargarHorarios();
         }
         catch (Exception ex)
         {
-            mensajeError = $"No se pudo inactivar el horario. {ex.Message}";
-            Toasts.Error("No se pudo inactivar el horario.");
+            mensajeError = $"No se pudo desactivar el horario. {ex.Message}";
+            Toasts.Error("No se pudo desactivar el horario.");
         }
         finally
         {
@@ -380,6 +443,12 @@
     private async Task ReactivarHorario(HorarioVeterinario horario)
     {
         if (horario is null || procesando) return;
+
+        if (DiaOcupadoPorOtro(horario.DiaSemana, horario.Id))
+        {
+            mensajeError = "No se puede reactivar porque ese dia ya tiene otro horario registrado.";
+            return;
+        }
 
         if (TieneSolapamiento(horario.HoraInicio, horario.HoraFin, horario.Id, horario.DiaSemana))
         {
@@ -434,6 +503,13 @@
             return false;
         }
 
+        var idExcluir = editando ? horarioEditandoId : 0;
+        if (DiaOcupadoPorOtro(diaSemana, idExcluir))
+        {
+            mensajeError = "Ese dia ya tiene un horario registrado para este veterinario. Edita o reactiva el horario existente.";
+            return false;
+        }
+
         if (!TryParseHora(horaInicioTexto, out var inicio) || !TryParseHora(horaFinTexto, out var fin))
         {
             mensajeError = "Ingresa una hora de inicio y fin validas.";
@@ -472,7 +548,6 @@
             descansoFin = df;
         }
 
-        var idExcluir = editando ? horarioEditandoId : 0;
         if (activoModelo && TieneSolapamiento(inicio, fin, idExcluir, diaSemana))
         {
             mensajeError = "Este horario se cruza con otro horario activo del mismo veterinario.";
@@ -502,6 +577,9 @@
             h.DiaSemana == dia &&
             inicio < h.HoraFin &&
             fin > h.HoraInicio);
+
+    private bool DiaOcupadoPorOtro(int dia, int idExcluir)
+        => listaHorarios.Any(h => h.Id != idExcluir && h.DiaSemana == dia);
 
     private HorarioVeterinario CopiarHorario(HorarioVeterinario horario) => new()
     {
