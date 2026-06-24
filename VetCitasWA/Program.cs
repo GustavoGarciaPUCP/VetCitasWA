@@ -129,18 +129,27 @@ app.MapPost("/auth/login", async (HttpContext context, UsuarioRestService usuari
     string contrasena = form["contrasena"].ToString();
 
     Usuario? usuario;
+    int? intentosRestantes = null;
     try
     {
-        usuario = usuarioService.Autenticar(username, contrasena);
+        usuario = usuarioService.Autenticar(username, contrasena, out intentosRestantes);
     }
-    catch
+    catch (Exception ex)
     {
+        // Cuenta bloqueada temporalmente por demasiados intentos fallidos.
+        if ((ex.Message ?? "").ToLowerInvariant().Contains("bloquead"))
+        {
+            return Results.Redirect("/login?error=locked");
+        }
         return Results.Redirect("/login?error=server");
     }
 
     if (usuario is null || !usuario.Activo)
     {
-        return Results.Redirect("/login?error=1");
+        // Si el backend informó los intentos restantes, se pasan a la vista de login.
+        return Results.Redirect(intentosRestantes is int n
+            ? $"/login?error=1&intentos={n}"
+            : "/login?error=1");
     }
 
     var claims = new List<Claim>

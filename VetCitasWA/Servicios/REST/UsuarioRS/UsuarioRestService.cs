@@ -19,7 +19,12 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
         }
 
         public Usuario? Autenticar(string username, string contrasenaPlana)
+            => Autenticar(username, contrasenaPlana, out _);
+
+        public Usuario? Autenticar(string username, string contrasenaPlana, out int? intentosRestantes)
         {
+            intentosRestantes = null;
+
             var content = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("username", username),
@@ -43,7 +48,26 @@ namespace VetCitasWA.Servicios.REST.UsuarioRS
 
             if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             {
+                // Lee, si viene, el numero de intentos restantes antes del bloqueo.
+                var cuerpo = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                try
+                {
+                    using var json = System.Text.Json.JsonDocument.Parse(cuerpo);
+                    if (json.RootElement.TryGetProperty("intentosRestantes", out var ir)
+                        && ir.ValueKind == System.Text.Json.JsonValueKind.Number)
+                    {
+                        intentosRestantes = ir.GetInt32();
+                    }
+                }
+                catch { /* cuerpo no-JSON: se ignora */ }
+
                 return null;
+            }
+
+            // 429 Too Many Requests: cuenta bloqueada temporalmente.
+            if ((int)response.StatusCode == 429)
+            {
+                throw new InvalidOperationException(response.ReadVetCitasMessage());
             }
 
             var detalle = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
