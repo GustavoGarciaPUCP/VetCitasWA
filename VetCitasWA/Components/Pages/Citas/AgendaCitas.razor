@@ -737,7 +737,7 @@
             : HoraAperturaFallback;
 
         var cierre = horarios.Any()
-            ? horarios.Max(h => Math.Min(HoraCierreMaxima, h.HoraFin.Hour + (h.HoraFin.Minute > 0 ? 1 : 0)))
+            ? horarios.Max(h => Math.Min(HoraCierreMaxima + 1, h.HoraFin.Hour + (h.HoraFin.Minute > 0 ? 1 : 0)))
             : HoraCierreMaxima;
 
         var ultimaHora = Math.Max(inicio, cierre - 1);
@@ -748,7 +748,7 @@
             ultimaHora = Math.Max(ultimaHora, citasVisibles.Max(c => Math.Clamp(c.FechaHoraInicio.Hour, 0, HoraCierreMaxima - 1)));
         }
 
-        ultimaHora = Math.Min(ultimaHora, HoraCierreMaxima - 1);
+        ultimaHora = Math.Min(ultimaHora, HoraCierreMaxima);
         return Enumerable.Range(inicio, ultimaHora - inicio + 1).ToList();
     }
 
@@ -1448,7 +1448,7 @@
         var idCliente = citaAccion.Mascota.Cliente?.Id ?? 0;
         var duracion = DuracionCita(citaAccion);
         var diaSemana = DiaSemanaNum(reprogFecha);
-        var maxHora = new TimeOnly(HoraCierreMaxima, 0);
+        var maxHora = new TimeOnly(HoraCierreMaxima, 59);
 
         var horarios = horariosAgenda
             .Where(h => h.Activo && h.Veterinario?.Id == idVeterinario && h.DiaSemana == diaSemana)
