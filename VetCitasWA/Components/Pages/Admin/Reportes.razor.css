@@ -228,20 +228,38 @@
     justify-content: center;
     gap: 0.55rem;
     width: 100%;
-    background: #2563eb;
+    background: linear-gradient(180deg, #3b82f6, #2563eb);
     color: #ffffff;
-    border: none;
+    border: 1px solid #2563eb;
     border-radius: 8px;
     padding: 0.75rem 1rem;
     font-size: 0.85rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.1px;
     cursor: pointer;
-    transition: background 0.15s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
-.btn-generar:hover {
-    background: #1d4ed8;
+.btn-generar:hover:not(:disabled) {
+    background: linear-gradient(180deg, #2563eb, #1d4ed8);
+    border-color: #1d4ed8;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
+}
+
+.btn-generar:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18), 0 6px 16px rgba(37, 99, 235, 0.28);
+}
+
+.btn-generar:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn-generar:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .report-actions {
@@ -276,9 +294,30 @@
     border-color: #fca5a5;
 }
 
+.btn-export-pdf:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
+}
+
 .btn-export-pdf:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+:root.dark .btn-generar {
+    background: linear-gradient(180deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.22);
+}
+
+:root.dark .btn-generar:hover:not(:disabled) {
+    background: linear-gradient(180deg, #60a5fa, #2563eb);
+    border-color: #60a5fa;
+}
+
+:root.dark .btn-generar:focus-visible {
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.22), 0 6px 18px rgba(59, 130, 246, 0.22);
 }
 
 :root.dark .btn-export-pdf {
