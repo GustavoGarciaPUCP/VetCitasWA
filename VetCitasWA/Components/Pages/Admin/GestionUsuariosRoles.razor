@@ -119,7 +119,7 @@
                                 <td data-label="Roles">
                                     @if (usuario.Roles != null && usuario.Roles.Any())
                                     {
-                                        <div class="@(usuario.Roles.Count > 1 ? "role-pills-stack" : "")">
+                                        <div class="role-pills-list">
                                             @foreach (var rol in usuario.Roles)
                                             {
                                                 <span class="role-pill @CssRol(rol.Codigo)">@NombreRol(rol)</span>
