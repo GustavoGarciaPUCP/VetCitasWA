@@ -28,6 +28,10 @@
     min-width: 0;
 }
 
+.col-left > .card + .card {
+    display: none;
+}
+
 /* ================== Card base ================== */
 .card {
     background: #ffffff;

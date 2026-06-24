@@ -5,6 +5,25 @@
     gap: 1.25rem;
 }
 
+.page-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.page-subtitle {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0;
+}
+
 .panel {
     background: #ffffff;
     border: 1px solid #e5e7eb;
@@ -487,5 +506,127 @@
 
     .schedule-actions {
         justify-content: flex-end;
+    }
+}
+
+/* ===== Ajustes finales de coherencia visual ===== */
+.schedule-complete {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    max-width: 360px;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.84rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.editor-title {
+    margin: 0;
+}
+
+.schedule-table tbody tr.row-inactive td {
+    color: #6b7280;
+    background: #fafafa;
+}
+
+.schedule-actions .vc-btn-danger {
+    min-width: 0;
+}
+
+.btn-reactivate-h {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    background: #ecfdf5;
+    color: #047857;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-reactivate-h:hover,
+.btn-reactivate-h:focus-visible {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    color: #065f46;
+    outline: none;
+}
+
+.btn-reactivate-h:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+:root.dark .page-title {
+    color: #f1f5f9;
+}
+
+:root.dark .page-subtitle,
+:root.dark .field-label,
+:root.dark .field-label-sm {
+    color: #94a3b8;
+}
+
+:root.dark .panel,
+:root.dark .editor-card {
+    background: #18181b;
+    border-color: #27272a;
+}
+
+:root.dark .editor-card {
+    background: #111827;
+}
+
+:root.dark .schedule-complete {
+    background: rgba(37, 99, 235, 0.16);
+    border-color: rgba(96, 165, 250, 0.45);
+    color: #bfdbfe;
+}
+
+:root.dark .schedule-table tbody tr.row-inactive td {
+    color: #94a3b8;
+    background: rgba(39, 39, 42, 0.45);
+}
+
+:root.dark .btn-reactivate-h {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(52, 211, 153, 0.45);
+    color: #6ee7b7;
+}
+
+:root.dark .btn-reactivate-h:hover,
+:root.dark .btn-reactivate-h:focus-visible {
+    background: rgba(16, 185, 129, 0.22);
+    border-color: #34d399;
+    color: #a7f3d0;
+}
+
+@media (max-width: 767.98px) {
+    .schedule-complete {
+        max-width: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .schedule-table tbody td[data-label="Dia"] {
+        grid-column: 1;
+        grid-row: 1;
+        font-weight: 700;
+        color: #111827;
+        font-size: 1rem;
+    }
+
+    :root.dark .schedule-table tbody td[data-label="Dia"] {
+        color: #f9fafb;
     }
 }
