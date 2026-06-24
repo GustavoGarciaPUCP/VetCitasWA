@@ -107,6 +107,33 @@
     color: #991b1b;
     font-size: 0.87rem;
     font-weight: 600;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.schedule-alert-modal {
+    margin: 0 0 1rem;
+}
+
+.alert-close {
+    width: 26px;
+    height: 26px;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    background: #fff7f7;
+    color: #991b1b;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.alert-close:hover,
+.alert-close:focus-visible {
+    background: #fee2e2;
+    outline: none;
 }
 
 .editor-card {
@@ -115,6 +142,23 @@
     background: #f9fafb;
     padding: 1rem;
     margin-bottom: 1.2rem;
+}
+
+.schedule-modal-card {
+    max-width: 620px;
+}
+
+.readonly-day {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    padding: 0 0.9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #111827;
+    font-size: 0.9rem;
+    font-weight: 700;
 }
 
 .table-wrapper {
@@ -386,6 +430,15 @@
     gap: 0.45rem;
 }
 
+.schedule-actions .btn-pencil {
+    flex: 0 0 auto;
+}
+
+.schedule-modal-actions {
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+}
+
 /* ================== Responsive ================== */
 @media (max-width: 767.98px) {
     .panel {
@@ -598,6 +651,60 @@
     background: rgba(39, 39, 42, 0.45);
 }
 
+:root.dark .schedule-alert {
+    background: rgba(127, 29, 29, 0.24);
+    border-color: rgba(248, 113, 113, 0.45);
+    color: #fecaca;
+}
+
+:root.dark .alert-close {
+    background: rgba(127, 29, 29, 0.22);
+    border-color: rgba(248, 113, 113, 0.5);
+    color: #fecaca;
+}
+
+:root.dark .alert-close:hover,
+:root.dark .alert-close:focus-visible {
+    background: rgba(185, 28, 28, 0.32);
+    color: #fee2e2;
+}
+
+:root.dark .readonly-day {
+    background: #111827;
+    border-color: #334155;
+    color: #f8fafc;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-edit {
+    color: #60a5fa;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-edit:hover,
+:root.dark .schedule-actions .btn-pencil.btn-edit:focus-visible {
+    background: rgba(37, 99, 235, 0.18);
+    color: #93c5fd;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-del {
+    color: #f87171;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-del:hover,
+:root.dark .schedule-actions .btn-pencil.btn-del:focus-visible {
+    background: rgba(220, 38, 38, 0.16);
+    color: #fca5a5;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-reactivate {
+    color: #34d399;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-reactivate:hover,
+:root.dark .schedule-actions .btn-pencil.btn-reactivate:focus-visible {
+    background: rgba(16, 185, 129, 0.16);
+    color: #6ee7b7;
+}
+
 :root.dark .btn-reactivate-h {
     background: rgba(16, 185, 129, 0.14);
     border-color: rgba(52, 211, 153, 0.45);
@@ -618,6 +725,10 @@
 }
 
 @media (max-width: 640px) {
+    .schedule-modal-actions {
+        flex-direction: column-reverse;
+    }
+
     .schedule-table tbody td[data-label="Dia"] {
         grid-column: 1;
         grid-row: 1;

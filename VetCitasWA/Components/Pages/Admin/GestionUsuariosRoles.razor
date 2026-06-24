@@ -60,9 +60,12 @@
         </div>
     </div>
 
-    @if (!string.IsNullOrWhiteSpace(errorMensaje))
+    @if (!HayModalAbierto && !string.IsNullOrWhiteSpace(errorMensaje))
     {
-        <div class="admin-alert" role="alert">@errorMensaje</div>
+        <div class="admin-alert" role="alert">
+            <span>@errorMensaje</span>
+            <button type="button" class="alert-close" aria-label="Cerrar alerta" @onclick="CerrarAlerta">x</button>
+        </div>
     }
 
     <section class="panel">
@@ -119,7 +122,7 @@
                                 <td data-label="Roles">
                                     @if (usuario.Roles != null && usuario.Roles.Any())
                                     {
-                                        <div class="@(usuario.Roles.Count > 1 ? "role-pills-stack" : "")">
+                                        <div class="role-pills-list">
                                             @foreach (var rol in usuario.Roles)
                                             {
                                                 <span class="role-pill @CssRol(rol.Codigo)">@NombreRol(rol)</span>
@@ -199,7 +202,7 @@
 @if (usuarioNuevo is not null)
 {
     <div class="inline-modal-backdrop" @onclick="CerrarNuevo"></div>
-    <section class="inline-modal" role="dialog" aria-modal="true" aria-labelledby="nuevoUsuarioTitulo">
+    <section class="inline-modal user-form-modal" role="dialog" aria-modal="true" aria-labelledby="nuevoUsuarioTitulo">
         <div class="inline-modal-header">
             <div>
                 <h2 id="nuevoUsuarioTitulo">Nuevo usuario</h2>
@@ -207,6 +210,14 @@
             </div>
             <button type="button" class="modal-close" aria-label="Cerrar" @onclick="CerrarNuevo">x</button>
         </div>
+
+        @if (!string.IsNullOrWhiteSpace(errorMensaje))
+        {
+            <div class="admin-alert modal-alert" role="alert">
+                <span>@errorMensaje</span>
+                <button type="button" class="alert-close" aria-label="Cerrar alerta" @onclick="CerrarAlerta">x</button>
+            </div>
+        }
 
         <div class="edit-grid">
             <div class="field-block edit-grid-wide">
@@ -301,7 +312,7 @@
 @if (usuarioEditando is not null)
 {
     <div class="inline-modal-backdrop" @onclick="CerrarEditar"></div>
-    <section class="inline-modal" role="dialog" aria-modal="true" aria-labelledby="editarUsuarioTitulo">
+    <section class="inline-modal user-form-modal" role="dialog" aria-modal="true" aria-labelledby="editarUsuarioTitulo">
         <div class="inline-modal-header">
             <div>
                 <h2 id="editarUsuarioTitulo">Editar usuario</h2>
@@ -309,6 +320,14 @@
             </div>
             <button type="button" class="modal-close" aria-label="Cerrar" @onclick="CerrarEditar">x</button>
         </div>
+
+        @if (!string.IsNullOrWhiteSpace(errorMensaje))
+        {
+            <div class="admin-alert modal-alert" role="alert">
+                <span>@errorMensaje</span>
+                <button type="button" class="alert-close" aria-label="Cerrar alerta" @onclick="CerrarAlerta">x</button>
+            </div>
+        }
 
         <div class="edit-grid">
             <label>
@@ -397,14 +416,27 @@
 @if (usuarioCambioEstado is not null)
 {
     <div class="inline-modal-backdrop" @onclick="CancelarCambioEstado"></div>
-    <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="estadoUsuarioTitulo">
+    <section class="confirm-modal state-modal" role="dialog" aria-modal="true" aria-labelledby="estadoUsuarioTitulo">
         <h2 id="estadoUsuarioTitulo">@(nuevoEstadoUsuario ? "Activar usuario" : "Inactivar usuario")</h2>
         <p>
             @(nuevoEstadoUsuario
                 ? "El usuario volvera a estar disponible para iniciar sesion."
                 : "El usuario se marcara como inactivo sin eliminarlo fisicamente.")
         </p>
-        <strong>@usuarioCambioEstado.Username</strong>
+        @if (!nuevoEstadoUsuario && TieneRol(usuarioCambioEstado, CodigoRol.VETERINARIO))
+        {
+            <p class="confirm-note">Si este veterinario tiene citas pendientes, confirmadas o en consulta, primero deben cancelarse o reprogramarse desde recepcion.</p>
+        }
+        <strong class="confirm-target">@usuarioCambioEstado.Username</strong>
+
+        @if (!string.IsNullOrWhiteSpace(errorMensaje))
+        {
+            <div class="admin-alert modal-alert" role="alert">
+                <span>@errorMensaje</span>
+                <button type="button" class="alert-close" aria-label="Cerrar alerta" @onclick="CerrarAlerta">x</button>
+            </div>
+        }
+
         <div class="modal-actions">
             <button type="button" class="btn-secondary" disabled="@procesando" @onclick="CancelarCambioEstado">Cancelar</button>
             <button type="button" class="@(nuevoEstadoUsuario ? "btn-new" : "btn-danger")" disabled="@procesando" @onclick="ConfirmarCambioEstadoAsync">
@@ -445,6 +477,8 @@
         rolesSeleccionados.Contains(CodigoRol.VETERINARIO) ? CodigoRol.VETERINARIO
         : rolesSeleccionados.Contains(CodigoRol.ADMINISTRADOR) ? CodigoRol.ADMINISTRADOR
         : CodigoRol.RECEPCIONISTA;
+
+    private bool HayModalAbierto => usuarioNuevo is not null || usuarioEditando is not null || usuarioCambioEstado is not null;
 
     private string RolesResumen => rolesSeleccionados.Count == 0
         ? "Selecciona uno o mas roles"
@@ -595,6 +629,11 @@
 
         usuarioEditando = CopiarUsuario(usuario);
         nuevaPasswordReset = "";
+        errorMensaje = null;
+    }
+
+    private void CerrarAlerta()
+    {
         errorMensaje = null;
     }
 
@@ -931,6 +970,7 @@
 
         usuarioCambioEstado = CopiarUsuario(usuario);
         nuevoEstadoUsuario = activo;
+        errorMensaje = null;
     }
 
     private void CancelarCambioEstado()
@@ -956,8 +996,11 @@
             Toasts.Exito(nuevoEstadoUsuario ? "Usuario activado." : "Usuario inactivado.");
         });
 
-        usuarioCambioEstado = null;
-        await CargarUsuariosAsync();
+        if (errorMensaje is null)
+        {
+            usuarioCambioEstado = null;
+            await CargarUsuariosAsync();
+        }
     }
 
     private async Task CambiarRolAsync(Usuario usuario, CodigoRol codigoRol)
