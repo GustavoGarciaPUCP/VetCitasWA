@@ -284,6 +284,17 @@
     padding-top: 0.5rem;
 }
 
+.inline-hint {
+    margin: 0.4rem 0 0;
+    font-size: 0.76rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+:root.dark .inline-hint {
+    color: #94a3b8;
+}
+
 /* ================== Cierre y Cobro ================== */
 .closing-row {
     display: grid;

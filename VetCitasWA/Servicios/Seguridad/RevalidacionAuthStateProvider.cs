@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,13 +14,16 @@ namespace VetCitasWA.Servicios.Seguridad
 {
     /// <summary>
     /// Revalida periodicamente el estado de autenticacion del circuito Blazor Server.
-    /// Si el usuario fue inactivado en la base de datos mientras tenia una sesion
-    /// abierta (por ejemplo en otra PC), en la siguiente revalidacion su sesion deja
-    /// de ser valida y es redirigido al login.
+    /// Si el usuario fue inactivado, o si le cambiaron los roles mientras tenia una
+    /// sesion abierta (por ejemplo en otra PC), en la siguiente revalidacion su sesion
+    /// deja de ser valida y es redirigido al login (donde recibe los roles actualizados).
     /// </summary>
     public class RevalidacionAuthStateProvider : RevalidatingServerAuthenticationStateProvider
     {
         private readonly IServiceScopeFactory scopeFactory;
+
+        private static readonly HashSet<string> RolesValidos =
+            new(StringComparer.OrdinalIgnoreCase) { "ADMINISTRADOR", "VETERINARIO", "RECEPCIONISTA" };
 
         public RevalidacionAuthStateProvider(
             ILoggerFactory loggerFactory,
@@ -48,8 +53,44 @@ namespace VetCitasWA.Servicios.Seguridad
             }
 
             await using var scope = scopeFactory.CreateAsyncScope();
+
+            // 1. El usuario debe seguir activo.
             var usuarioService = scope.ServiceProvider.GetRequiredService<UsuarioRestService>();
-            return await usuarioService.EstaActivoAsync(idUsuario);
+            if (!await usuarioService.EstaActivoAsync(idUsuario))
+            {
+                return false;
+            }
+
+            // 2. Los roles de la cookie deben coincidir con los actuales en la BD.
+            //    Al SuperAdmin se le excluye (sus roles son fijos / se le agregan todos al entrar).
+            var esSuperAdmin = user.HasClaim("EsSuperAdmin", "true");
+            if (!esSuperAdmin)
+            {
+                try
+                {
+                    var adminService = scope.ServiceProvider.GetRequiredService<AdministradorRestService>();
+                    var rolesBd = (await Task.Run(() => adminService.ListarRolesDeUsuario(idUsuario)))
+                        .Select(r => r.Codigo.ToString())
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                    var rolesCookie = user.FindAll(ClaimTypes.Role)
+                        .Select(c => c.Value)
+                        .Where(v => RolesValidos.Contains(v))
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                    // Si cambiaron (se agrego o quito algun rol), se invalida la sesion.
+                    if (!rolesBd.SetEquals(rolesCookie))
+                    {
+                        return false;
+                    }
+                }
+                catch
+                {
+                    // Ante un fallo transitorio del backend no se expulsa al usuario.
+                }
+            }
+
+            return true;
         }
     }
 }

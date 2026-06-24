@@ -1524,19 +1524,18 @@ h1:focus {
 }
 
 /* Status-* (usado en Recordatorios) — mismo lenguaje visual */
+/* Badge de estado unificado (mismo look que /usuarios-roles) */
 .status-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.35rem;
-    padding: 0.32rem 0.85rem;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    line-height: 1;
+    padding: 0.22rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.4;
     border: 1px solid transparent;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
 }
 
 .status-sent {
@@ -1559,9 +1558,9 @@ h1:focus {
 }
 
 .status-inactive {
-    background: #e2e8f0;
-    color: #334155;
-    border-color: #cbd5e1;
+    background: #f3f4f6;
+    color: #4b5563;
+    border-color: #e5e7eb;
 }
 
 /* ============================================================ */

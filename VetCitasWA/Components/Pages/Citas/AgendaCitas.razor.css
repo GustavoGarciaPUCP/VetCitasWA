@@ -1,3 +1,21 @@
+/* ===== Enlace de WhatsApp (telefono del cliente en el detalle) ===== */
+.vc-wa-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #16a34a;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.vc-wa-link:hover {
+    text-decoration: underline;
+}
+
+:root.dark .vc-wa-link {
+    color: #4ade80;
+}
+
 /* ================== Contenedor ================== */
 .page-section {
     display: flex;

@@ -133,7 +133,14 @@ else if (cita is null)
                             Notas de procedimiento (cataplasmas, sedantes, ecografías)
                         </summary>
                         <div class="inline-collapse-body">
-                            <textarea class="textarea" rows="3" maxlength="1000" placeholder="Detalle del procedimiento…" @bind="atencion.NotaPostOperatoria" disabled="@SoloLectura"></textarea>
+                            <textarea class="textarea" rows="3" maxlength="1000"
+                                      placeholder="@(ServicioSeleccionadoEsClinico ? "Detalle del procedimiento…" : "Disponible solo para servicios clínicos")"
+                                      @bind="atencion.NotaPostOperatoria"
+                                      disabled="@(SoloLectura || !ServicioSeleccionadoEsClinico)"></textarea>
+                            @if (!SoloLectura && !ServicioSeleccionadoEsClinico)
+                            {
+                                <p class="inline-hint">Las notas de procedimiento solo aplican a servicios clínicos.</p>
+                            }
                         </div>
                     </details>
 
@@ -217,6 +224,10 @@ else if (cita is null)
 
     private IEnumerable<VcSelectOption<int>> ServicioOptions
         => listaServicios.Select(s => new VcSelectOption<int>(s.Id, s.Nombre));
+
+    // Solo los servicios clinicos habilitan las notas de procedimiento.
+    private bool ServicioSeleccionadoEsClinico
+        => listaServicios.FirstOrDefault(s => s.Id == idServicioSeleccionado)?.Tipo == TipoServicio.CLINICA;
 
     private void OnServicioSel(int v)
     {

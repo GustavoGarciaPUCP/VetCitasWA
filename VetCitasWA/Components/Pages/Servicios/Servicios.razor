@@ -99,7 +99,7 @@
                                         }
                                         else
                                         {
-                                            <span class="status-badge status-inactive">Inactivo</span>
+                                            <span class="status-badge status-inactive">Desactivado</span>
                                         }
                                     </td>
                                     <td data-label="Acciones" class="admin-only">
@@ -181,7 +181,7 @@
     {
         new VcSelectOption<string>("todos", "Todos los estados"),
         new VcSelectOption<string>("activos", "Solo activos"),
-        new VcSelectOption<string>("inactivos", "Solo inactivos"),
+        new VcSelectOption<string>("inactivos", "Solo desactivados"),
     };
 
     private void OnFiltroEstadoChanged(string value)

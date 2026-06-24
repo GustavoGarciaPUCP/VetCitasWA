@@ -10,6 +10,7 @@
 @inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VeterinarioService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.RecepcionistaRestService RecepcionistaService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.UsuarioRestService UsuarioService
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
 
 <PageTitle>Usuarios y roles - VetCitas</PageTitle>
@@ -162,8 +163,8 @@
                                         {
                                             <button type="button"
                                                     class="btn-pencil btn-del"
-                                                    title="Inactivar"
-                                                    aria-label="Inactivar"
+                                                    title="Desactivar"
+                                                    aria-label="Desactivar"
                                                     disabled="@(procesando || usuario.Id == usuarioActualId || EsSuperAdminUsuario(usuario))"
                                                     @onclick="() => PedirCambioEstado(usuario, false)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
@@ -358,7 +359,7 @@
 
         <div class="roles-editor">
             <h3>Roles del usuario</h3>
-            <p>Asigna o quita roles desde aqui. Los cambios se guardan al instante.</p>
+            <p>Marca o desmarca los roles. Los cambios se aplican al pulsar "Guardar cambios".</p>
             <div class="role-actions role-actions-editor" aria-label="Gestionar roles">
                 @foreach (var rolGestionable in RolesGestionables)
                 {
@@ -367,7 +368,7 @@
                             class="role-toggle @(tieneRol ? "role-toggle-on" : "")"
                             disabled="@(procesando || NoPuedeModificarRol(usuarioEditando, rolGestionable.Codigo))"
                             title="@TituloRol(usuarioEditando, rolGestionable.Codigo, rolGestionable.Label)"
-                            @onclick="() => CambiarRolAsync(usuarioEditando, rolGestionable.Codigo)">
+                            @onclick="() => ToggleRolLocal(rolGestionable.Codigo)">
                         @(tieneRol ? "Quitar" : "Asignar") @rolGestionable.Label
                     </button>
                 }
@@ -417,17 +418,28 @@
 {
     <div class="inline-modal-backdrop" @onclick="CancelarCambioEstado"></div>
     <section class="confirm-modal state-modal" role="dialog" aria-modal="true" aria-labelledby="estadoUsuarioTitulo">
-        <h2 id="estadoUsuarioTitulo">@(nuevoEstadoUsuario ? "Activar usuario" : "Inactivar usuario")</h2>
-        <p>
-            @(nuevoEstadoUsuario
-                ? "El usuario volvera a estar disponible para iniciar sesion."
-                : "El usuario se marcara como inactivo sin eliminarlo fisicamente.")
-        </p>
-        @if (!nuevoEstadoUsuario && TieneRol(usuarioCambioEstado, CodigoRol.VETERINARIO))
-        {
-            <p class="confirm-note">Si este veterinario tiene citas pendientes, confirmadas o en consulta, primero deben cancelarse o reprogramarse desde recepcion.</p>
-        }
+        <h2 id="estadoUsuarioTitulo">@(nuevoEstadoUsuario ? "Activar usuario" : "Desactivar usuario")</h2>
         <strong class="confirm-target">@usuarioCambioEstado.Username</strong>
+
+        @if (verificandoCitasVet)
+        {
+            <p class="confirm-checking">Verificando si el veterinario tiene citas activas…</p>
+        }
+        else if (!nuevoEstadoUsuario && vetTieneCitasActivas)
+        {
+            <div class="confirm-block" role="alert">
+                Este veterinario tiene citas <strong>pendientes, confirmadas o en consulta</strong>.
+                Para desactivarlo, primero cancela o reprograma esas citas desde recepción.
+            </div>
+        }
+        else
+        {
+            <p class="confirm-desc">
+                @(nuevoEstadoUsuario
+                    ? "El usuario volverá a estar disponible para iniciar sesión."
+                    : "El usuario se marcará como inactivo sin eliminarlo físicamente.")
+            </p>
+        }
 
         @if (!string.IsNullOrWhiteSpace(errorMensaje))
         {
@@ -438,10 +450,15 @@
         }
 
         <div class="modal-actions">
-            <button type="button" class="btn-secondary" disabled="@procesando" @onclick="CancelarCambioEstado">Cancelar</button>
-            <button type="button" class="@(nuevoEstadoUsuario ? "btn-new" : "btn-danger")" disabled="@procesando" @onclick="ConfirmarCambioEstadoAsync">
-                @(procesando ? "Procesando..." : (nuevoEstadoUsuario ? "Activar" : "Inactivar"))
+            <button type="button" class="btn-secondary" disabled="@procesando" @onclick="CancelarCambioEstado">
+                @(!nuevoEstadoUsuario && vetTieneCitasActivas ? "Entendido" : "Cancelar")
             </button>
+            @if (!verificandoCitasVet && !(!nuevoEstadoUsuario && vetTieneCitasActivas))
+            {
+                <button type="button" class="@(nuevoEstadoUsuario ? "btn-new" : "btn-danger")" disabled="@procesando" @onclick="ConfirmarCambioEstadoAsync">
+                    @(procesando ? "Procesando..." : (nuevoEstadoUsuario ? "Activar" : "Desactivar"))
+                </button>
+            }
         </div>
     </section>
 }
@@ -465,6 +482,10 @@
     private PhoneInput? phoneInputEditar;
     private Usuario? usuarioCambioEstado;
     private bool nuevoEstadoUsuario;
+    private bool verificandoCitasVet;
+    private bool vetTieneCitasActivas;
+    // Roles que tenia el usuario al abrir el modal de edicion (para calcular el diff al guardar).
+    private HashSet<CodigoRol> rolesOriginalesEditar = new();
     // Roles seleccionados para el nuevo usuario (multi-seleccion).
     private HashSet<CodigoRol> rolesSeleccionados = new();
     private bool rolesDropdownAbierto;
@@ -628,6 +649,7 @@
         }
 
         usuarioEditando = CopiarUsuario(usuario);
+        rolesOriginalesEditar = new HashSet<CodigoRol>((usuario.Roles ?? new List<RolSistema>()).Select(r => r.Codigo));
         nuevaPasswordReset = "";
         errorMensaje = null;
     }
@@ -930,19 +952,52 @@
 
         if (usuarioEditando.Id == usuarioActualId && !usuarioEditando.Activo)
         {
-            Toasts.Error("No puedes inactivar tu propio usuario.");
+            Toasts.Error("No puedes desactivar tu propio usuario.");
             return;
         }
 
         if (EsSuperAdminUsuario(usuarioEditando) && !usuarioEditando.Activo)
         {
-            Toasts.Error("No se puede inactivar al SuperAdmin.");
+            Toasts.Error("No se puede desactivar al SuperAdmin.");
+            return;
+        }
+
+        // ===== Validacion y diff de roles (se aplican al guardar) =====
+        var rolesActuales = (usuarioEditando.Roles ?? new List<RolSistema>())
+            .Select(r => r.Codigo).ToHashSet();
+
+        if (rolesActuales.Count == 0)
+        {
+            Toasts.Error("Un usuario debe tener al menos un rol.");
+            return;
+        }
+
+        var rolesQuitados = rolesOriginalesEditar.Where(r => !rolesActuales.Contains(r)).ToList();
+        var rolesAgregados = rolesActuales.Where(r => !rolesOriginalesEditar.Contains(r)).ToList();
+
+        // Quitar el rol Veterinario requiere que no tenga citas activas.
+        if (rolesQuitados.Contains(CodigoRol.VETERINARIO)
+            && await VeterinarioTieneCitasActivasAsync(usuarioEditando.Id))
+        {
+            Toasts.Error("No se puede quitar el rol Veterinario: este usuario tiene citas pendientes, confirmadas o en consulta. Cancélalas o reprográmalas desde recepción primero.");
             return;
         }
 
         await EjecutarOperacionAsync(() =>
         {
             AdminService.ModificarUsuarioBasico(usuarioEditando, usuarioActualId);
+
+            // Primero se asignan los nuevos y luego se revocan, para no dejar al
+            // usuario momentaneamente sin roles (el backend lo rechazaria).
+            foreach (var rol in rolesAgregados)
+            {
+                AdminService.AsignarRol(usuarioEditando.Id, rol.ToString());
+            }
+            foreach (var rol in rolesQuitados)
+            {
+                AdminService.RevocarRol(usuarioEditando.Id, rol.ToString());
+            }
+
             Toasts.Exito("Usuario actualizado.");
         });
 
@@ -954,23 +1009,52 @@
         }
     }
 
-    private void PedirCambioEstado(Usuario usuario, bool activo)
+    private async Task PedirCambioEstado(Usuario usuario, bool activo)
     {
         if (!activo && usuario.Id == usuarioActualId)
         {
-            Toasts.Error("No puedes inactivar tu propio usuario.");
+            Toasts.Error("No puedes desactivar tu propio usuario.");
             return;
         }
 
         if (!activo && EsSuperAdminUsuario(usuario))
         {
-            Toasts.Error("No se puede inactivar al SuperAdmin.");
+            Toasts.Error("No se puede desactivar al SuperAdmin.");
             return;
         }
 
         usuarioCambioEstado = CopiarUsuario(usuario);
         nuevoEstadoUsuario = activo;
         errorMensaje = null;
+        vetTieneCitasActivas = false;
+
+        // Al inactivar a un veterinario, se verifica de inmediato si tiene citas
+        // activas: el backend no permitira inactivarlo, asi que se avisa antes.
+        if (!activo && TieneRol(usuario, CodigoRol.VETERINARIO))
+        {
+            verificandoCitasVet = true;
+            vetTieneCitasActivas = await VeterinarioTieneCitasActivasAsync(usuario.Id);
+            verificandoCitasVet = false;
+        }
+    }
+
+    // El veterinario tiene citas que impiden inactivarlo si hay alguna en estado
+    // PENDIENTE, CONFIRMADA o EN_CONSULTA.
+    private async Task<bool> VeterinarioTieneCitasActivasAsync(int idVet)
+    {
+        try
+        {
+            var citas = await Task.Run(() => CitaService.ListarFiltradas(idVet, null, null, "", ""));
+            return citas.Any(c => c.Veterinario?.Id == idVet
+                && (c.Estado == EstadoCita.PENDIENTE
+                    || c.Estado == EstadoCita.CONFIRMADA
+                    || c.Estado == EstadoCita.EN_CONSULTA));
+        }
+        catch
+        {
+            // Si no se puede verificar, no se bloquea aqui: el backend valida al confirmar.
+            return false;
+        }
     }
 
     private void CancelarCambioEstado()
@@ -984,6 +1068,12 @@
     private async Task ConfirmarCambioEstadoAsync()
     {
         if (usuarioCambioEstado is null)
+        {
+            return;
+        }
+
+        // Defensa: no intentar inactivar a un veterinario con citas activas.
+        if (!nuevoEstadoUsuario && vetTieneCitasActivas)
         {
             return;
         }
@@ -1003,52 +1093,32 @@
         }
     }
 
-    private async Task CambiarRolAsync(Usuario usuario, CodigoRol codigoRol)
+    // Cambia el rol SOLO en memoria (no toca el backend). La diferencia con los
+    // roles originales se aplica recien al pulsar "Guardar cambios".
+    private void ToggleRolLocal(CodigoRol codigoRol)
     {
-        var asignado = TieneRol(usuario, codigoRol);
-        if (asignado && NoPuedeModificarRol(usuario, codigoRol))
+        if (usuarioEditando is null) return;
+        usuarioEditando.Roles ??= new List<RolSistema>();
+
+        var tiene = usuarioEditando.Roles.Any(r => r.Codigo == codigoRol);
+        if (tiene)
         {
-            Toasts.Error("No se puede quitar este rol administrativo.");
-            return;
+            if (NoPuedeModificarRol(usuarioEditando, codigoRol))
+            {
+                Toasts.Error("No se puede quitar este rol administrativo.");
+                return;
+            }
+            if (usuarioEditando.Roles.Count <= 1)
+            {
+                Toasts.Error("Un usuario debe tener al menos un rol.");
+                return;
+            }
+            usuarioEditando.Roles.RemoveAll(r => r.Codigo == codigoRol);
         }
-
-        await EjecutarOperacionAsync(() =>
+        else
         {
-            if (asignado)
-            {
-                AdminService.RevocarRol(usuario.Id, codigoRol.ToString());
-                Toasts.Exito("Rol revocado.");
-            }
-            else
-            {
-                AdminService.AsignarRol(usuario.Id, codigoRol.ToString());
-                Toasts.Exito("Rol asignado.");
-            }
-        });
-
-        // Refresca los roles del usuario en edicion con el metodo dedicado del backend.
-        // Es mas confiable que re-parsear la lista filtrada: si el usuario deja de
-        // coincidir con el filtro de rol al cambiarlo, ya no aparece en la lista y
-        // el panel mostraria roles desactualizados.
-        if (usuarioEditando?.Id == usuario.Id)
-        {
-            try
-            {
-                var rolesActuales = await Task.Run(() => AdminService.ListarRolesDeUsuario(usuario.Id));
-                usuarioEditando.Roles = rolesActuales ?? new List<RolSistema>();
-            }
-            catch
-            {
-                // Si falla la consulta de roles, ajusta el estado localmente para no dejar el panel inconsistente.
-                usuarioEditando.Roles ??= new List<RolSistema>();
-                if (asignado)
-                    usuarioEditando.Roles.RemoveAll(r => r.Codigo == codigoRol);
-                else if (usuarioEditando.Roles.All(r => r.Codigo != codigoRol))
-                    usuarioEditando.Roles.Add(new RolSistema { Codigo = codigoRol });
-            }
+            usuarioEditando.Roles.Add(new RolSistema { Codigo = codigoRol });
         }
-
-        await CargarUsuariosAsync();
     }
 
     private async Task EjecutarOperacionAsync(Action operacion)

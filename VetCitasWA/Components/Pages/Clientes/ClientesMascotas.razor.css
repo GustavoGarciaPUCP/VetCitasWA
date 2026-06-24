@@ -132,16 +132,19 @@
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    color: #ffffff;
+    color: #047857;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 0.75rem;
     flex-shrink: 0;
-    background: linear-gradient(135deg, #34d399 0%, #0d9488 100%);
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.25);
     letter-spacing: 0.5px;
 }
+
+:root.dark .client-avatar { color: #6ee7b7; }
 
 /* Badge de # mascotas */
 .pet-count-badge {
@@ -418,12 +421,19 @@ button.btn-eye {
 }
 
 .pet-dog {
-    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+    border: 1px solid rgba(37, 99, 235, 0.22);
 }
 
 .pet-cat {
-    background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+    background: rgba(147, 51, 234, 0.12);
+    color: #7e22ce;
+    border: 1px solid rgba(147, 51, 234, 0.22);
 }
+
+:root.dark .pet-dog { color: #93c5fd; }
+:root.dark .pet-cat { color: #d8b4fe; }
 
 .pet-name {
     color: #111827;
@@ -442,12 +452,19 @@ button.btn-eye {
 }
 
 .species-dog {
-    background: #3b82f6;
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+    border: 1px solid rgba(37, 99, 235, 0.22);
 }
 
 .species-cat {
-    background: #c084fc;
+    background: rgba(147, 51, 234, 0.12);
+    color: #7e22ce;
+    border: 1px solid rgba(147, 51, 234, 0.22);
 }
+
+:root.dark .species-dog { color: #93c5fd; }
+:root.dark .species-cat { color: #d8b4fe; }
 
 /* ===== Botón ojito ===== */
 .btn-eye {

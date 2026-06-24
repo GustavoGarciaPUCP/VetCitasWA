@@ -63,6 +63,39 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     return;
                 }
 
+                // Verifica que los roles de la cookie sigan coincidiendo con los de la BD
+                // (al SuperAdmin se le excluye porque sus roles son fijos).
+                var esSuperAdmin = principal!.HasClaim("EsSuperAdmin", "true");
+                if (!esSuperAdmin)
+                {
+                    try
+                    {
+                        var adminService = context.HttpContext.RequestServices
+                            .GetRequiredService<VetCitasWA.Servicios.REST.UsuarioRS.AdministradorRestService>();
+
+                        var rolesBd = (await Task.Run(() => adminService.ListarRolesDeUsuario(idUsuario)))
+                            .Select(r => r.Codigo.ToString())
+                            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                        var rolesCookie = principal.FindAll(ClaimTypes.Role)
+                            .Select(c => c.Value)
+                            .Where(v => v is "ADMINISTRADOR" or "VETERINARIO" or "RECEPCIONISTA")
+                            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                        if (!rolesBd.SetEquals(rolesCookie))
+                        {
+                            context.RejectPrincipal();
+                            await context.HttpContext.SignOutAsync(
+                                CookieAuthenticationDefaults.AuthenticationScheme);
+                            return;
+                        }
+                    }
+                    catch
+                    {
+                        // Ante un fallo transitorio del backend no se expulsa al usuario.
+                    }
+                }
+
                 context.Properties.SetString("ultimaRevalidacion", ahora.ToString("o"));
                 context.ShouldRenew = true;
             }

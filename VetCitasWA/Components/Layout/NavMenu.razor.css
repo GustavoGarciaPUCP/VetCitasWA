@@ -9,34 +9,38 @@
 
 /* ================== Encabezado de marca ================== */
 .brand-row {
-    height: 56px;
-    background: #1976ef;
-    color: #ffffff;
+    height: 72px;
+    background: #ffffff;
+    border-bottom: 1px solid #eef0f3;
     display: flex;
     align-items: center;
-    padding: 0 1rem;
+    justify-content: center;
+    padding: 0.5rem 1rem;
     flex-shrink: 0;
 }
 
-.brand-row-left {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    font-weight: 700;
-    font-size: 1.05rem;
+.brand-logo {
+    height: 52px;
+    width: auto;
+    object-fit: contain;
 }
 
-.brand-toggle {
-    width: 22px;
-    height: 22px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
+/* Mostrar el logo segun el tema: claro por defecto, oscuro en modo oscuro */
+.brand-logo-dark {
+    display: none;
 }
 
-.brand-name {
-    letter-spacing: 0.2px;
+:root.dark .brand-row {
+    background: #0f172a;
+    border-bottom-color: #1e293b;
+}
+
+:root.dark .brand-logo-light {
+    display: none;
+}
+
+:root.dark .brand-logo-dark {
+    display: block;
 }
 
 /* ================== Tarjeta de usuario ================== */
