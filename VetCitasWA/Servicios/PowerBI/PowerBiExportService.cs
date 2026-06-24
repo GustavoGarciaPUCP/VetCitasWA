@@ -68,14 +68,22 @@ namespace VetCitasWA.Servicios.PowerBI
                 using var estadoResp = await http.GetAsync(estadoUrl, ct);
                 await GarantizarOkAsync(estadoResp, "consultar el estado de la exportacion", ct);
 
-                estadoExport = await LeerPropiedadAsync(estadoResp, "status", ct);
+                var cuerpoEstado = await estadoResp.Content.ReadAsStringAsync(ct);
+                using var docEstado = JsonDocument.Parse(cuerpoEstado);
+                estadoExport = docEstado.RootElement.TryGetProperty("status", out var st) ? st.GetString() : null;
+
                 if (string.Equals(estadoExport, "Succeeded", StringComparison.OrdinalIgnoreCase))
                 {
                     break;
                 }
                 if (string.Equals(estadoExport, "Failed", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException("La exportacion del reporte de Power BI fallo.");
+                    // Se incluye el detalle de error que devuelve Power BI para poder diagnosticar
+                    // (p. ej. parametro inexistente, formato de valor invalido, o credenciales del origen).
+                    var detalle = docEstado.RootElement.TryGetProperty("error", out var err)
+                        ? err.ToString()
+                        : cuerpoEstado;
+                    throw new InvalidOperationException($"La exportacion del reporte de Power BI fallo. {detalle}");
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(3), ct);
@@ -96,17 +104,29 @@ namespace VetCitasWA.Servicios.PowerBI
         {
             var parametros = new List<object>();
 
-            if (!string.IsNullOrWhiteSpace(fechaInicio))
-                parametros.Add(new { name = "Fromvetcitasdbcitafechahorainicio", value = fechaInicio });
+            // Los parametros de fecha son de tipo Texto y el reporte hace
+            // DATEVALUE(valor) + TIMEVALUE(valor); por eso se envia el datetime con
+            // ESPACIO (no "T"): inicio a las 00:00:00 y fin a las 23:59:59 (inclusivo).
+            if (TryFecha(fechaInicio, out var dIni))
+                parametros.Add(new
+                {
+                    name = "Fromvetcitasdbcitafechahorainicio",
+                    value = dIni.Date.ToString("yyyy-MM-dd HH:mm:ss")
+                });
 
-            if (!string.IsNullOrWhiteSpace(fechaFin))
-                parametros.Add(new { name = "Tovetcitasdbcitafechahorainicio", value = fechaFin });
+            if (TryFecha(fechaFin, out var dFin))
+                parametros.Add(new
+                {
+                    name = "Tovetcitasdbcitafechahorainicio",
+                    value = dFin.Date.AddDays(1).AddSeconds(-1).ToString("yyyy-MM-dd HH:mm:ss")
+                });
 
+            // Nombres reales segun el DAX del reporte (RSCustomDaxFilter).
             if (!string.IsNullOrWhiteSpace(estado) && !estado.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
-                parametros.Add(new { name = "citaestado", value = estado });
+                parametros.Add(new { name = "vetcitasdbcitaestado", value = estado });
 
             if (!string.IsNullOrWhiteSpace(servicio) && !servicio.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
-                parametros.Add(new { name = "servicionombre", value = servicio });
+                parametros.Add(new { name = "vetcitasdbservicionombre", value = servicio });
 
             if (parametros.Count == 0)
             {
@@ -119,6 +139,10 @@ namespace VetCitasWA.Servicios.PowerBI
                 paginatedReportConfiguration = new { parameterValues = parametros }
             };
         }
+
+        private static bool TryFecha(string? texto, out DateTime fecha)
+            => DateTime.TryParse(texto, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out fecha);
 
         private async Task<string> ObtenerTokenAsync(
             HttpClient http, string tenantId, string clientId, string clientSecret, CancellationToken ct)
@@ -149,11 +173,31 @@ namespace VetCitasWA.Servicios.PowerBI
         private static async Task GarantizarOkAsync(HttpResponseMessage resp, string accion, CancellationToken ct)
         {
             if (resp.IsSuccessStatusCode) return;
+
+            // 429: Power BI limita la cantidad de solicitudes de exportacion por intervalo.
+            if ((int)resp.StatusCode == 429)
+            {
+                var segundos = resp.Headers.RetryAfter?.Delta?.TotalSeconds;
+                var espera = segundos.HasValue
+                    ? $" Espera ~{(int)segundos.Value} segundos antes de reintentar."
+                    : " Espera unos minutos antes de reintentar.";
+                throw new InvalidOperationException(
+                    "Power BI esta limitando las solicitudes de exportacion (demasiados intentos seguidos)." + espera);
+            }
+
             var detalle = await resp.Content.ReadAsStringAsync(ct);
             throw new InvalidOperationException($"No se pudo {accion} (HTTP {(int)resp.StatusCode}). {detalle}");
         }
 
         private string Requerido(string clave)
-            => _config[clave] ?? throw new InvalidOperationException($"Falta la configuracion '{clave}'.");
+        {
+            var valor = _config[clave];
+            if (string.IsNullOrWhiteSpace(valor))
+            {
+                throw new InvalidOperationException(
+                    $"Falta la configuracion '{clave}'. Definela con user-secrets (dotnet user-secrets set \"{clave}\" ...).");
+            }
+            return valor;
+        }
     }
 }

@@ -123,22 +123,25 @@ else if (cita is null)
                         <input id="diagnostico" type="text" class="input" maxlength="255" @bind="atencion.Diagnostico" disabled="@SoloLectura" />
                     </div>
 
-                    <details class="inline-collapse">
-                        <summary class="inline-collapse-summary">
-                            <span class="inline-arrow" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
-                                </svg>
-                            </span>
-                            Notas de procedimiento (cataplasmas, sedantes, ecografías)
-                        </summary>
-                        <div class="inline-collapse-body">
-                            <textarea class="textarea" rows="3" maxlength="1000"
-                                      placeholder="Detalle del procedimiento…"
-                                      @bind="atencion.NotaPostOperatoria"
-                                      disabled="@(SoloLectura || !ServicioSeleccionadoEsClinico)"></textarea>
-                        </div>
-                    </details>
+                    @if (ServicioSeleccionadoEsClinico)
+                    {
+                        <details class="inline-collapse">
+                            <summary class="inline-collapse-summary">
+                                <span class="inline-arrow" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+                                    </svg>
+                                </span>
+                                Notas de procedimiento (cataplasmas, sedantes, ecografías)
+                            </summary>
+                            <div class="inline-collapse-body">
+                                <textarea class="textarea" rows="3" maxlength="1000"
+                                          placeholder="Detalle del procedimiento…"
+                                          @bind="atencion.NotaPostOperatoria"
+                                          disabled="@SoloLectura"></textarea>
+                            </div>
+                        </details>
+                    }
 
                     <div class="field">
                         <label class="field-label" for="recomendaciones">Recomendaciones y control</label>
