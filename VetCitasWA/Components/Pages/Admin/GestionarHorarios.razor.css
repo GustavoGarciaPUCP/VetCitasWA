@@ -117,6 +117,23 @@
     margin-bottom: 1.2rem;
 }
 
+.schedule-modal-card {
+    max-width: 620px;
+}
+
+.readonly-day {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    padding: 0 0.9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #111827;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
 .table-wrapper {
     overflow-x: auto;
 }
@@ -386,6 +403,15 @@
     gap: 0.45rem;
 }
 
+.schedule-actions .btn-pencil {
+    flex: 0 0 auto;
+}
+
+.schedule-modal-actions {
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+}
+
 /* ================== Responsive ================== */
 @media (max-width: 767.98px) {
     .panel {
@@ -598,6 +624,42 @@
     background: rgba(39, 39, 42, 0.45);
 }
 
+:root.dark .readonly-day {
+    background: #111827;
+    border-color: #334155;
+    color: #f8fafc;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-edit {
+    color: #60a5fa;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-edit:hover,
+:root.dark .schedule-actions .btn-pencil.btn-edit:focus-visible {
+    background: rgba(37, 99, 235, 0.18);
+    color: #93c5fd;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-del {
+    color: #f87171;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-del:hover,
+:root.dark .schedule-actions .btn-pencil.btn-del:focus-visible {
+    background: rgba(220, 38, 38, 0.16);
+    color: #fca5a5;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-reactivate {
+    color: #34d399;
+}
+
+:root.dark .schedule-actions .btn-pencil.btn-reactivate:hover,
+:root.dark .schedule-actions .btn-pencil.btn-reactivate:focus-visible {
+    background: rgba(16, 185, 129, 0.16);
+    color: #6ee7b7;
+}
+
 :root.dark .btn-reactivate-h {
     background: rgba(16, 185, 129, 0.14);
     border-color: rgba(52, 211, 153, 0.45);
@@ -618,6 +680,10 @@
 }
 
 @media (max-width: 640px) {
+    .schedule-modal-actions {
+        flex-direction: column-reverse;
+    }
+
     .schedule-table tbody td[data-label="Dia"] {
         grid-column: 1;
         grid-row: 1;

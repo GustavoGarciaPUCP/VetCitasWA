@@ -2,7 +2,10 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "RECEPCIONISTA")]
 @using System.Security.Claims
+@using VetCitasWA.Servicios.Modelo.Cita
+@using VetCitasWA.Servicios.Modelo.Common.Enums
 @using VetCitasWA.Servicios.Modelo.Usuario
+@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.VeterinarioRestService VetService
 @inject VetCitasWA.Servicios.REST.UsuarioRS.HorarioVeterinarioRestService HorarioService
 @inject VetCitasWA.Servicios.UI.ToastService Toasts
@@ -59,77 +62,6 @@
             <div class="schedule-alert">@mensajeError</div>
         }
 
-        @if (mostrarEditor)
-        {
-            <div class="editor-card">
-                <div class="editor-summary">
-                    <h2 class="editor-title">@(editando ? "Editar horario" : "Registrar horario")</h2>
-                    <button type="button" class="vc-btn vc-btn-secondary vc-btn-sm" @onclick="CancelarEdicion" disabled="@procesando">Cerrar</button>
-                </div>
-
-                <div class="editor-body">
-                    <div class="time-grid">
-                        <div class="form-field">
-                            <label class="field-label-sm">Dia</label>
-                            <VcSelect TValue="int"
-                                      @bind-Value="diaSemana"
-                                      Options="OpcionesDiasEditor"
-                                      Placeholder="Selecciona un dia"
-                                      EmptyText="No hay dias libres para este veterinario." />
-                        </div>
-
-                        <label class="check-row active-row">
-                            <input type="checkbox" class="check-input" @bind="activoModelo" disabled="@(!editando)" />
-                            <span class="check-visual"></span>
-                            <span class="check-label">Horario activo</span>
-                        </label>
-                    </div>
-
-                    <div class="time-grid">
-                        <div class="form-field">
-                            <label class="field-label-sm">Hora inicio</label>
-                            <input type="time" class="input" step="900" value="@horaInicioTexto"
-                                   @onchange="e => horaInicioTexto = e.Value?.ToString() ?? string.Empty" />
-                        </div>
-                        <div class="form-field">
-                            <label class="field-label-sm">Hora fin</label>
-                            <input type="time" class="input" step="900" value="@horaFinTexto"
-                                   @onchange="e => horaFinTexto = e.Value?.ToString() ?? string.Empty" />
-                        </div>
-                    </div>
-
-                    <label class="check-row">
-                        <input type="checkbox" class="check-input" @bind="usarDescanso" />
-                        <span class="check-visual"></span>
-                        <span class="check-label">Agregar refrigerio</span>
-                    </label>
-
-                    @if (usarDescanso)
-                    {
-                        <div class="time-grid">
-                            <div class="form-field">
-                                <label class="field-label-sm">Inicio refrigerio</label>
-                                <input type="time" class="input" step="900" value="@descansoInicioTexto"
-                                       @onchange="e => descansoInicioTexto = e.Value?.ToString() ?? string.Empty" />
-                            </div>
-                            <div class="form-field">
-                                <label class="field-label-sm">Fin refrigerio</label>
-                                <input type="time" class="input" step="900" value="@descansoFinTexto"
-                                       @onchange="e => descansoFinTexto = e.Value?.ToString() ?? string.Empty" />
-                            </div>
-                        </div>
-                    }
-
-                    <div class="actions-stack">
-                        <button type="button" class="vc-btn vc-btn-primary" @onclick="GuardarHorario" disabled="@procesando">
-                            @(procesando ? "Guardando..." : editando ? "Guardar cambios" : "Registrar horario")
-                        </button>
-                        <button type="button" class="vc-btn vc-btn-secondary" @onclick="LimpiarFormulario" disabled="@procesando">Limpiar formulario</button>
-                    </div>
-                </div>
-            </div>
-        }
-
         <h2 class="section-title">Resumen semanal de horarios</h2>
 
         <div class="table-wrapper">
@@ -177,14 +109,43 @@
                                 </td>
                                 <td data-label="Acciones">
                                     <div class="schedule-actions">
-                                        <button type="button" class="vc-btn vc-btn-secondary vc-btn-sm" @onclick="() => EditarHorario(h)" disabled="@procesando">Editar</button>
+                                        <button type="button"
+                                                class="btn-pencil btn-edit"
+                                                title="Editar horario"
+                                                aria-label="Editar horario"
+                                                @onclick="() => EditarHorario(h)"
+                                                disabled="@procesando">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" />
+                                            </svg>
+                                        </button>
                                         @if (h.Activo)
                                         {
-                                            <button type="button" class="vc-btn vc-btn-danger vc-btn-sm" @onclick="() => DesactivarHorario(h)" disabled="@procesando">Desactivar</button>
+                                            <button type="button"
+                                                    class="btn-pencil btn-del"
+                                                    title="Desactivar horario"
+                                                    aria-label="Desactivar horario"
+                                                    @onclick="() => DesactivarHorario(h)"
+                                                    disabled="@procesando">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1 0-2H5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1h2.5a1 1 0 0 1 1 1M4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+                                                </svg>
+                                            </button>
                                         }
                                         else
                                         {
-                                            <button type="button" class="btn-reactivate-h" @onclick="() => ReactivarHorario(h)" disabled="@procesando">Reactivar</button>
+                                            <button type="button"
+                                                    class="btn-pencil btn-reactivate"
+                                                    title="Reactivar horario"
+                                                    aria-label="Reactivar horario"
+                                                    @onclick="() => ReactivarHorario(h)"
+                                                    disabled="@procesando">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M10.854 6.146a.5.5 0 0 1 0 .708l-3.75 3.75a.5.5 0 0 1-.708 0l-1.75-1.75a.5.5 0 1 1 .708-.708L6.75 9.543l3.396-3.397a.5.5 0 0 1 .708 0" />
+                                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                                </svg>
+                                            </button>
                                         }
                                     </div>
                                 </td>
@@ -196,6 +157,89 @@
         </div>
     </section>
 </div>
+
+@if (mostrarEditor)
+{
+    <div class="vc-modal-backdrop" role="presentation">
+        <div class="vc-modal-card vc-modal-card-lg schedule-modal-card" role="dialog" aria-modal="true" aria-labelledby="horarioEditorTitulo">
+            <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="CancelarEdicion" disabled="@procesando">x</button>
+            <h2 id="horarioEditorTitulo" class="vc-modal-title">@(editando ? "Editar horario" : "Registrar horario")</h2>
+            <p class="vc-modal-subtitle">
+                @(editando ? "Ajusta el rango sin afectar citas pendientes o confirmadas." : "Registra un dia libre para la disponibilidad semanal.")
+            </p>
+
+            <div class="editor-body">
+                <div class="time-grid">
+                    <div class="form-field">
+                        <label class="field-label-sm">Dia</label>
+                        @if (editando)
+                        {
+                            <div class="readonly-day">
+                                <span>@GetNombreDia(diaSemana)</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <VcSelect TValue="int"
+                                      @bind-Value="diaSemana"
+                                      Options="OpcionesDiasEditor"
+                                      Placeholder="Selecciona un dia"
+                                      EmptyText="No hay dias libres para este veterinario." />
+                        }
+                    </div>
+
+                    <label class="check-row active-row">
+                        <input type="checkbox" class="check-input" @bind="activoModelo" disabled="@(!editando)" />
+                        <span class="check-visual"></span>
+                        <span class="check-label">Horario activo</span>
+                    </label>
+                </div>
+
+                <div class="time-grid">
+                    <div class="form-field">
+                        <label class="field-label-sm">Hora inicio</label>
+                        <input type="time" class="input" step="900" value="@horaInicioTexto"
+                               @onchange="e => horaInicioTexto = e.Value?.ToString() ?? string.Empty" />
+                    </div>
+                    <div class="form-field">
+                        <label class="field-label-sm">Hora fin</label>
+                        <input type="time" class="input" step="900" value="@horaFinTexto"
+                               @onchange="e => horaFinTexto = e.Value?.ToString() ?? string.Empty" />
+                    </div>
+                </div>
+
+                <label class="check-row">
+                    <input type="checkbox" class="check-input" @bind="usarDescanso" />
+                    <span class="check-visual"></span>
+                    <span class="check-label">Agregar refrigerio</span>
+                </label>
+
+                @if (usarDescanso)
+                {
+                    <div class="time-grid">
+                        <div class="form-field">
+                            <label class="field-label-sm">Inicio refrigerio</label>
+                            <input type="time" class="input" step="900" value="@descansoInicioTexto"
+                                   @onchange="e => descansoInicioTexto = e.Value?.ToString() ?? string.Empty" />
+                        </div>
+                        <div class="form-field">
+                            <label class="field-label-sm">Fin refrigerio</label>
+                            <input type="time" class="input" step="900" value="@descansoFinTexto"
+                                   @onchange="e => descansoFinTexto = e.Value?.ToString() ?? string.Empty" />
+                        </div>
+                    </div>
+                }
+
+                <div class="vc-modal-actions schedule-modal-actions">
+                    <button type="button" class="vc-btn vc-btn-secondary" @onclick="LimpiarFormulario" disabled="@procesando">Limpiar formulario</button>
+                    <button type="button" class="vc-btn vc-btn-primary" @onclick="GuardarHorario" disabled="@procesando">
+                        @(procesando ? "Guardando..." : editando ? "Guardar cambios" : "Registrar horario")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private List<Veterinario> listaVeterinarios = new();
@@ -414,8 +458,13 @@
     {
         if (horario is null || procesando) return;
 
-        procesando = true;
         mensajeError = null;
+        if (!TryValidarSinCitasParaDesactivar(horario))
+        {
+            return;
+        }
+
+        procesando = true;
 
         try
         {
@@ -554,6 +603,11 @@
             return false;
         }
 
+        if (editando && !TryValidarImpactoCitas(inicio, fin, descansoInicio, descansoFin, activoModelo))
+        {
+            return false;
+        }
+
         horario = new HorarioVeterinario
         {
             Id = idExcluir,
@@ -569,6 +623,149 @@
 
         return true;
     }
+
+    private bool TryValidarImpactoCitas(
+        TimeOnly inicio,
+        TimeOnly fin,
+        TimeOnly? descansoInicio,
+        TimeOnly? descansoFin,
+        bool quedaraActivo)
+    {
+        if (!TryObtenerCitasBloqueantesDelDia(diaSemana, out var citas, out var error))
+        {
+            mensajeError = error;
+            Toasts.Error("No se pudo validar el impacto del horario.");
+            return false;
+        }
+
+        if (!quedaraActivo)
+        {
+            if (citas.Any())
+            {
+                mensajeError = CrearMensajeCitasBloqueantes(citas, "desactivar");
+                Toasts.Error("Hay citas que dependen de este horario.");
+                return false;
+            }
+
+            return true;
+        }
+
+        var afectadas = citas
+            .Where(cita => !CitaCabeEnHorario(cita, inicio, fin, descansoInicio, descansoFin))
+            .ToList();
+
+        if (!afectadas.Any())
+        {
+            return true;
+        }
+
+        mensajeError = CrearMensajeCitasBloqueantes(afectadas, "modificar");
+        Toasts.Error("El cambio afecta citas existentes.");
+        return false;
+    }
+
+    private bool TryValidarSinCitasParaDesactivar(HorarioVeterinario horario)
+    {
+        if (!TryObtenerCitasBloqueantesDelDia(horario.DiaSemana, out var citas, out var error))
+        {
+            mensajeError = error;
+            Toasts.Error("No se pudo validar si existen citas afectadas.");
+            return false;
+        }
+
+        if (!citas.Any())
+        {
+            return true;
+        }
+
+        mensajeError = CrearMensajeCitasBloqueantes(citas, "desactivar");
+        Toasts.Error("Hay citas que dependen de este horario.");
+        return false;
+    }
+
+    private bool TryObtenerCitasBloqueantesDelDia(int dia, out List<Cita> citas, out string error)
+    {
+        citas = new();
+        error = string.Empty;
+
+        try
+        {
+            var desdeHoy = DateTime.Today;
+            citas = CitaService
+                .ListarFiltradas(idVetSeleccionado, desdeHoy, null, string.Empty, string.Empty)
+                .Where(cita => cita.FechaHoraInicio != default)
+                .Where(cita => NumeroDiaSemana(cita.FechaHoraInicio) == dia)
+                .Where(cita => EstadoBloqueaHorario(cita.Estado))
+                .ToList();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            error = $"No se pudo validar si existen citas afectadas. {ex.Message}";
+            return false;
+        }
+    }
+
+    private static bool CitaCabeEnHorario(
+        Cita cita,
+        TimeOnly inicio,
+        TimeOnly fin,
+        TimeOnly? descansoInicio,
+        TimeOnly? descansoFin)
+    {
+        var citaInicio = TimeOnly.FromDateTime(cita.FechaHoraInicio);
+        var citaFin = TimeOnly.FromDateTime(cita.FechaHoraFin);
+        var dentroDelRango = citaInicio >= inicio && citaFin <= fin;
+        var cruzaDescanso = descansoInicio.HasValue
+            && descansoFin.HasValue
+            && citaInicio < descansoFin.Value
+            && citaFin > descansoInicio.Value;
+
+        return dentroDelRango && !cruzaDescanso;
+    }
+
+    private string CrearMensajeCitasBloqueantes(List<Cita> citas, string accion)
+    {
+        var cantidad = citas.Count;
+        var tieneConfirmadas = citas.Any(c => c.Estado == EstadoCita.CONFIRMADA || c.Estado == EstadoCita.EN_CONSULTA);
+        var tienePendientes = citas.Any(c => c.Estado == EstadoCita.PENDIENTE);
+        var ejemplo = citas
+            .OrderBy(c => c.FechaHoraInicio)
+            .Select(c => $"{NombreMascota(c)} {c.FechaHoraInicio:dd/MM HH:mm} ({EstadoTexto(c.Estado)})")
+            .FirstOrDefault();
+
+        if (tieneConfirmadas)
+        {
+            return $"No se puede {accion} este horario porque tiene {cantidad} cita(s) confirmada(s) o en consulta. Cancela o reprograma esas citas antes. Ejemplo: {ejemplo}.";
+        }
+
+        if (tienePendientes)
+        {
+            return $"No se puede {accion} este horario porque tiene {cantidad} cita(s) pendiente(s). Reprograma o cancela esas citas antes. Ejemplo: {ejemplo}.";
+        }
+
+        return $"No se puede {accion} este horario porque tiene {cantidad} cita(s) vigentes. Revisa la agenda antes de continuar.";
+    }
+
+    private static bool EstadoBloqueaHorario(EstadoCita estado)
+        => estado == EstadoCita.PENDIENTE
+           || estado == EstadoCita.CONFIRMADA
+           || estado == EstadoCita.EN_CONSULTA;
+
+    private static int NumeroDiaSemana(DateTime fecha)
+        => fecha.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)fecha.DayOfWeek;
+
+    private static string NombreMascota(Cita cita)
+        => string.IsNullOrWhiteSpace(cita.Mascota?.Nombre) ? "Cita" : cita.Mascota.Nombre;
+
+    private static string EstadoTexto(EstadoCita estado)
+        => estado switch
+        {
+            EstadoCita.PENDIENTE => "pendiente",
+            EstadoCita.CONFIRMADA => "confirmada",
+            EstadoCita.EN_CONSULTA => "en consulta",
+            _ => estado.ToString().ToLowerInvariant()
+        };
 
     private bool TieneSolapamiento(TimeOnly inicio, TimeOnly fin, int idExcluir, int dia)
         => listaHorarios.Any(h =>
