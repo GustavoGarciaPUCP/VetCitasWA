@@ -107,6 +107,33 @@
     color: #991b1b;
     font-size: 0.87rem;
     font-weight: 600;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.schedule-alert-modal {
+    margin: 0 0 1rem;
+}
+
+.alert-close {
+    width: 26px;
+    height: 26px;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    background: #fff7f7;
+    color: #991b1b;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.alert-close:hover,
+.alert-close:focus-visible {
+    background: #fee2e2;
+    outline: none;
 }
 
 .editor-card {
@@ -622,6 +649,24 @@
 :root.dark .schedule-table tbody tr.row-inactive td {
     color: #94a3b8;
     background: rgba(39, 39, 42, 0.45);
+}
+
+:root.dark .schedule-alert {
+    background: rgba(127, 29, 29, 0.24);
+    border-color: rgba(248, 113, 113, 0.45);
+    color: #fecaca;
+}
+
+:root.dark .alert-close {
+    background: rgba(127, 29, 29, 0.22);
+    border-color: rgba(248, 113, 113, 0.5);
+    color: #fecaca;
+}
+
+:root.dark .alert-close:hover,
+:root.dark .alert-close:focus-visible {
+    background: rgba(185, 28, 28, 0.32);
+    color: #fee2e2;
 }
 
 :root.dark .readonly-day {

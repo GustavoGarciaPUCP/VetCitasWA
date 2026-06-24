@@ -57,9 +57,12 @@
             }
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(mensajeError))
+        @if (!mostrarEditor && !string.IsNullOrWhiteSpace(mensajeError))
         {
-            <div class="schedule-alert">@mensajeError</div>
+            <div class="schedule-alert" role="alert">
+                <span>@mensajeError</span>
+                <button type="button" class="alert-close" aria-label="Cerrar alerta" @onclick="CerrarMensajeError">x</button>
+            </div>
         }
 
         <h2 class="section-title">Resumen semanal de horarios</h2>
@@ -167,6 +170,14 @@
             <p class="vc-modal-subtitle">
                 @(editando ? "Ajusta el rango sin afectar citas pendientes o confirmadas." : "Registra un dia libre para la disponibilidad semanal.")
             </p>
+
+            @if (!string.IsNullOrWhiteSpace(mensajeError))
+            {
+                <div class="schedule-alert schedule-alert-modal" role="alert">
+                    <span>@mensajeError</span>
+                    <button type="button" class="alert-close" aria-label="Cerrar alerta" @onclick="CerrarMensajeError">x</button>
+                </div>
+            }
 
             <div class="editor-body">
                 <div class="time-grid">
@@ -396,6 +407,11 @@
         mostrarEditor = false;
         mensajeError = null;
         LimpiarFormulario();
+    }
+
+    private void CerrarMensajeError()
+    {
+        mensajeError = null;
     }
 
     private void LimpiarFormulario()
