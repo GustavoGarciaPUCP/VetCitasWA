@@ -108,41 +108,34 @@ namespace VetCitasWA.Servicios.PowerBI
         }
 
         private object ConstruirCuerpoExport(
-            TipoReportePowerBi tipoReporte,
-            string? fechaInicio,
-            string? fechaFin,
-            string? estado,
-            string? servicio,
-            int? minimoCitasCliente)
+                    TipoReportePowerBi tipoReporte,
+                    string? fechaInicio,
+                    string? fechaFin,
+                    string? estado,
+                    string? servicio,
+                    int? minimoCitasCliente)
         {
             var parametros = new List<object>();
 
-            // 1. FECHAS: Formato "yyyy-MM-dd HH:mm:ss" (DAX con VALUE lo procesará perfecto)
             var dIni = TryFecha(fechaInicio, out var f1) ? f1 : new DateTime(2000, 1, 1);
-            parametros.Add(new
-            {
-                name = "Fromvetcitasdbcitafechahorainicio",
-                value = dIni.ToString("yyyy-MM-dd HH:mm:ss")
-            });
-
             var dFin = TryFecha(fechaFin, out var f2) ? f2 : new DateTime(2099, 12, 31);
-            parametros.Add(new
-            {
-                name = "Tovetcitasdbcitafechahorainicio",
-                value = dFin.ToString("yyyy-MM-dd HH:mm:ss")
-            });
 
+            // ==========================================
+            // REPORTE 2: CLIENTES FRECUENTES
+            // ==========================================
             if (tipoReporte == TipoReportePowerBi.Clientes)
             {
-                var parametroMinimo = _config["PowerBI:ParametroMinimoCitasClientes"];
-                if (!string.IsNullOrWhiteSpace(parametroMinimo) && minimoCitasCliente.HasValue)
+                parametros.Add(new { name = "FechaInicio", value = dIni.ToString("yyyy-MM-dd HH:mm:ss") });
+                parametros.Add(new { name = "FechaFin", value = dFin.ToString("yyyy-MM-dd HH:mm:ss") });
+
+                string nombreParamMinimo = _config["PowerBI:ParametroMinimoCitasClientes"];
+                if (string.IsNullOrWhiteSpace(nombreParamMinimo))
                 {
-                    parametros.Add(new
-                    {
-                        name = parametroMinimo,
-                        value = Math.Max(1, minimoCitasCliente.Value).ToString(CultureInfo.InvariantCulture)
-                    });
+                    nombreParamMinimo = "MinimoCitas"; // Rescate por si no se lee el appsettings
                 }
+
+                int minVal = minimoCitasCliente.HasValue && minimoCitasCliente.Value > 0 ? minimoCitasCliente.Value : 1;
+                parametros.Add(new { name = nombreParamMinimo, value = minVal.ToString(CultureInfo.InvariantCulture) });
 
                 return new
                 {
@@ -151,17 +144,20 @@ namespace VetCitasWA.Servicios.PowerBI
                 };
             }
 
-            // Si es "TODOS" o viene vacio, enviamos "TODOS" para que coincida con el valor predeterminado del RDL.
+            // ==========================================
+            // REPORTE 1: CONSOLIDADO DE CITAS
+            // ==========================================
+            parametros.Add(new { name = "Fromvetcitasdbcitafechahorainicio", value = dIni.ToString("yyyy-MM-dd HH:mm:ss") });
+            parametros.Add(new { name = "Tovetcitasdbcitafechahorainicio", value = dFin.ToString("yyyy-MM-dd HH:mm:ss") });
+
             string estadoVal = (!string.IsNullOrWhiteSpace(estado) && !estado.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
                 ? estado.Replace(",", "|")
                 : "TODOS";
-
             parametros.Add(new { name = "vetcitasdbcitaestado", value = estadoVal });
 
             string servicioVal = (!string.IsNullOrWhiteSpace(servicio) && !servicio.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
                 ? servicio.Replace(",", "|")
                 : "TODOS";
-
             parametros.Add(new { name = "vetcitasdbservicionombre", value = servicioVal });
 
             return new
@@ -170,7 +166,6 @@ namespace VetCitasWA.Servicios.PowerBI
                 paginatedReportConfiguration = new { parameterValues = parametros }
             };
         }
-        // Método parseador mucho más robusto
         private string ReportIdPara(TipoReportePowerBi tipoReporte)
         {
             return tipoReporte switch
