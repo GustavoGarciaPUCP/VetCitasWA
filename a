@@ -1,0 +1,112 @@
+[1mdiff --git a/VetCitasWA/Servicios/PowerBI/PowerBiExportService.cs b/VetCitasWA/Servicios/PowerBI/PowerBiExportService.cs[m
+[1mindex e51cc82..537495c 100644[m
+[1m--- a/VetCitasWA/Servicios/PowerBI/PowerBiExportService.cs[m
+[1m+++ b/VetCitasWA/Servicios/PowerBI/PowerBiExportService.cs[m
+[36m@@ -98,41 +98,37 @@[m [mnamespace VetCitasWA.Servicios.PowerBI[m
+             return await http.GetByteArrayAsync($"{estadoUrl}/file", ct);[m
+         }[m
+ [m
+[31m-        // Arma el cuerpo del ExportTo. Si hay filtros, los manda como parameterValues[m
+[31m-        // del reporte paginado (mismos nombres de parametro definidos en el reporte).[m
+         private static object ConstruirCuerpoExport(string? fechaInicio, string? fechaFin, string? estado, string? servicio)[m
+         {[m
+             var parametros = new List<object>();[m
+ [m
+[31m-            // El reporte espera las fechas en formato US con AM/PM (igual que su[m
+[31m-            // selector: "6/19/2026 4:00:00 PM"). Inicio a las 12:00:00 AM y fin a las[m
+[31m-            // 11:59:59 PM (inclusivo).[m
+[31m-            var us = System.Globalization.CultureInfo.GetCultureInfo("en-US");[m
+[31m-            if (TryFecha(fechaInicio, out var dIni))[m
+[31m-                parametros.Add(new[m
+[31m-                {[m
+[31m-                    name = "Fromvetcitasdbcitafechahorainicio",[m
+[31m-                    value = dIni.Date.ToString("M/d/yyyy h:mm:ss tt", us)[m
+[31m-                });[m
+[32m+[m[32m            // 1. FECHAS: Formato "yyyy-MM-dd HH:mm:ss" (DAX con VALUE lo procesará perfecto)[m
+[32m+[m[32m            var dIni = TryFecha(fechaInicio, out var f1) ? f1 : new DateTime(2000, 1, 1);[m
+[32m+[m[32m            parametros.Add(new[m
+[32m+[m[32m            {[m
+[32m+[m[32m                name = "Fromvetcitasdbcitafechahorainicio",[m
+[32m+[m[32m                value = dIni.ToString("yyyy-MM-dd HH:mm:ss")[m
+[32m+[m[32m            });[m
+ [m
+[31m-            if (TryFecha(fechaFin, out var dFin))[m
+[31m-                parametros.Add(new[m
+[31m-                {[m
+[31m-                    name = "Tovetcitasdbcitafechahorainicio",[m
+[31m-                    value = dFin.Date.AddDays(1).AddSeconds(-1).ToString("M/d/yyyy h:mm:ss tt", us)[m
+[31m-                });[m
+[32m+[m[32m            var dFin = TryFecha(fechaFin, out var f2) ? f2 : new DateTime(2099, 12, 31);[m
+[32m+[m[32m            parametros.Add(new[m
+[32m+[m[32m            {[m
+[32m+[m[32m                name = "Tovetcitasdbcitafechahorainicio",[m
+[32m+[m[32m                value = dFin.ToString("yyyy-MM-dd HH:mm:ss")[m
+[32m+[m[32m            });[m
+ [m
+[31m-            // Nombres reales segun el DAX del reporte (RSCustomDaxFilter).[m
+[31m-            if (!string.IsNullOrWhiteSpace(estado) && !estado.Equals("TODOS", StringComparison.OrdinalIgnoreCase))[m
+[31m-                parametros.Add(new { name = "vetcitasdbcitaestado", value = estado });[m
+[32m+[m[32m            // Si es "TODOS" o viene vacío, enviamos "TODOS" para que coincida con el valor predeterminado del RDL[m
+[32m+[m[32m            string estadoVal = (!string.IsNullOrWhiteSpace(estado) && !estado.Equals("TODOS", StringComparison.OrdinalIgnoreCase))[m
+[32m+[m[32m                ? estado.Replace(",", "|")[m
+[32m+[m[32m                : "TODOS";[m
+ [m
+[31m-            if (!string.IsNullOrWhiteSpace(servicio) && !servicio.Equals("TODOS", StringComparison.OrdinalIgnoreCase))[m
+[31m-                parametros.Add(new { name = "vetcitasdbservicionombre", value = servicio });[m
+[32m+[m[32m            parametros.Add(new { name = "vetcitasdbcitaestado", value = estadoVal });[m
+ [m
+[31m-            if (parametros.Count == 0)[m
+[31m-            {[m
+[31m-                return new { format = "PDF" };[m
+[31m-            }[m
+[32m+[m[32m            string servicioVal = (!string.IsNullOrWhiteSpace(servicio) && !servicio.Equals("TODOS", StringComparison.OrdinalIgnoreCase))[m
+[32m+[m[32m                ? servicio.Replace(",", "|")[m
+[32m+[m[32m                : "TODOS";[m
+[32m+[m
+[32m+[m[32m            parametros.Add(new { name = "vetcitasdbservicionombre", value = servicioVal });[m
+ [m
+             return new[m
+             {[m
+[36m@@ -140,11 +136,26 @@[m [mnamespace VetCitasWA.Servicios.PowerBI[m
+                 paginatedReportConfiguration = new { parameterValues = parametros }[m
+             };[m
+         }[m
+[31m-[m
+[32m+[m[32m        // Método parseador mucho más robusto[m
+         private static bool TryFecha(string? texto, out DateTime fecha)[m
+[31m-            => DateTime.TryParse(texto, System.Globalization.CultureInfo.InvariantCulture,[m
+[31m-                System.Globalization.DateTimeStyles.None, out fecha);[m
+[32m+[m[32m        {[m
+[32m+[m[32m            if (string.IsNullOrWhiteSpace(texto))[m
+[32m+[m[32m            {[m
+[32m+[m[32m                fecha = default;[m
+[32m+[m[32m                return false;[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            // Intenta parsear los formatos más comunes (ISO de HTML5 y formatos locales)[m
+[32m+[m[32m            string[] formatos = { "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy", "d/M/yyyy", "yyyy-MM-ddTHH:mm:ss" };[m
+ [m
+[32m+[m[32m            if (DateTime.TryParseExact(texto, formatos, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out fecha))[m
+[32m+[m[32m            {[m
+[32m+[m[32m                return true;[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            // Último recurso usando la configuración regional del servidor[m
+[32m+[m[32m            return DateTime.TryParse(texto, out fecha);[m
+[32m+[m[32m        }[m
+         private async Task<string> ObtenerTokenAsync([m
+             HttpClient http, string tenantId, string clientId, string clientSecret, CancellationToken ct)[m
+         {[m
+[1mdiff --git a/VetCitasWA/appsettings.json b/VetCitasWA/appsettings.json[m
+[1mindex 2fe4f01..3852fdc 100644[m
+[1m--- a/VetCitasWA/appsettings.json[m
+[1m+++ b/VetCitasWA/appsettings.json[m
+[36m@@ -12,7 +12,7 @@[m
+   "PowerBI": {[m
+     "TenantId": "48fee74e-b746-4358-bd88-690e7962024c",[m
+     "ClientId": "4de514af-afc9-404c-a031-493390d12504",[m
+[31m-    "ClientSecret": "",[m
+[32m+[m[41m[m
+     "WorkspaceId": "3e03d8c5-af11-42be-af00-a241d1bd224d",[m
+     "ReportId": "a8e0c132-b6d2-451a-9237-1b7404e20a14"[m
+   }[m
