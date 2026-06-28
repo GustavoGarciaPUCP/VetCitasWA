@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -9,6 +10,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace VetCitasWA.Servicios.PowerBI
 {
+    public enum TipoReportePowerBi
+    {
+        Citas,
+        Clientes
+    }
+
     /// <summary>
     /// Exporta un reporte de Power BI a PDF usando la API REST (exportToFile)
     /// con autenticacion de service principal (client credentials). Toda la
@@ -29,17 +36,19 @@ namespace VetCitasWA.Servicios.PowerBI
         }
 
         public async Task<byte[]> ExportarReportePdfAsync(
+            TipoReportePowerBi tipoReporte,
             string? fechaInicio = null,
             string? fechaFin = null,
             string? estado = null,
             string? servicio = null,
+            int? minimoCitasCliente = null,
             CancellationToken ct = default)
         {
             var tenantId = Requerido("PowerBI:TenantId");
             var clientId = Requerido("PowerBI:ClientId");
             var clientSecret = Requerido("PowerBI:ClientSecret");
             var workspaceId = Requerido("PowerBI:WorkspaceId");
-            var reportId = Requerido("PowerBI:ReportId");
+            var reportId = ReportIdPara(tipoReporte);
 
             var http = _httpFactory.CreateClient();
             http.Timeout = TimeSpan.FromMinutes(5);
@@ -53,7 +62,7 @@ namespace VetCitasWA.Servicios.PowerBI
             //    filtros como parametros del reporte paginado (Report Builder).
             var exportUrl = $"{ApiBase}/groups/{workspaceId}/reports/{reportId}/ExportTo";
             using var exportResp = await http.PostAsJsonAsync(exportUrl,
-                ConstruirCuerpoExport(fechaInicio, fechaFin, estado, servicio), ct);
+                ConstruirCuerpoExport(tipoReporte, fechaInicio, fechaFin, estado, servicio, minimoCitasCliente), ct);
             await GarantizarOkAsync(exportResp, "iniciar la exportacion", ct);
 
             var exportId = await LeerPropiedadAsync(exportResp, "id", ct)
@@ -98,36 +107,57 @@ namespace VetCitasWA.Servicios.PowerBI
             return await http.GetByteArrayAsync($"{estadoUrl}/file", ct);
         }
 
-        private static object ConstruirCuerpoExport(string? fechaInicio, string? fechaFin, string? estado, string? servicio)
+        private object ConstruirCuerpoExport(
+                    TipoReportePowerBi tipoReporte,
+                    string? fechaInicio,
+                    string? fechaFin,
+                    string? estado,
+                    string? servicio,
+                    int? minimoCitasCliente)
         {
             var parametros = new List<object>();
 
-            // 1. FECHAS: Formato "yyyy-MM-dd HH:mm:ss" (DAX con VALUE lo procesará perfecto)
             var dIni = TryFecha(fechaInicio, out var f1) ? f1 : new DateTime(2000, 1, 1);
-            parametros.Add(new
-            {
-                name = "Fromvetcitasdbcitafechahorainicio",
-                value = dIni.ToString("yyyy-MM-dd HH:mm:ss")
-            });
-
             var dFin = TryFecha(fechaFin, out var f2) ? f2 : new DateTime(2099, 12, 31);
-            parametros.Add(new
-            {
-                name = "Tovetcitasdbcitafechahorainicio",
-                value = dFin.ToString("yyyy-MM-dd HH:mm:ss")
-            });
 
-            // Si es "TODOS" o viene vacío, enviamos "TODOS" para que coincida con el valor predeterminado del RDL
+            // ==========================================
+            // REPORTE 2: CLIENTES FRECUENTES
+            // ==========================================
+            if (tipoReporte == TipoReportePowerBi.Clientes)
+            {
+                parametros.Add(new { name = "FechaInicio", value = dIni.ToString("yyyy-MM-dd HH:mm:ss") });
+                parametros.Add(new { name = "FechaFin", value = dFin.ToString("yyyy-MM-dd HH:mm:ss") });
+
+                string nombreParamMinimo = _config["PowerBI:ParametroMinimoCitasClientes"];
+                if (string.IsNullOrWhiteSpace(nombreParamMinimo))
+                {
+                    nombreParamMinimo = "MinimoCitas"; // Rescate por si no se lee el appsettings
+                }
+
+                int minVal = minimoCitasCliente.HasValue && minimoCitasCliente.Value > 0 ? minimoCitasCliente.Value : 1;
+                parametros.Add(new { name = nombreParamMinimo, value = minVal.ToString(CultureInfo.InvariantCulture) });
+
+                return new
+                {
+                    format = "PDF",
+                    paginatedReportConfiguration = new { parameterValues = parametros }
+                };
+            }
+
+            // ==========================================
+            // REPORTE 1: CONSOLIDADO DE CITAS
+            // ==========================================
+            parametros.Add(new { name = "Fromvetcitasdbcitafechahorainicio", value = dIni.ToString("yyyy-MM-dd HH:mm:ss") });
+            parametros.Add(new { name = "Tovetcitasdbcitafechahorainicio", value = dFin.ToString("yyyy-MM-dd HH:mm:ss") });
+
             string estadoVal = (!string.IsNullOrWhiteSpace(estado) && !estado.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
                 ? estado.Replace(",", "|")
                 : "TODOS";
-
             parametros.Add(new { name = "vetcitasdbcitaestado", value = estadoVal });
 
             string servicioVal = (!string.IsNullOrWhiteSpace(servicio) && !servicio.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
                 ? servicio.Replace(",", "|")
                 : "TODOS";
-
             parametros.Add(new { name = "vetcitasdbservicionombre", value = servicioVal });
 
             return new
@@ -136,7 +166,22 @@ namespace VetCitasWA.Servicios.PowerBI
                 paginatedReportConfiguration = new { parameterValues = parametros }
             };
         }
-        // Método parseador mucho más robusto
+        private string ReportIdPara(TipoReportePowerBi tipoReporte)
+        {
+            return tipoReporte switch
+            {
+                TipoReportePowerBi.Clientes => Requerido("PowerBI:ReportIdClientes"),
+                _ => RequeridoOpcional("PowerBI:ReportIdCitas")
+                    ?? Requerido("PowerBI:ReportId")
+            };
+        }
+
+        private string? RequeridoOpcional(string clave)
+        {
+            var valor = _config[clave];
+            return string.IsNullOrWhiteSpace(valor) ? null : valor;
+        }
+
         private static bool TryFecha(string? texto, out DateTime fecha)
         {
             if (string.IsNullOrWhiteSpace(texto))

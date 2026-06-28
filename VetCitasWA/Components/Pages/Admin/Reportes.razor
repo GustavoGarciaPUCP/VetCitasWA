@@ -1,6 +1,7 @@
 @page "/consolidados"
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "ADMINISTRADOR")]
+@implements IDisposable
 @using VetCitasWA.Servicios.Modelo.Cita
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
@@ -22,6 +23,16 @@
     @if (pdfError is not null)
     {
         <div class="admin-alert" role="alert">@pdfError</div>
+    }
+    @if (pdfAviso is not null)
+    {
+        <div class="report-status" role="status">
+            <div class="report-status-text">
+                <strong>Exportacion PDF</strong>
+                <span>@pdfAviso</span>
+            </div>
+            <button type="button" class="report-status-close" aria-label="Cerrar aviso" @onclick="CerrarAvisoPdf">x</button>
+        </div>
     }
 
     <div class="reports-grid">
@@ -120,8 +131,21 @@
                     <button type="button" class="btn-generar" @onclick="CargarCitasAsync" disabled="@cargandoCitas">
                         Generar consolidado
                     </button>
-                    <button type="button" class="btn-export-pdf" @onclick="ExportarPdfCitas" disabled="@generandoPdf">
-                        @(generandoPdf ? "Generando PDF…" : "Exportar a PDF")
+                    <button type="button"
+                            class="btn-export-pdf @ClaseCooldownPdf"
+                            @onclick="ExportarPdfCitas"
+                            disabled="@generandoPdf"
+                            aria-disabled="@PdfEnCooldown"
+                            title="@TituloBotonPdf">
+                        <span class="pdf-icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0v-1h.5a1.5 1.5 0 0 0 0-3zm.5.5h.5a.5.5 0 0 1 0 1H6z" />
+                                <path d="M8 7.5A.5.5 0 0 1 8.5 7H10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H8.5A.5.5 0 0 1 8 10.5zm1 .5v2h1V8z" />
+                                <path d="M11.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V9.5h.75a.5.5 0 0 0 0-1H12V8h1a.5.5 0 0 0 0-1z" />
+                                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z" />
+                            </svg>
+                        </span>
+                        @TextoBotonPdf(TipoPdf.Citas)
                     </button>
                 </div>
             </div>
@@ -197,9 +221,27 @@
                     </div>
                 }
 
-                <button type="button" class="btn-generar" @onclick="CargarClientesAsync" disabled="@cargandoClientes">
-                    Generar consolidado
-                </button>
+                <div class="report-actions">
+                    <button type="button" class="btn-generar" @onclick="CargarClientesAsync" disabled="@cargandoClientes">
+                        Generar consolidado
+                    </button>
+                    <button type="button"
+                            class="btn-export-pdf @ClaseCooldownPdf"
+                            @onclick="ExportarPdfClientes"
+                            disabled="@generandoPdf"
+                            aria-disabled="@PdfEnCooldown"
+                            title="@TituloBotonPdf">
+                        <span class="pdf-icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0v-1h.5a1.5 1.5 0 0 0 0-3zm.5.5h.5a.5.5 0 0 1 0 1H6z" />
+                                <path d="M8 7.5A.5.5 0 0 1 8.5 7H10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H8.5A.5.5 0 0 1 8 10.5zm1 .5v2h1V8z" />
+                                <path d="M11.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V9.5h.75a.5.5 0 0 0 0-1H12V8h1a.5.5 0 0 0 0-1z" />
+                                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z" />
+                            </svg>
+                        </span>
+                        @TextoBotonPdf(TipoPdf.Clientes)
+                    </button>
+                </div>
 
                 <p class="report-note">
                     <span class="report-note-label">Este consolidado incluye:</span>
@@ -213,46 +255,208 @@
 </div>
 
 @code {
+    private const int SegundosCooldownPowerBi = 259;
     private bool generandoPdf;
+    private TipoPdf? pdfEnProceso;
     private string? pdfError;
+    private string? pdfAviso;
+    private DateTimeOffset? pdfBloqueadoHasta;
+    private System.Threading.CancellationTokenSource? pdfCooldownCts;
+    private System.Threading.CancellationTokenSource? pdfAvisoCts;
 
-    // Exporta el reporte de Power BI. Por ahora se exporta con los valores por
-    // defecto del reporte (sin filtros), porque los parametros de fecha del reporte
-    // estan restringidos a una lista de valores (Available Values por query) y
-    // rechazan fechas de rango arbitrarias. Para enviar los filtros de la UI, en
-    // Report Builder hay que poner Available Values = None en esos parametros.
-    private Task ExportarPdfCitas()
-        => ExportarPdf(null, null, null, null);
-
-    private async Task ExportarPdf(DateTime? fIni, DateTime? fFin, string? estadoFiltro, string? servicioFiltro)
+    private bool PdfEnCooldown => SegundosRestantesPdf > 0;
+    private int SegundosRestantesPdf
     {
+        get
+        {
+            if (pdfBloqueadoHasta is null) return 0;
+            var restantes = (int)Math.Ceiling((pdfBloqueadoHasta.Value - DateTimeOffset.UtcNow).TotalSeconds);
+            return Math.Max(0, restantes);
+        }
+    }
+
+    private string ClaseCooldownPdf => PdfEnCooldown ? "btn-export-pdf-cooldown" : "";
+    private string TituloBotonPdf => PdfEnCooldown
+        ? $"Power BI permite una exportacion cada {SegundosCooldownPowerBi} segundos. Espera {TiempoRestantePdfTexto}."
+        : "Exportar consolidado a PDF";
+
+    private string TiempoRestantePdfTexto => FormatoEspera(SegundosRestantesPdf);
+
+    private Task ExportarPdfCitas()
+        => ExportarPdf(TipoPdf.Citas);
+
+    private Task ExportarPdfClientes()
+        => ExportarPdf(TipoPdf.Clientes);
+
+    private async Task ExportarPdf(TipoPdf tipo)
+    {
+        if (PdfEnCooldown)
+        {
+            MostrarAvisoPdf($"Power BI permite generar un PDF cada {SegundosCooldownPowerBi} segundos. Espera {TiempoRestantePdfTexto} antes de intentar nuevamente.");
+            pdfError = null;
+            return;
+        }
+
         generandoPdf = true;
+        pdfEnProceso = tipo;
         pdfError = null;
+        pdfAviso = null;
         try
         {
+            var (fIni, fFin, estadoFiltro, servicioFiltro, archivo) = tipo == TipoPdf.Citas
+                ? (fechaInicioCitas, fechaFinCitas, filtroEstado, filtroServicio, "consolidado-citas.pdf")
+                : (fechaInicioClientes, fechaFinClientes, "TODOS", "TODOS", "clientes-frecuentes.pdf");
+            var tipoReporte = tipo == TipoPdf.Clientes ? "clientes" : "citas";
+
             var partes = new List<string>();
-            if (fIni.HasValue) partes.Add($"fechaInicio={fIni:yyyy-MM-dd}");
-            if (fFin.HasValue) partes.Add($"fechaFin={fFin:yyyy-MM-dd}");
+            partes.Add($"tipo={tipoReporte}");
+            partes.Add($"fechaInicio={fIni:yyyy-MM-dd}");
+            partes.Add($"fechaFin={fFin:yyyy-MM-dd}");
             if (!string.IsNullOrWhiteSpace(estadoFiltro) && estadoFiltro != "TODOS")
                 partes.Add($"estado={Uri.EscapeDataString(estadoFiltro)}");
             if (!string.IsNullOrWhiteSpace(servicioFiltro) && servicioFiltro != "TODOS")
                 partes.Add($"servicio={Uri.EscapeDataString(servicioFiltro)}");
+            if (tipo == TipoPdf.Clientes)
+                partes.Add($"minimoCitas={Math.Max(1, minimoCitasCliente)}");
 
             var url = "/consolidados/pdf" + (partes.Count > 0 ? "?" + string.Join("&", partes) : "");
 
             // El endpoint hace la exportacion en el servidor y devuelve el archivo;
             // el helper JS dispara la descarga con la cookie de sesion.
-            await JS.InvokeVoidAsync("descargarArchivo", url, "consolidados.pdf");
+            await JS.InvokeVoidAsync("descargarArchivo", url, archivo);
+            IniciarCooldownPdf(SegundosCooldownPowerBi);
+            MostrarAvisoPdf($"PDF generado. Podras exportar otro en {TiempoRestantePdfTexto}.");
         }
         catch (Exception ex)
         {
+            var segundos = ExtraerSegundosEspera(ex.Message);
+            if (segundos > 0)
+            {
+                IniciarCooldownPdf(segundos);
+                MostrarAvisoPdf($"Power BI esta limitando las exportaciones. Espera {TiempoRestantePdfTexto} antes de volver a generar un PDF.");
+            }
+
             // Se muestra el detalle real (incluye el mensaje que devuelve Power BI).
             pdfError = $"No se pudo generar el PDF. {ex.Message}";
         }
         finally
         {
             generandoPdf = false;
+            pdfEnProceso = null;
         }
+    }
+
+    private void MostrarAvisoPdf(string mensaje)
+    {
+        pdfAviso = mensaje;
+        pdfAvisoCts?.Cancel();
+        pdfAvisoCts?.Dispose();
+        pdfAvisoCts = new System.Threading.CancellationTokenSource();
+        _ = OcultarAvisoPdfAsync(pdfAvisoCts.Token);
+    }
+
+    private async Task OcultarAvisoPdfAsync(System.Threading.CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(7), token);
+            if (!token.IsCancellationRequested)
+            {
+                pdfAviso = null;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private void CerrarAvisoPdf()
+    {
+        pdfAvisoCts?.Cancel();
+        pdfAviso = null;
+    }
+
+    private string TextoBotonPdf(TipoPdf tipo)
+    {
+        if (generandoPdf && pdfEnProceso == tipo)
+        {
+            return "Generando PDF...";
+        }
+
+        if (PdfEnCooldown)
+        {
+            return $"PDF en {TiempoRestantePdfTexto}";
+        }
+
+        return "Exportar a PDF";
+    }
+
+    private void IniciarCooldownPdf(int segundos)
+    {
+        if (segundos <= 0) return;
+
+        pdfBloqueadoHasta = DateTimeOffset.UtcNow.AddSeconds(segundos);
+        pdfCooldownCts?.Cancel();
+        pdfCooldownCts?.Dispose();
+        pdfCooldownCts = new System.Threading.CancellationTokenSource();
+        _ = ActualizarCooldownPdfAsync(pdfCooldownCts.Token);
+    }
+
+    private async Task ActualizarCooldownPdfAsync(System.Threading.CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested && PdfEnCooldown)
+            {
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(1000, token);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (!token.IsCancellationRequested)
+        {
+            pdfBloqueadoHasta = null;
+            if (pdfAviso is not null && pdfAviso.Contains("Espera", StringComparison.OrdinalIgnoreCase))
+            {
+                pdfAviso = null;
+            }
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private static int ExtraerSegundosEspera(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto)) return 0;
+
+        var match = System.Text.RegularExpressions.Regex.Match(texto, @"(\d+)\s*segundo", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (match.Success && int.TryParse(match.Groups[1].Value, out var segundos))
+        {
+            return Math.Max(1, segundos);
+        }
+
+        match = System.Text.RegularExpressions.Regex.Match(texto, @"(\d+)\s*min", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (match.Success && int.TryParse(match.Groups[1].Value, out var minutos))
+        {
+            return Math.Max(1, minutos * 60);
+        }
+
+        return texto.Contains("limitando", StringComparison.OrdinalIgnoreCase) ? SegundosCooldownPowerBi : 0;
+    }
+
+    private static string FormatoEspera(int segundos)
+    {
+        if (segundos <= 0) return "0 s";
+        var minutos = segundos / 60;
+        var resto = segundos % 60;
+
+        if (minutos <= 0) return $"{resto} s";
+        if (resto == 0) return $"{minutos} min";
+        return $"{minutos} min {resto:00} s";
     }
 
     private readonly DateTime hoy = DateTime.Today;
@@ -455,4 +659,18 @@
     };
 
     private sealed record ClienteFrecuenteVm(string Nombre, string Dni, string Telefono, int TotalCitas);
+
+    private enum TipoPdf
+    {
+        Citas,
+        Clientes
+    }
+
+    public void Dispose()
+    {
+        pdfCooldownCts?.Cancel();
+        pdfCooldownCts?.Dispose();
+        pdfAvisoCts?.Cancel();
+        pdfAvisoCts?.Dispose();
+    }
 }
