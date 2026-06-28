@@ -27,8 +27,11 @@
     @if (pdfAviso is not null)
     {
         <div class="report-status" role="status">
-            <strong>Exportacion PDF</strong>
-            <span>@pdfAviso</span>
+            <div class="report-status-text">
+                <strong>Exportacion PDF</strong>
+                <span>@pdfAviso</span>
+            </div>
+            <button type="button" class="report-status-close" aria-label="Cerrar aviso" @onclick="CerrarAvisoPdf">x</button>
         </div>
     }
 
@@ -259,6 +262,7 @@
     private string? pdfAviso;
     private DateTimeOffset? pdfBloqueadoHasta;
     private System.Threading.CancellationTokenSource? pdfCooldownCts;
+    private System.Threading.CancellationTokenSource? pdfAvisoCts;
 
     private bool PdfEnCooldown => SegundosRestantesPdf > 0;
     private int SegundosRestantesPdf
@@ -288,7 +292,7 @@
     {
         if (PdfEnCooldown)
         {
-            pdfAviso = $"Power BI permite generar un PDF cada {SegundosCooldownPowerBi} segundos. Espera {TiempoRestantePdfTexto} antes de intentar nuevamente.";
+            MostrarAvisoPdf($"Power BI permite generar un PDF cada {SegundosCooldownPowerBi} segundos. Espera {TiempoRestantePdfTexto} antes de intentar nuevamente.");
             pdfError = null;
             return;
         }
@@ -317,7 +321,7 @@
             // el helper JS dispara la descarga con la cookie de sesion.
             await JS.InvokeVoidAsync("descargarArchivo", url, archivo);
             IniciarCooldownPdf(SegundosCooldownPowerBi);
-            pdfAviso = $"PDF generado. Podras exportar otro en {TiempoRestantePdfTexto}.";
+            MostrarAvisoPdf($"PDF generado. Podras exportar otro en {TiempoRestantePdfTexto}.");
         }
         catch (Exception ex)
         {
@@ -325,7 +329,7 @@
             if (segundos > 0)
             {
                 IniciarCooldownPdf(segundos);
-                pdfAviso = $"Power BI esta limitando las exportaciones. Espera {TiempoRestantePdfTexto} antes de volver a generar un PDF.";
+                MostrarAvisoPdf($"Power BI esta limitando las exportaciones. Espera {TiempoRestantePdfTexto} antes de volver a generar un PDF.");
             }
 
             // Se muestra el detalle real (incluye el mensaje que devuelve Power BI).
@@ -336,6 +340,37 @@
             generandoPdf = false;
             pdfEnProceso = null;
         }
+    }
+
+    private void MostrarAvisoPdf(string mensaje)
+    {
+        pdfAviso = mensaje;
+        pdfAvisoCts?.Cancel();
+        pdfAvisoCts?.Dispose();
+        pdfAvisoCts = new System.Threading.CancellationTokenSource();
+        _ = OcultarAvisoPdfAsync(pdfAvisoCts.Token);
+    }
+
+    private async Task OcultarAvisoPdfAsync(System.Threading.CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(7), token);
+            if (!token.IsCancellationRequested)
+            {
+                pdfAviso = null;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private void CerrarAvisoPdf()
+    {
+        pdfAvisoCts?.Cancel();
+        pdfAviso = null;
     }
 
     private string TextoBotonPdf(TipoPdf tipo)
@@ -631,5 +666,7 @@
     {
         pdfCooldownCts?.Cancel();
         pdfCooldownCts?.Dispose();
+        pdfAvisoCts?.Cancel();
+        pdfAvisoCts?.Dispose();
     }
 }

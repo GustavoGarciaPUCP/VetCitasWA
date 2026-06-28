@@ -23,6 +23,7 @@
 .report-status {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.55rem;
     flex-wrap: wrap;
     padding: 0.75rem 0.95rem;
@@ -34,8 +35,40 @@
     line-height: 1.45;
 }
 
+.report-status-text {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
 .report-status strong {
     color: #1d4ed8;
+}
+
+.report-status-close {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #1d4ed8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.report-status-close:hover,
+.report-status-close:focus-visible {
+    outline: none;
+    background: rgba(37, 99, 235, 0.12);
+    color: #1e3a8a;
 }
 
 /* ================== Grid de reportes ================== */
@@ -407,6 +440,16 @@
 
 :root.dark .report-status strong {
     color: #93c5fd;
+}
+
+:root.dark .report-status-close {
+    color: #93c5fd;
+}
+
+:root.dark .report-status-close:hover,
+:root.dark .report-status-close:focus-visible {
+    background: rgba(147, 197, 253, 0.16);
+    color: #dbeafe;
 }
 
 /* ================== Nota informativa ================== */
