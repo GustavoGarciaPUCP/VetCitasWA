@@ -306,14 +306,18 @@
             var (fIni, fFin, estadoFiltro, servicioFiltro, archivo) = tipo == TipoPdf.Citas
                 ? (fechaInicioCitas, fechaFinCitas, filtroEstado, filtroServicio, "consolidado-citas.pdf")
                 : (fechaInicioClientes, fechaFinClientes, "TODOS", "TODOS", "clientes-frecuentes.pdf");
+            var tipoReporte = tipo == TipoPdf.Clientes ? "clientes" : "citas";
 
             var partes = new List<string>();
+            partes.Add($"tipo={tipoReporte}");
             partes.Add($"fechaInicio={fIni:yyyy-MM-dd}");
             partes.Add($"fechaFin={fFin:yyyy-MM-dd}");
             if (!string.IsNullOrWhiteSpace(estadoFiltro) && estadoFiltro != "TODOS")
                 partes.Add($"estado={Uri.EscapeDataString(estadoFiltro)}");
             if (!string.IsNullOrWhiteSpace(servicioFiltro) && servicioFiltro != "TODOS")
                 partes.Add($"servicio={Uri.EscapeDataString(servicioFiltro)}");
+            if (tipo == TipoPdf.Clientes)
+                partes.Add($"minimoCitas={Math.Max(1, minimoCitasCliente)}");
 
             var url = "/consolidados/pdf" + (partes.Count > 0 ? "?" + string.Join("&", partes) : "");
 

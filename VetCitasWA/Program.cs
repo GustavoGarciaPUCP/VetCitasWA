@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using VetCitasWA.Components;
 using VetCitasWA.Servicios.Modelo.Usuario;
+using VetCitasWA.Servicios.PowerBI;
 using VetCitasWA.Servicios.REST.UsuarioRS;
 using VetCitasWA.Servicios.Seguridad;
 
@@ -238,12 +239,20 @@ app.MapGet("/auth/logout", async (HttpContext context) =>
 // Acepta filtros opcionales que se pasan como parametros del reporte paginado.
 app.MapGet("/consolidados/pdf", async (
     VetCitasWA.Servicios.PowerBI.PowerBiExportService powerBi,
-    string? fechaInicio, string? fechaFin, string? estado, string? servicio) =>
+    string? tipo, string? fechaInicio, string? fechaFin, string? estado, string? servicio, int? minimoCitas) =>
 {
     try
     {
-        var pdf = await powerBi.ExportarReportePdfAsync(fechaInicio, fechaFin, estado, servicio);
-        return Results.File(pdf, "application/pdf", "consolidados.pdf");
+        var tipoReporte = string.Equals(tipo, "clientes", StringComparison.OrdinalIgnoreCase)
+            ? TipoReportePowerBi.Clientes
+            : TipoReportePowerBi.Citas;
+        var archivo = tipoReporte == TipoReportePowerBi.Clientes
+            ? "clientes-frecuentes.pdf"
+            : "consolidado-citas.pdf";
+        var pdf = await powerBi.ExportarReportePdfAsync(
+            tipoReporte, fechaInicio, fechaFin, estado, servicio, minimoCitas);
+
+        return Results.File(pdf, "application/pdf", archivo);
     }
     catch (Exception ex)
     {
