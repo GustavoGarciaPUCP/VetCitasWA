@@ -98,41 +98,37 @@ namespace VetCitasWA.Servicios.PowerBI
             return await http.GetByteArrayAsync($"{estadoUrl}/file", ct);
         }
 
-        // Arma el cuerpo del ExportTo. Si hay filtros, los manda como parameterValues
-        // del reporte paginado (mismos nombres de parametro definidos en el reporte).
         private static object ConstruirCuerpoExport(string? fechaInicio, string? fechaFin, string? estado, string? servicio)
         {
             var parametros = new List<object>();
 
-            // El reporte espera las fechas en formato US con AM/PM (igual que su
-            // selector: "6/19/2026 4:00:00 PM"). Inicio a las 12:00:00 AM y fin a las
-            // 11:59:59 PM (inclusivo).
-            var us = System.Globalization.CultureInfo.GetCultureInfo("en-US");
-            if (TryFecha(fechaInicio, out var dIni))
-                parametros.Add(new
-                {
-                    name = "Fromvetcitasdbcitafechahorainicio",
-                    value = dIni.Date.ToString("M/d/yyyy h:mm:ss tt", us)
-                });
-
-            if (TryFecha(fechaFin, out var dFin))
-                parametros.Add(new
-                {
-                    name = "Tovetcitasdbcitafechahorainicio",
-                    value = dFin.Date.AddDays(1).AddSeconds(-1).ToString("M/d/yyyy h:mm:ss tt", us)
-                });
-
-            // Nombres reales segun el DAX del reporte (RSCustomDaxFilter).
-            if (!string.IsNullOrWhiteSpace(estado) && !estado.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
-                parametros.Add(new { name = "vetcitasdbcitaestado", value = estado });
-
-            if (!string.IsNullOrWhiteSpace(servicio) && !servicio.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
-                parametros.Add(new { name = "vetcitasdbservicionombre", value = servicio });
-
-            if (parametros.Count == 0)
+            // 1. FECHAS: Formato "yyyy-MM-dd HH:mm:ss" (DAX con VALUE lo procesará perfecto)
+            var dIni = TryFecha(fechaInicio, out var f1) ? f1 : new DateTime(2000, 1, 1);
+            parametros.Add(new
             {
-                return new { format = "PDF" };
-            }
+                name = "Fromvetcitasdbcitafechahorainicio",
+                value = dIni.ToString("yyyy-MM-dd HH:mm:ss")
+            });
+
+            var dFin = TryFecha(fechaFin, out var f2) ? f2 : new DateTime(2099, 12, 31);
+            parametros.Add(new
+            {
+                name = "Tovetcitasdbcitafechahorainicio",
+                value = dFin.ToString("yyyy-MM-dd HH:mm:ss")
+            });
+
+            // Si es "TODOS" o viene vacío, enviamos "TODOS" para que coincida con el valor predeterminado del RDL
+            string estadoVal = (!string.IsNullOrWhiteSpace(estado) && !estado.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
+                ? estado.Replace(",", "|")
+                : "TODOS";
+
+            parametros.Add(new { name = "vetcitasdbcitaestado", value = estadoVal });
+
+            string servicioVal = (!string.IsNullOrWhiteSpace(servicio) && !servicio.Equals("TODOS", StringComparison.OrdinalIgnoreCase))
+                ? servicio.Replace(",", "|")
+                : "TODOS";
+
+            parametros.Add(new { name = "vetcitasdbservicionombre", value = servicioVal });
 
             return new
             {
@@ -140,11 +136,26 @@ namespace VetCitasWA.Servicios.PowerBI
                 paginatedReportConfiguration = new { parameterValues = parametros }
             };
         }
-
+        // Método parseador mucho más robusto
         private static bool TryFecha(string? texto, out DateTime fecha)
-            => DateTime.TryParse(texto, System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.None, out fecha);
+        {
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                fecha = default;
+                return false;
+            }
 
+            // Intenta parsear los formatos más comunes (ISO de HTML5 y formatos locales)
+            string[] formatos = { "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy", "d/M/yyyy", "yyyy-MM-ddTHH:mm:ss" };
+
+            if (DateTime.TryParseExact(texto, formatos, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out fecha))
+            {
+                return true;
+            }
+
+            // Último recurso usando la configuración regional del servidor
+            return DateTime.TryParse(texto, out fecha);
+        }
         private async Task<string> ObtenerTokenAsync(
             HttpClient http, string tenantId, string clientId, string clientSecret, CancellationToken ct)
         {
