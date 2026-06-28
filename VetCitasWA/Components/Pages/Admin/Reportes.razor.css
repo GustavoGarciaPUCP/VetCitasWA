@@ -20,6 +20,24 @@
     flex-wrap: wrap;
 }
 
+.report-status {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 0.95rem;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1e40af;
+    font-size: 0.86rem;
+    line-height: 1.45;
+}
+
+.report-status strong {
+    color: #1d4ed8;
+}
+
 /* ================== Grid de reportes ================== */
 .reports-grid {
     display: grid;
@@ -277,31 +295,58 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     flex: 0 0 auto;
-    background: #ffffff;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
+    min-width: 154px;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
     border-radius: 8px;
     padding: 0.75rem 1rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.12);
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 
 .btn-export-pdf:hover:not(:disabled) {
-    background: #fef2f2;
-    border-color: #fca5a5;
+    background: #ffedd5;
+    border-color: #fdba74;
+    color: #9a3412;
+    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.18);
 }
 
 .btn-export-pdf:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2), 0 6px 16px rgba(249, 115, 22, 0.18);
+}
+
+.btn-export-pdf:active:not(:disabled) {
+    transform: translateY(1px);
 }
 
 .btn-export-pdf:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-export-pdf[aria-disabled="True"],
+.btn-export-pdf[aria-disabled="true"],
+.btn-export-pdf-cooldown {
+    background: #f8fafc;
+    color: #64748b;
+    border-color: #cbd5e1;
+    box-shadow: none;
+}
+
+.btn-export-pdf[aria-disabled="True"]:hover,
+.btn-export-pdf[aria-disabled="true"]:hover,
+.btn-export-pdf-cooldown:hover {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #cbd5e1;
 }
 
 :root.dark .btn-generar {
@@ -321,17 +366,47 @@
 }
 
 :root.dark .btn-export-pdf {
-    background: #1e293b;
-    color: #fca5a5;
-    border-color: rgba(220, 38, 38, 0.4);
+    background: rgba(249, 115, 22, 0.14);
+    color: #fdba74;
+    border-color: rgba(251, 146, 60, 0.45);
+    box-shadow: 0 6px 18px rgba(249, 115, 22, 0.12);
 }
 
 :root.dark .btn-export-pdf:hover:not(:disabled) {
-    background: rgba(220, 38, 38, 0.12);
+    background: rgba(249, 115, 22, 0.22);
+    color: #fed7aa;
+    border-color: rgba(251, 146, 60, 0.65);
+}
+
+:root.dark .btn-export-pdf[aria-disabled="True"],
+:root.dark .btn-export-pdf[aria-disabled="true"],
+:root.dark .btn-export-pdf-cooldown {
+    background: #1f2937;
+    color: #94a3b8;
+    border-color: #334155;
+    box-shadow: none;
+}
+
+:root.dark .btn-export-pdf[aria-disabled="True"]:hover,
+:root.dark .btn-export-pdf[aria-disabled="true"]:hover,
+:root.dark .btn-export-pdf-cooldown:hover {
+    background: #273244;
+    color: #cbd5e1;
+    border-color: #475569;
 }
 
 .pdf-icon {
     display: inline-flex;
+}
+
+:root.dark .report-status {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(96, 165, 250, 0.35);
+    color: #bfdbfe;
+}
+
+:root.dark .report-status strong {
+    color: #93c5fd;
 }
 
 /* ================== Nota informativa ================== */
