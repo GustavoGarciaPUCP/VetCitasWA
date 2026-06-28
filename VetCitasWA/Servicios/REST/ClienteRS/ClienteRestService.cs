@@ -3,6 +3,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using VetCitasWA.Servicios.Modelo.Cliente;
 
+using VetCitasWA.Servicios.REST;
+
 namespace VetCitasWA.Servicios.REST.ClienteRS
 {
     public class ClienteRestService
@@ -21,11 +23,35 @@ namespace VetCitasWA.Servicios.REST.ClienteRS
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
         }
 
+        public int InsertarConMascotas(Cliente cliente)
+        {
+            var response = http.PostAsJsonAsync("ClienteRS/insertarConMascotas", cliente).GetAwaiter().GetResult();
+            response.EnsureVetCitasSuccess();
+            var id = response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+            if (id <= 0)
+            {
+                throw new System.InvalidOperationException("No se pudo guardar el cliente con sus mascotas.");
+            }
+            return id;
+        }
+
         // 2. MODIFICAR CLIENTE
         public int Modificar(Cliente cliente)
         {
             var response = http.PutAsJsonAsync("ClienteRS/modificar", cliente).GetAwaiter().GetResult();
             return response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+        }
+
+        public int ModificarConMascotas(Cliente cliente)
+        {
+            var response = http.PutAsJsonAsync("ClienteRS/modificarConMascotas", cliente).GetAwaiter().GetResult();
+            response.EnsureVetCitasSuccess();
+            var id = response.Content.ReadFromJsonAsync<int>().GetAwaiter().GetResult();
+            if (id <= 0)
+            {
+                throw new System.InvalidOperationException("No se pudo actualizar el cliente con sus mascotas.");
+            }
+            return id;
         }
 
         // 3. ELIMINAR CLIENTE POR ID
