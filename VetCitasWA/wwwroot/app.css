@@ -3730,6 +3730,12 @@ h1:focus {
 .vc-form-row > .vc-form-field { flex: 1 1 200px; }
 .vc-form-field { display: flex; flex-direction: column; margin-bottom: 0.9rem; }
 .vc-form-label { font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.35rem; }
+.vc-required-mark {
+    margin-left: 0.25rem;
+    color: #dc2626;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
 .vc-form-input,
 .vc-form-textarea {
     width: 100%;
@@ -3774,6 +3780,7 @@ h1:focus {
 .vc-form-check input { width: 16px; height: 16px; cursor: pointer; }
 
 :root.dark .vc-form-label { color: #cbd5e1; }
+:root.dark .vc-required-mark { color: #fca5a5; }
 :root.dark .vc-form-check { color: #cbd5e1; }
 :root.dark .vc-form-input,
 :root.dark .vc-form-textarea { background: #1e293b; color: #e2e8f0; border-color: #334155; }
