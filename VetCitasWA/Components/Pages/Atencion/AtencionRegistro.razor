@@ -196,8 +196,6 @@ else if (cita is null)
 @code {
     private int usuarioActualId;
     private bool usuarioEsVeterinario;
-    private bool usuarioEsRecepcionista;
-    private bool usuarioEsAdministrador;
     private double precioServicio=0;
 
     [SupplyParameterFromQuery(Name = "id")]
@@ -263,12 +261,9 @@ else if (cita is null)
                     return;
                 }
 
-                if (SoloLectura && EsVeterinarioPuro && cita.Veterinario?.Id != usuarioActualId)
-                {
-                    cita = null;
-                    errorMensaje = "No tienes acceso a esta atención médica.";
-                    return;
-                }
+                // En modo solo-lectura (modo=ver) cualquier rol autorizado puede ver la
+                // atencion: no se restringe al veterinario que la atendio. El registro/
+                // edicion (no SoloLectura) sigue limitado al veterinario asignado arriba.
 
                 mascota = cita.Mascota;
                 cliente = mascota?.Cliente;
@@ -319,14 +314,10 @@ else if (cita is null)
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         usuarioEsVeterinario = authState.User.IsInRole("VETERINARIO");
-        usuarioEsRecepcionista = authState.User.IsInRole("RECEPCIONISTA");
-        usuarioEsAdministrador = authState.User.IsInRole("ADMINISTRADOR");
         var claim = authState.User.FindFirst("IdUsuario")?.Value
             ?? authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         return int.TryParse(claim, out var id) ? id : 0;
     }
-
-    private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
 
     private async Task HidratarMascotaAsync()
     {
