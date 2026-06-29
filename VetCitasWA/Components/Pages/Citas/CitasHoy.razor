@@ -189,7 +189,8 @@
                 Se cancelará la cita de <strong>@(citaACancelar.Mascota?.Nombre)</strong> de las @citaACancelar.FechaHoraInicio.ToString("HH:mm").
                 Indica el motivo:
             </p>
-            <textarea class="vc-form-textarea" rows="3" placeholder="Motivo de la cancelación…" @bind="motivoCancelacion" style="width:100%;margin-bottom:1rem;"></textarea>
+            <label class="vc-form-label" for="hoy-cancelar-motivo">Motivo <span class="vc-required-mark">* obligatorio</span></label>
+            <textarea id="hoy-cancelar-motivo" class="vc-form-textarea" rows="3" placeholder="Motivo de la cancelación…" @bind="motivoCancelacion" style="width:100%;margin-bottom:1rem;" required></textarea>
             <div class="vc-modal-actions">
                 <button type="button" class="vc-btn vc-btn-secondary" @onclick="() => citaACancelar = null" disabled="@procesando">Volver</button>
                 <button type="button" class="vc-btn vc-btn-danger" @onclick="ConfirmarCancelacion" disabled="@procesando">
