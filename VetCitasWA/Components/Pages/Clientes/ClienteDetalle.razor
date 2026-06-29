@@ -6,9 +6,6 @@
 @using VetCitasWA.Servicios.Modelo.Common.Enums
 @inject VetCitasWA.Servicios.REST.ClienteRS.ClienteRestService ClienteService
 @inject VetCitasWA.Servicios.REST.ClienteRS.MascotaRestService MascotaService
-@inject VetCitasWA.Servicios.REST.CitaRS.AtencionRestService AtencionService
-@inject VetCitasWA.Servicios.REST.CitaRS.CitaRestService CitaService
-@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Detalle de cliente - VetCitas</PageTitle>
 
@@ -142,33 +139,18 @@
     private Cliente? cliente;
     private List<Mascota> mascotas = new();
     private bool cargando = true;
-    private int usuarioActualId;
-    private bool usuarioEsVeterinario;
-    private bool usuarioEsRecepcionista;
-    private bool usuarioEsAdministrador;
-
-    private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            await CargarContextoUsuario();
+            // Detalle disponible para cualquier rol autorizado (veterinario,
+            // recepcionista o administrador): no se restringe a las mascotas que
+            // el veterinario haya atendido.
             cliente = await Task.Run(() => ClienteService.BuscarPorId(Id));
             if (cliente is not null)
             {
                 mascotas = await Task.Run(() => MascotaService.ListarPorCliente(Id));
-
-                if (EsVeterinarioPuro)
-                {
-                    var permitidas = await CargarMascotasPermitidasVeterinario();
-                    mascotas = mascotas.Where(m => permitidas.Contains(m.Id)).ToList();
-
-                    if (!mascotas.Any())
-                    {
-                        cliente = null;
-                    }
-                }
             }
         }
         catch
@@ -179,47 +161,6 @@
         {
             cargando = false;
         }
-    }
-
-    private async Task CargarContextoUsuario()
-    {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        usuarioEsVeterinario = user.IsInRole("VETERINARIO");
-        usuarioEsRecepcionista = user.IsInRole("RECEPCIONISTA");
-        usuarioEsAdministrador = user.IsInRole("ADMINISTRADOR");
-
-        var claim = user.FindFirst("IdUsuario")?.Value
-            ?? user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        usuarioActualId = int.TryParse(claim, out var id) ? id : 0;
-    }
-
-    private async Task<HashSet<int>> CargarMascotasPermitidasVeterinario()
-    {
-        var permitidas = new HashSet<int>();
-        if (usuarioActualId <= 0) return permitidas;
-
-        var citasVet = await Task.Run(() => CitaService.ListarFiltradas(usuarioActualId, null, null, "", ""));
-        foreach (var cita in citasVet.Where(c => c.Veterinario?.Id == usuarioActualId && c.Mascota?.Id > 0))
-        {
-            permitidas.Add(cita.Mascota.Id);
-        }
-
-        try
-        {
-            var atencionesVet = await Task.Run(() => AtencionService.ListarFiltradas(usuarioActualId, "", null, ""));
-            foreach (var atencion in atencionesVet.Where(a => a.Cita?.Veterinario?.Id == usuarioActualId && a.Cita?.Mascota?.Id > 0))
-            {
-                permitidas.Add(atencion.Cita.Mascota.Id);
-            }
-        }
-        catch
-        {
-            // Las citas asignadas siguen delimitando el acceso si el historial no responde.
-        }
-
-        return permitidas;
     }
 
     private string Iniciales(string? nombres, string? apellidos)

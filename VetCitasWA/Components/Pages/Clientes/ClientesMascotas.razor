@@ -456,7 +456,6 @@
     private HashSet<int> mascotaIdsPermitidas = new();
     private bool verSoloMisClientes;
 
-    private bool EsVeterinarioPuro => usuarioEsVeterinario && !usuarioEsRecepcionista && !usuarioEsAdministrador;
     // El veterinario ve TODOS los clientes por defecto. El alcance acotado a "mis clientes"
     // solo se aplica si el propio usuario activa el toggle.
     private bool UsaAlcanceVeterinario => verSoloMisClientes;
