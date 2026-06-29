@@ -75,22 +75,46 @@
     text-decoration: none !important;
 }
 
-.btn-icon-edit:hover {
-    background: #eff6ff;
-    color: #2563eb;
+/* Igualar el tamaño de los iconos al estandar de /clientes-mascotas (18px).
+   Se fuerza aqui porque la regla global no siempre alcanza estos SVG. */
+.row-actions .btn-icon svg {
+    width: 18px;
+    height: 18px;
 }
 
-.btn-icon-delete:hover {
-    background: #fef2f2;
-    color: #dc2626;
+/* Íconos de acción con color (replicado de /clientes-mascotas):
+   editar (azul), desactivar (rojo) y reactivar (verde). */
+.btn-icon-edit { color: #2563eb; }
+.btn-icon-edit:hover { background: #eff6ff; color: #1d4ed8; }
+
+.btn-icon-delete { color: #dc2626; }
+.btn-icon-delete:hover { background: #fef2f2; color: #b91c1c; }
+
+.btn-icon-reactivate { color: #059669; }
+.btn-icon-reactivate:hover { background: #ecfdf5; color: #047857; }
+
+:root.dark .row-actions .btn-icon-edit { color: #60a5fa; }
+:root.dark .row-actions .btn-icon-edit:hover,
+:root.dark .row-actions .btn-icon-edit:focus-visible {
+    background: rgba(37, 99, 235, 0.18);
+    color: #93c5fd;
+    outline: none;
 }
 
-.btn-icon-reactivate {
-    color: #059669;
+:root.dark .row-actions .btn-icon-delete { color: #f87171; }
+:root.dark .row-actions .btn-icon-delete:hover,
+:root.dark .row-actions .btn-icon-delete:focus-visible {
+    background: rgba(220, 38, 38, 0.16);
+    color: #fca5a5;
+    outline: none;
 }
-.btn-icon-reactivate:hover {
-    background: #ecfdf5;
-    color: #047857;
+
+:root.dark .row-actions .btn-icon-reactivate { color: #34d399; }
+:root.dark .row-actions .btn-icon-reactivate:hover,
+:root.dark .row-actions .btn-icon-reactivate:focus-visible {
+    background: rgba(16, 185, 129, 0.16);
+    color: #6ee7b7;
+    outline: none;
 }
 
 /* ================== Panel ================== */

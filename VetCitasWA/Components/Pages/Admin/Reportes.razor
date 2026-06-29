@@ -494,7 +494,7 @@
     private List<Cita> citasBase = new();
     private List<Cita> citasClientes = new();
     private List<string> serviciosDisponibles = new();
-    // DNI/telefono no vienen en el cliente anidado de las citas; se enriquecen
+    // telefono no vienen en el cliente anidado de las citas; se enriquecen
     // con la lista completa de clientes (id -> cliente).
     private Dictionary<int, VetCitasWA.Servicios.Modelo.Cliente.Cliente> clientesPorId = new();
 
@@ -528,7 +528,7 @@
             .Select(g =>
             {
                 var cliente = g.First().Mascota.Cliente;
-                // El cliente anidado en la cita no trae DNI/telefono: se completan
+                // El cliente anidado en la cita no trae telefono: se completan
                 // desde la lista maestra de clientes por Id cuando estan vacios.
                 var maestro = cliente.Id > 0 && clientesPorId.TryGetValue(cliente.Id, out var m) ? m : null;
                 var dni = !string.IsNullOrWhiteSpace(cliente.Dni) ? cliente.Dni : maestro?.Dni;

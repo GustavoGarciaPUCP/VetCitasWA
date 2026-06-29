@@ -790,7 +790,7 @@
     }
 
     .users-table tbody td[data-label="ID"],
-    .users-table tbody td[data-label="DNI/Telefono"],
+    .users-table tbody td[data-label="Telefono"],
     .users-table tbody td[data-label="Correo"],
     .users-table tbody td[data-label="Roles"] {
         grid-column: 1 / -1;
@@ -804,7 +804,7 @@
     }
 
     .users-table tbody td[data-label="ID"]::before,
-    .users-table tbody td[data-label="DNI/Telefono"]::before,
+    .users-table tbody td[data-label="Telefono"]::before,
     .users-table tbody td[data-label="Correo"]::before,
     .users-table tbody td[data-label="Roles"]::before {
         content: attr(data-label);
