@@ -280,15 +280,23 @@
                 <input class="search-input" type="email" required @bind="usuarioNuevo.Email" />
             </label>
 
-            @if (RolPrincipalEfectivo == CodigoRol.ADMINISTRADOR || RolPrincipalEfectivo == CodigoRol.RECEPCIONISTA)
+            @if (rolesSeleccionados.Contains(CodigoRol.ADMINISTRADOR))
             {
                 <label class="edit-grid-wide">
-                    <span>Area <span class="req">*</span></span>
-                    <input class="search-input" required @bind="areaNuevo" placeholder="Ej. Recepcion" />
+                    <span>Area de administrador <span class="req">*</span></span>
+                    <input class="search-input" required @bind="areaAdminNuevo" placeholder="Ej. Sistemas" />
                 </label>
             }
 
-            @if (RolPrincipalEfectivo == CodigoRol.VETERINARIO)
+            @if (rolesSeleccionados.Contains(CodigoRol.RECEPCIONISTA))
+            {
+                <label class="edit-grid-wide">
+                    <span>Area de recepcionista <span class="req">*</span></span>
+                    <input class="search-input" required @bind="areaRecepNuevo" placeholder="Ej. Recepcion" />
+                </label>
+            }
+
+            @if (rolesSeleccionados.Contains(CodigoRol.VETERINARIO))
             {
                 <label>
                     <span>CMPV <span class="req">*</span></span>
@@ -359,21 +367,44 @@
 
         <div class="roles-editor">
             <h3>Roles del usuario</h3>
-            <p>Asigna o quita roles desde aqui. Los cambios se guardan al instante.</p>
+            <p>Asigna o quita roles. Los cambios se aplican al guardar.</p>
             <div class="role-actions role-actions-editor" aria-label="Gestionar roles">
                 @foreach (var rolGestionable in RolesGestionables)
                 {
-                    var tieneRol = TieneRol(usuarioEditando, rolGestionable.Codigo);
+                    var tieneRol = rolesEditando.Contains(rolGestionable.Codigo);
                     <button type="button"
                             class="role-toggle @(tieneRol ? "role-toggle-on" : "")"
-                            disabled="@(procesando || NoPuedeModificarRol(usuarioEditando, rolGestionable.Codigo))"
-                            title="@TituloRol(usuarioEditando, rolGestionable.Codigo, rolGestionable.Label)"
-                            @onclick="() => CambiarRolAsync(usuarioEditando, rolGestionable.Codigo)">
+                            disabled="@(procesando || NoPuedeQuitarRolEditar(rolGestionable.Codigo))"
+                            title="@TituloRolEditar(rolGestionable.Codigo, rolGestionable.Label)"
+                            @onclick="() => ToggleRolEditar(rolGestionable.Codigo)">
                         @(tieneRol ? "Quitar" : "Asignar") @rolGestionable.Label
                     </button>
                 }
             </div>
         </div>
+
+        @if (rolesEditando.Contains(CodigoRol.ADMINISTRADOR) || rolesEditando.Contains(CodigoRol.RECEPCIONISTA))
+        {
+            <div class="roles-editor">
+                <h3>Datos por rol</h3>
+                <div class="edit-grid">
+                    @if (rolesEditando.Contains(CodigoRol.ADMINISTRADOR))
+                    {
+                        <label class="edit-grid-wide">
+                            <span>Area de administrador</span>
+                            <input class="search-input" @bind="areaAdminEditar" placeholder="Ej. Sistemas" />
+                        </label>
+                    }
+                    @if (rolesEditando.Contains(CodigoRol.RECEPCIONISTA))
+                    {
+                        <label class="edit-grid-wide">
+                            <span>Area de recepcionista</span>
+                            <input class="search-input" @bind="areaRecepEditar" placeholder="Ej. Recepcion" />
+                        </label>
+                    }
+                </div>
+            </div>
+        }
 
         <div class="roles-editor">
             <h3>Restablecer contrasena</h3>
@@ -509,9 +540,17 @@
     }
     private string passwordNuevo = "";
     private string nuevaPasswordReset = "";
-    private string areaNuevo = "";
+    private string areaAdminNuevo = "";
+    private string areaRecepNuevo = "";
     private string cmpvNuevo = "";
     private string especialidadNuevo = "";
+
+    // Edicion diferida de roles: el toggle solo cambia este conjunto en memoria;
+    // los cambios (asignar/revocar) se validan y aplican al dar "Guardar cambios".
+    private HashSet<CodigoRol> rolesEditando = new();
+    // Areas capturadas en el modal de edicion (se cargan al abrir, se guardan al final).
+    private string areaAdminEditar = "";
+    private string areaRecepEditar = "";
 
     private IEnumerable<Usuario> UsuariosPaginados
         => listaUsuarios.Skip((paginaActual - 1) * PageSize).Take(PageSize);
@@ -637,7 +676,7 @@
         return int.TryParse(valor, out var id) ? id : 0;
     }
 
-    private void AbrirEditar(Usuario usuario)
+    private async Task AbrirEditar(Usuario usuario)
     {
         // Un SuperAdmin solo puede ser editado por si mismo.
         if (EsSuperAdminUsuario(usuario) && usuario.Id != usuarioActualId)
@@ -649,6 +688,34 @@
         usuarioEditando = CopiarUsuario(usuario);
         nuevaPasswordReset = "";
         errorMensaje = null;
+        rolesEditando = usuarioEditando.Roles?.Select(r => r.Codigo).ToHashSet() ?? new();
+        areaAdminEditar = "";
+        areaRecepEditar = "";
+        await CargarAreasEdicionAsync();
+    }
+
+    // Carga el area actual de los subtipos administrativos que tenga el usuario,
+    // para mostrarla en el formulario. Trae el registro completo solo para leer el area.
+    private async Task CargarAreasEdicionAsync()
+    {
+        if (usuarioEditando is null) return;
+        try
+        {
+            if (rolesEditando.Contains(CodigoRol.ADMINISTRADOR))
+            {
+                var a = await Task.Run(() => AdminService.BuscarPorId(usuarioEditando.Id));
+                areaAdminEditar = a?.Area ?? "";
+            }
+            if (rolesEditando.Contains(CodigoRol.RECEPCIONISTA))
+            {
+                var r = await Task.Run(() => RecepcionistaService.BuscarPorId(usuarioEditando.Id));
+                areaRecepEditar = r?.Area ?? "";
+            }
+        }
+        catch
+        {
+            // No se bloquea el modal por un fallo de carga.
+        }
     }
 
     private void CerrarAlerta()
@@ -738,7 +805,8 @@
         rolesSeleccionados = new();
         rolesDropdownAbierto = false;
         passwordNuevo = "";
-        areaNuevo = "";
+        areaAdminNuevo = "";
+        areaRecepNuevo = "";
         cmpvNuevo = "";
         especialidadNuevo = "";
         usernameError = null;
@@ -783,13 +851,17 @@
         if (!string.IsNullOrEmpty(tel) && (tel.Length < 6 || tel.Length > 15))
             return "El telefono debe tener entre 6 y 15 digitos.";
 
-        if (RolPrincipalEfectivo == CodigoRol.VETERINARIO
+        if (rolesSeleccionados.Contains(CodigoRol.VETERINARIO)
             && (string.IsNullOrWhiteSpace(cmpvNuevo) || string.IsNullOrWhiteSpace(especialidadNuevo)))
             return "Para veterinario debes indicar CMPV y especialidad.";
 
-        if ((RolPrincipalEfectivo == CodigoRol.ADMINISTRADOR || RolPrincipalEfectivo == CodigoRol.RECEPCIONISTA)
-            && string.IsNullOrWhiteSpace(areaNuevo))
-            return "Indica el area del usuario.";
+        if (rolesSeleccionados.Contains(CodigoRol.ADMINISTRADOR)
+            && string.IsNullOrWhiteSpace(areaAdminNuevo))
+            return "Indica el area de administrador.";
+
+        if (rolesSeleccionados.Contains(CodigoRol.RECEPCIONISTA)
+            && string.IsNullOrWhiteSpace(areaRecepNuevo))
+            return "Indica el area de recepcionista.";
 
         return null;
     }
@@ -855,7 +927,7 @@
                     Telefono = usuarioNuevo.Telefono,
                     Email = usuarioNuevo.Email,
                     Activo = true,
-                    Area = areaNuevo,
+                    Area = areaAdminNuevo,
                     EsSuperAdmin = false,
                     ModifiedBy = auditor
                 }),
@@ -868,7 +940,7 @@
                     Telefono = usuarioNuevo.Telefono,
                     Email = usuarioNuevo.Email,
                     Activo = true,
-                    Area = areaNuevo,
+                    Area = areaRecepNuevo,
                     ModifiedBy = auditor
                 }),
                 _ => VeterinarioService.Insertar(new Veterinario
@@ -897,6 +969,46 @@
                 AdminService.AsignarRol(idCreado, rolExtra.ToString());
             }
 
+            // asignar_rol crea la fila de subtipo con area vacia; aqui se guarda el
+            // area capturada en el formulario para los subtipos administrativos que
+            // se asignaron como rol secundario (no son el subtipo principal).
+            if (RolPrincipalEfectivo != CodigoRol.ADMINISTRADOR
+                && rolesSeleccionados.Contains(CodigoRol.ADMINISTRADOR))
+            {
+                AdminService.Modificar(new Administrador
+                {
+                    Id = idCreado,
+                    Username = usuarioNuevo.Username,
+                    ContrasenaHash = passwordNuevo,
+                    Nombres = usuarioNuevo.Nombres,
+                    Apellidos = usuarioNuevo.Apellidos,
+                    Telefono = usuarioNuevo.Telefono,
+                    Email = usuarioNuevo.Email,
+                    Activo = true,
+                    Area = areaAdminNuevo,
+                    EsSuperAdmin = false,
+                    ModifiedBy = auditor
+                });
+            }
+
+            if (RolPrincipalEfectivo != CodigoRol.RECEPCIONISTA
+                && rolesSeleccionados.Contains(CodigoRol.RECEPCIONISTA))
+            {
+                RecepcionistaService.Modificar(new Recepcionista
+                {
+                    Id = idCreado,
+                    Username = usuarioNuevo.Username,
+                    ContrasenaHash = passwordNuevo,
+                    Nombres = usuarioNuevo.Nombres,
+                    Apellidos = usuarioNuevo.Apellidos,
+                    Telefono = usuarioNuevo.Telefono,
+                    Email = usuarioNuevo.Email,
+                    Activo = true,
+                    Area = areaRecepNuevo,
+                    ModifiedBy = auditor
+                });
+            }
+
             Toasts.Exito(rolesSeleccionados.Count > 1
                 ? "Usuario creado con sus roles."
                 : "Usuario creado.");
@@ -917,6 +1029,9 @@
         if (!procesando)
         {
             usuarioEditando = null;
+            rolesEditando = new();
+            areaAdminEditar = "";
+            areaRecepEditar = "";
         }
     }
 
@@ -959,9 +1074,74 @@
             return;
         }
 
+        // ===== Validaciones de roles (todas al guardar) =====
+        if (rolesEditando.Count == 0)
+        {
+            Toasts.Error("El usuario debe tener al menos un rol.");
+            return;
+        }
+
+        var rolesActuales = usuarioEditando.Roles?.Select(r => r.Codigo).ToHashSet() ?? new();
+        var rolesAQuitar = rolesActuales.Where(r => !rolesEditando.Contains(r)).ToList();
+        var rolesAAsignar = rolesEditando.Where(r => !rolesActuales.Contains(r)).ToList();
+
+        // No se puede quitar ADMINISTRADOR a uno mismo ni al SuperAdmin.
+        if (rolesAQuitar.Contains(CodigoRol.ADMINISTRADOR)
+            && (usuarioEditando.Id == usuarioActualId || EsSuperAdminUsuario(usuarioEditando)))
+        {
+            Toasts.Error("No se puede quitar el rol Administrador a este usuario.");
+            return;
+        }
+
+        // No se puede quitar VETERINARIO si tiene citas pendientes, confirmadas o en consulta.
+        if (rolesAQuitar.Contains(CodigoRol.VETERINARIO)
+            && await VeterinarioTieneCitasActivasAsync(usuarioEditando.Id))
+        {
+            Toasts.Error("No se puede quitar el rol Veterinario: tiene citas pendientes, confirmadas o en consulta. Cancela o reprograma esas citas primero.");
+            return;
+        }
+
         await EjecutarOperacionAsync(() =>
         {
+            // 1) Datos basicos del usuario.
             AdminService.ModificarUsuarioBasico(usuarioEditando, usuarioActualId);
+
+            // 2) Asignar roles nuevos PRIMERO (evita quedar en 0 roles al intercambiar).
+            foreach (var rol in rolesAAsignar)
+            {
+                AdminService.AsignarRol(usuarioEditando.Id, rol.ToString());
+            }
+
+            // 3) Guardar el area de los subtipos administrativos vigentes. Se relee el
+            //    registro para tomar el hash VIGENTE (por si se acaba de restablecer la
+            //    contrasena) y solo se le aplica el area y los datos basicos editados.
+            if (rolesEditando.Contains(CodigoRol.ADMINISTRADOR))
+            {
+                var actual = AdminService.BuscarPorId(usuarioEditando.Id);
+                if (actual is not null)
+                {
+                    actual.Area = areaAdminEditar ?? "";
+                    SincronizarBasicosSubtipo(actual);
+                    AdminService.Modificar(actual);
+                }
+            }
+            if (rolesEditando.Contains(CodigoRol.RECEPCIONISTA))
+            {
+                var actual = RecepcionistaService.BuscarPorId(usuarioEditando.Id);
+                if (actual is not null)
+                {
+                    actual.Area = areaRecepEditar ?? "";
+                    SincronizarBasicosSubtipo(actual);
+                    RecepcionistaService.Modificar(actual);
+                }
+            }
+
+            // 4) Revocar roles quitados al final (cuando ya hay roles suficientes).
+            foreach (var rol in rolesAQuitar)
+            {
+                AdminService.RevocarRol(usuarioEditando.Id, rol.ToString());
+            }
+
             Toasts.Exito("Usuario actualizado.");
         });
 
@@ -969,8 +1149,27 @@
         if (errorMensaje is null)
         {
             usuarioEditando = null;
+            rolesEditando = new();
+            areaAdminEditar = "";
+            areaRecepEditar = "";
             await CargarUsuariosAsync();
         }
+    }
+
+    // Copia los datos basicos editados del usuario al subtipo antes de guardarlo,
+    // para que Modificar (que tambien actualiza la tabla usuario) no revierta los
+    // cambios hechos en el formulario. No toca la contrasena.
+    private void SincronizarBasicosSubtipo(Usuario subtipo)
+    {
+        if (usuarioEditando is null) return;
+        subtipo.Id = usuarioEditando.Id;
+        subtipo.Username = usuarioEditando.Username;
+        subtipo.Nombres = usuarioEditando.Nombres;
+        subtipo.Apellidos = usuarioEditando.Apellidos;
+        subtipo.Telefono = usuarioEditando.Telefono;
+        subtipo.Email = usuarioEditando.Email;
+        subtipo.Activo = usuarioEditando.Activo;
+        subtipo.ModifiedBy = new Usuario { Id = usuarioActualId };
     }
 
     private async Task PedirCambioEstado(Usuario usuario, bool activo)
@@ -1057,52 +1256,31 @@
         }
     }
 
-    private async Task CambiarRolAsync(Usuario usuario, CodigoRol codigoRol)
+    // Cambio de rol DIFERIDO: solo modifica el conjunto en memoria. La asignacion
+    // o revocacion real (y todas sus validaciones) ocurren en "Guardar cambios".
+    private void ToggleRolEditar(CodigoRol codigoRol)
     {
-        var asignado = TieneRol(usuario, codigoRol);
-        if (asignado && NoPuedeModificarRol(usuario, codigoRol))
+        if (usuarioEditando is null) return;
+
+        if (rolesEditando.Contains(codigoRol))
         {
-            Toasts.Error("No se puede quitar este rol administrativo.");
-            return;
+            // Proteccion en UI; la validacion definitiva se hace al guardar.
+            if (NoPuedeQuitarRolEditar(codigoRol))
+            {
+                Toasts.Error("No se puede quitar este rol administrativo.");
+                return;
+            }
+            rolesEditando.Remove(codigoRol);
         }
-
-        await EjecutarOperacionAsync(() =>
+        else
         {
-            if (asignado)
+            if (rolesEditando.Count >= 3)
             {
-                AdminService.RevocarRol(usuario.Id, codigoRol.ToString());
-                Toasts.Exito("Rol revocado.");
+                Toasts.Error("No se permite mas de 3 roles por usuario.");
+                return;
             }
-            else
-            {
-                AdminService.AsignarRol(usuario.Id, codigoRol.ToString());
-                Toasts.Exito("Rol asignado.");
-            }
-        });
-
-        // Refresca los roles del usuario en edicion con el metodo dedicado del backend.
-        // Es mas confiable que re-parsear la lista filtrada: si el usuario deja de
-        // coincidir con el filtro de rol al cambiarlo, ya no aparece en la lista y
-        // el panel mostraria roles desactualizados.
-        if (usuarioEditando?.Id == usuario.Id)
-        {
-            try
-            {
-                var rolesActuales = await Task.Run(() => AdminService.ListarRolesDeUsuario(usuario.Id));
-                usuarioEditando.Roles = rolesActuales ?? new List<RolSistema>();
-            }
-            catch
-            {
-                // Si falla la consulta de roles, ajusta el estado localmente para no dejar el panel inconsistente.
-                usuarioEditando.Roles ??= new List<RolSistema>();
-                if (asignado)
-                    usuarioEditando.Roles.RemoveAll(r => r.Codigo == codigoRol);
-                else if (usuarioEditando.Roles.All(r => r.Codigo != codigoRol))
-                    usuarioEditando.Roles.Add(new RolSistema { Codigo = codigoRol });
-            }
+            rolesEditando.Add(codigoRol);
         }
-
-        await CargarUsuariosAsync();
     }
 
     private async Task EjecutarOperacionAsync(Action operacion)
@@ -1149,10 +1327,13 @@
     private static bool TieneRol(Usuario usuario, CodigoRol codigoRol)
         => usuario.Roles?.Any(r => r.Codigo == codigoRol) == true;
 
-    private bool NoPuedeModificarRol(Usuario usuario, CodigoRol codigoRol)
-        => codigoRol == CodigoRol.ADMINISTRADOR
-            && TieneRol(usuario, CodigoRol.ADMINISTRADOR)
-            && (usuario.Id == usuarioActualId || EsSuperAdminUsuario(usuario));
+    // En el editor diferido, no se puede dejar staged la quita de ADMINISTRADOR a
+    // uno mismo ni al SuperAdmin (se bloquea el toggle). El resto se valida al guardar.
+    private bool NoPuedeQuitarRolEditar(CodigoRol codigoRol)
+        => usuarioEditando is not null
+            && codigoRol == CodigoRol.ADMINISTRADOR
+            && rolesEditando.Contains(CodigoRol.ADMINISTRADOR)
+            && (usuarioEditando.Id == usuarioActualId || EsSuperAdminUsuario(usuarioEditando));
 
     private static bool EsSuperAdminUsuario(Usuario usuario)
         => usuario.Id == 1
@@ -1177,10 +1358,10 @@
             _ => "role-pill-admin"
         };
 
-    private string TituloRol(Usuario usuario, CodigoRol codigoRol, string label)
-        => NoPuedeModificarRol(usuario, codigoRol)
+    private string TituloRolEditar(CodigoRol codigoRol, string label)
+        => NoPuedeQuitarRolEditar(codigoRol)
             ? "No se puede quitar este rol administrativo"
-            : $"{(TieneRol(usuario, codigoRol) ? "Quitar" : "Asignar")} {label}";
+            : $"{(rolesEditando.Contains(codigoRol) ? "Quitar" : "Asignar")} {label}";
 
     private void IrAPagina(int p) => paginaActual = p;
 

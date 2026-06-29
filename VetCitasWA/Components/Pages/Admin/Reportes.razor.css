@@ -85,7 +85,8 @@
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-    overflow: hidden;
+    /* visible para que el desplegable de los selects no quede recortado por el card */
+    overflow: visible;
 }
 
 .report-head {

@@ -501,7 +501,7 @@
             <button type="button" class="vc-modal-close" aria-label="Cerrar" @onclick="() => mostrarCancelar = false" disabled="@procesando">×</button>
             <h3 class="vc-modal-title">Cancelar cita</h3>
             <p class="vc-modal-message">Indica el motivo de la cancelación:</p>
-            <label class="vc-form-label" for="agenda-cancelar-motivo">Motivo <span class="vc-required-mark">* obligatorio</span></label>
+            <label class="vc-form-label" for="agenda-cancelar-motivo">Motivo <span class="vc-required-mark">*</span></label>
             <textarea id="agenda-cancelar-motivo" class="vc-form-textarea" rows="3" @bind="cancelarMotivo" style="width:100%;margin-bottom:1rem;" required></textarea>
             <div class="vc-modal-actions">
                 <button class="vc-btn vc-btn-secondary" @onclick="() => mostrarCancelar = false" disabled="@procesando">Volver</button>

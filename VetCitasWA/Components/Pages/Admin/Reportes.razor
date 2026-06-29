@@ -51,11 +51,11 @@
                 <div class="filters-grid">
                     <div class="filter-field">
                         <label class="filter-label" for="rep1-fini">Fecha de inicio</label>
-                        <input id="rep1-fini" type="date" class="filter-input" @bind="fechaInicioCitas" @bind:after="CargarCitasAsync" />
+                        <input id="rep1-fini" type="date" class="filter-input" @bind="fechaInicioCitas" @bind:after="OcultarConsolidadoCitas" />
                     </div>
                     <div class="filter-field">
                         <label class="filter-label" for="rep1-ffin">Fecha de fin</label>
-                        <input id="rep1-ffin" type="date" class="filter-input" @bind="fechaFinCitas" @bind:after="CargarCitasAsync" />
+                        <input id="rep1-ffin" type="date" class="filter-input" @bind="fechaFinCitas" @bind:after="OcultarConsolidadoCitas" />
                     </div>
                     <div class="filter-field">
                         <label class="filter-label" for="rep1-estado">Estado</label>
@@ -73,81 +73,87 @@
                     </div>
                 </div>
 
-                @if (!string.IsNullOrWhiteSpace(errorCitas))
-                {
-                    <p class="estado-mensaje estado-error">@errorCitas</p>
-                }
-                else if (cargandoCitas)
-                {
-                    <p class="estado-mensaje">Cargando consolidado...</p>
-                }
-                else
-                {
-                    <div class="report-note">
-                        <span class="report-note-label">Resumen del rango:</span>
-                        @CitasFiltradas.Count cita(s), @TotalPorEstado(EstadoCita.ATENDIDA) atendida(s),
-                        @TotalPorEstado(EstadoCita.CANCELADA) cancelada(s) y @TotalPorEstado(EstadoCita.NO_ASISTIO) no asistio.
-                    </div>
-
-                    <div class="records-wrapper">
-                        <table class="records-table">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Mascota</th>
-                                    <th>Cliente</th>
-                                    <th>Veterinario</th>
-                                    <th>Servicio</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (!CitasFiltradas.Any())
-                                {
-                                    <tr>
-                                        <td colspan="6" class="estado-mensaje">No hay citas para el rango y filtros seleccionados.</td>
-                                    </tr>
-                                }
-                                else
-                                {
-                                    @foreach (var cita in CitasFiltradas.Take(12))
-                                    {
-                                        <tr>
-                                            <td data-label="Fecha">@cita.FechaHoraInicio.ToString("dd/MM/yyyy HH:mm")</td>
-                                            <td data-label="Mascota">@(cita.Mascota?.Nombre ?? "-")</td>
-                                            <td data-label="Cliente">@NombreCliente(cita)</td>
-                                            <td data-label="Veterinario">@NombreVeterinario(cita)</td>
-                                            <td data-label="Servicio">@(cita.Servicio?.Nombre ?? "-")</td>
-                                            <td data-label="Estado"><span class="state @EstadoCss(cita.Estado)">@EstadoLabel(cita.Estado)</span></td>
-                                        </tr>
-                                    }
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-
                 <div class="report-actions">
-                    <button type="button" class="btn-generar" @onclick="CargarCitasAsync" disabled="@cargandoCitas">
+                    <button type="button" class="btn-generar" @onclick="GenerarCitas" disabled="@cargandoCitas">
                         Generar consolidado
                     </button>
-                    <button type="button"
-                            class="btn-export-pdf @ClaseCooldownPdf"
-                            @onclick="ExportarPdfCitas"
-                            disabled="@generandoPdf"
-                            aria-disabled="@PdfEnCooldown"
-                            title="@TituloBotonPdf">
-                        <span class="pdf-icon" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M5.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0v-1h.5a1.5 1.5 0 0 0 0-3zm.5.5h.5a.5.5 0 0 1 0 1H6z" />
-                                <path d="M8 7.5A.5.5 0 0 1 8.5 7H10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H8.5A.5.5 0 0 1 8 10.5zm1 .5v2h1V8z" />
-                                <path d="M11.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V9.5h.75a.5.5 0 0 0 0-1H12V8h1a.5.5 0 0 0 0-1z" />
-                                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z" />
-                            </svg>
-                        </span>
-                        @TextoBotonPdf(TipoPdf.Citas)
-                    </button>
                 </div>
+
+                @if (citasGenerado)
+                {
+                    @if (!string.IsNullOrWhiteSpace(errorCitas))
+                    {
+                        <p class="estado-mensaje estado-error">@errorCitas</p>
+                    }
+                    else if (cargandoCitas)
+                    {
+                        <p class="estado-mensaje">Cargando consolidado...</p>
+                    }
+                    else
+                    {
+                        <div class="report-note">
+                            <span class="report-note-label">Resumen del rango:</span>
+                            @CitasFiltradas.Count cita(s), @TotalPorEstado(EstadoCita.ATENDIDA) atendida(s),
+                            @TotalPorEstado(EstadoCita.CANCELADA) cancelada(s) y @TotalPorEstado(EstadoCita.NO_ASISTIO) no asistio.
+                        </div>
+
+                        <div class="records-wrapper">
+                            <table class="records-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Mascota</th>
+                                        <th>Cliente</th>
+                                        <th>Veterinario</th>
+                                        <th>Servicio</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (!CitasFiltradas.Any())
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="estado-mensaje">No hay citas para el rango y filtros seleccionados.</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var cita in CitasFiltradas.Take(12))
+                                        {
+                                            <tr>
+                                                <td data-label="Fecha">@cita.FechaHoraInicio.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td data-label="Mascota">@(cita.Mascota?.Nombre ?? "-")</td>
+                                                <td data-label="Cliente">@NombreCliente(cita)</td>
+                                                <td data-label="Veterinario">@NombreVeterinario(cita)</td>
+                                                <td data-label="Servicio">@(cita.Servicio?.Nombre ?? "-")</td>
+                                                <td data-label="Estado"><span class="state @EstadoCss(cita.Estado)">@EstadoLabel(cita.Estado)</span></td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="report-actions">
+                            <button type="button"
+                                    class="btn-export-pdf @ClaseCooldownPdf"
+                                    @onclick="ExportarPdfCitas"
+                                    disabled="@(generandoPdf || PdfEnCooldown)"
+                                    aria-disabled="@PdfEnCooldown"
+                                    title="@TituloBotonPdf">
+                                <span class="pdf-icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M5.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0v-1h.5a1.5 1.5 0 0 0 0-3zm.5.5h.5a.5.5 0 0 1 0 1H6z" />
+                                        <path d="M8 7.5A.5.5 0 0 1 8.5 7H10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H8.5A.5.5 0 0 1 8 10.5zm1 .5v2h1V8z" />
+                                        <path d="M11.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V9.5h.75a.5.5 0 0 0 0-1H12V8h1a.5.5 0 0 0 0-1z" />
+                                        <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z" />
+                                    </svg>
+                                </span>
+                                @TextoBotonPdf(TipoPdf.Citas)
+                            </button>
+                        </div>
+                    }
+                }
             </div>
         </section>
 
@@ -165,88 +171,94 @@
                 <div class="filters-grid">
                     <div class="filter-field">
                         <label class="filter-label" for="rep2-fini">Fecha de inicio</label>
-                        <input id="rep2-fini" type="date" class="filter-input" @bind="fechaInicioClientes" @bind:after="CargarClientesAsync" />
+                        <input id="rep2-fini" type="date" class="filter-input" @bind="fechaInicioClientes" @bind:after="OcultarConsolidadoClientes" />
                     </div>
                     <div class="filter-field">
                         <label class="filter-label" for="rep2-ffin">Fecha de fin</label>
-                        <input id="rep2-ffin" type="date" class="filter-input" @bind="fechaFinClientes" @bind:after="CargarClientesAsync" />
+                        <input id="rep2-ffin" type="date" class="filter-input" @bind="fechaFinClientes" @bind:after="OcultarConsolidadoClientes" />
                     </div>
                     <div class="filter-field filter-field-full">
                         <label class="filter-label" for="rep2-metrica">Minimo de citas</label>
-                        <input id="rep2-metrica" type="number" class="filter-input" min="1" @bind="minimoCitasCliente" />
+                        <input id="rep2-metrica" type="number" class="filter-input" min="1" @bind="minimoCitasCliente" @bind:after="OcultarConsolidadoClientes" />
                     </div>
                 </div>
-
-                @if (!string.IsNullOrWhiteSpace(errorClientes))
-                {
-                    <p class="estado-mensaje estado-error">@errorClientes</p>
-                }
-                else if (cargandoClientes)
-                {
-                    <p class="estado-mensaje">Cargando clientes frecuentes...</p>
-                }
-                else
-                {
-                    <div class="records-wrapper">
-                        <table class="records-table">
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>DNI</th>
-                                    <th>Telefono</th>
-                                    <th># Citas</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (!ClientesFrecuentes.Any())
-                                {
-                                    <tr>
-                                        <td colspan="4" class="estado-mensaje">No hay clientes que superen la metrica en este rango.</td>
-                                    </tr>
-                                }
-                                else
-                                {
-                                    @foreach (var cliente in ClientesFrecuentes.Take(10))
-                                    {
-                                        <tr>
-                                            <td data-label="Cliente">@cliente.Nombre</td>
-                                            <td data-label="DNI">@cliente.Dni</td>
-                                            <td data-label="Telefono">@cliente.Telefono</td>
-                                            <td data-label="# Citas"><span class="count-badge">@cliente.TotalCitas</span></td>
-                                        </tr>
-                                    }
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
 
                 <div class="report-actions">
-                    <button type="button" class="btn-generar" @onclick="CargarClientesAsync" disabled="@cargandoClientes">
+                    <button type="button" class="btn-generar" @onclick="GenerarClientes" disabled="@cargandoClientes">
                         Generar consolidado
-                    </button>
-                    <button type="button"
-                            class="btn-export-pdf @ClaseCooldownPdf"
-                            @onclick="ExportarPdfClientes"
-                            disabled="@generandoPdf"
-                            aria-disabled="@PdfEnCooldown"
-                            title="@TituloBotonPdf">
-                        <span class="pdf-icon" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M5.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0v-1h.5a1.5 1.5 0 0 0 0-3zm.5.5h.5a.5.5 0 0 1 0 1H6z" />
-                                <path d="M8 7.5A.5.5 0 0 1 8.5 7H10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H8.5A.5.5 0 0 1 8 10.5zm1 .5v2h1V8z" />
-                                <path d="M11.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V9.5h.75a.5.5 0 0 0 0-1H12V8h1a.5.5 0 0 0 0-1z" />
-                                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z" />
-                            </svg>
-                        </span>
-                        @TextoBotonPdf(TipoPdf.Clientes)
                     </button>
                 </div>
 
-                <p class="report-note">
-                    <span class="report-note-label">Este consolidado incluye:</span>
-                    clientes con al menos @Math.Max(1, minimoCitasCliente) cita(s) dentro del rango seleccionado.
-                </p>
+                @if (clientesGenerado)
+                {
+                    @if (!string.IsNullOrWhiteSpace(errorClientes))
+                    {
+                        <p class="estado-mensaje estado-error">@errorClientes</p>
+                    }
+                    else if (cargandoClientes)
+                    {
+                        <p class="estado-mensaje">Cargando clientes frecuentes...</p>
+                    }
+                    else
+                    {
+                        <div class="records-wrapper">
+                            <table class="records-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>DNI</th>
+                                        <th>Telefono</th>
+                                        <th># Citas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (!ClientesFrecuentes.Any())
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="estado-mensaje">No hay clientes que superen la metrica en este rango.</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var cliente in ClientesFrecuentes.Take(10))
+                                        {
+                                            <tr>
+                                                <td data-label="Cliente">@cliente.Nombre</td>
+                                                <td data-label="DNI">@cliente.Dni</td>
+                                                <td data-label="Telefono">@cliente.Telefono</td>
+                                                <td data-label="# Citas"><span class="count-badge">@cliente.TotalCitas</span></td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p class="report-note">
+                            <span class="report-note-label">Este consolidado incluye:</span>
+                            clientes con al menos @Math.Max(1, minimoCitasCliente) cita(s) dentro del rango seleccionado.
+                        </p>
+
+                        <div class="report-actions">
+                            <button type="button"
+                                    class="btn-export-pdf @ClaseCooldownPdf"
+                                    @onclick="ExportarPdfClientes"
+                                    disabled="@(generandoPdf || PdfEnCooldown)"
+                                    aria-disabled="@PdfEnCooldown"
+                                    title="@TituloBotonPdf">
+                                <span class="pdf-icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M5.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0v-1h.5a1.5 1.5 0 0 0 0-3zm.5.5h.5a.5.5 0 0 1 0 1H6z" />
+                                        <path d="M8 7.5A.5.5 0 0 1 8.5 7H10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H8.5A.5.5 0 0 1 8 10.5zm1 .5v2h1V8z" />
+                                        <path d="M11.5 7a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V9.5h.75a.5.5 0 0 0 0-1H12V8h1a.5.5 0 0 0 0-1z" />
+                                        <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z" />
+                                    </svg>
+                                </span>
+                                @TextoBotonPdf(TipoPdf.Clientes)
+                            </button>
+                        </div>
+                    }
+                }
             </div>
         </section>
 
@@ -332,12 +344,17 @@
             var segundos = ExtraerSegundosEspera(ex.Message);
             if (segundos > 0)
             {
+                // Limite de Power BI (429): se bloquea el boton con el tiempo de espera
+                // que indica el propio error y NO se muestra el HTTP 500 crudo.
                 IniciarCooldownPdf(segundos);
                 MostrarAvisoPdf($"Power BI esta limitando las exportaciones. Espera {TiempoRestantePdfTexto} antes de volver a generar un PDF.");
+                pdfError = null;
             }
-
-            // Se muestra el detalle real (incluye el mensaje que devuelve Power BI).
-            pdfError = $"No se pudo generar el PDF. {ex.Message}";
+            else
+            {
+                // Otros errores si se muestran con su detalle real.
+                pdfError = $"No se pudo generar el PDF. {ex.Message}";
+            }
         }
         finally
         {
@@ -469,6 +486,9 @@
     private int minimoCitasCliente = 2;
     private bool cargandoCitas;
     private bool cargandoClientes;
+    // La tabla y el boton de exportar solo aparecen tras pulsar "Generar consolidado".
+    private bool citasGenerado;
+    private bool clientesGenerado;
     private string? errorCitas;
     private string? errorClientes;
     private List<Cita> citasBase = new();
@@ -524,22 +544,32 @@
             .ThenBy(c => c.Nombre)
             .ToList();
 
-    protected override async Task OnInitializedAsync()
+    // No se consulta nada al cargar la pagina: la API solo se llama al pulsar
+    // "Generar consolidado" (ahorro de queries).
+    private void OnEstadoChanged(string value)
     {
-        await CargarCitasAsync();
-        await CargarClientesAsync();
-    }
-
-    private async Task OnEstadoChanged(string value)
-    {
+        // Solo guarda el filtro; se aplicara en la siguiente generacion.
         filtroEstado = value;
-        await CargarCitasAsync();
+        citasGenerado = false;
     }
 
     private Task OnServicioChanged(string value)
     {
         filtroServicio = value;
+        citasGenerado = false;
         return Task.CompletedTask;
+    }
+
+    // Al cambiar cualquier filtro, se oculta el consolidado generado previamente
+    // (hay que volver a pulsar "Generar consolidado" para ver los nuevos resultados).
+    private void OcultarConsolidadoCitas() => citasGenerado = false;
+    private void OcultarConsolidadoClientes() => clientesGenerado = false;
+
+    // Dispara la generacion del consolidado: muestra la tabla y el boton de exportar.
+    private async Task GenerarCitas()
+    {
+        citasGenerado = true;
+        await CargarCitasAsync();
     }
 
     private async Task CargarCitasAsync()
@@ -579,6 +609,12 @@
         {
             cargandoCitas = false;
         }
+    }
+
+    private async Task GenerarClientes()
+    {
+        clientesGenerado = true;
+        await CargarClientesAsync();
     }
 
     private async Task CargarClientesAsync()
